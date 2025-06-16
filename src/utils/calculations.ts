@@ -81,11 +81,11 @@ export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashF
   });
 
   const weeklyInflows = last12Weeks
-    .filter(t => t.type === 'inflow')
+    .filter(t => t.amount > 0)
     .reduce((sum, t) => sum + t.amount, 0) / 12;
 
   const weeklyOutflows = Math.abs(last12Weeks
-    .filter(t => t.type === 'outflow')
+    .filter(t => t.amount < 0)
     .reduce((sum, t) => sum + t.amount, 0)) / 12;
 
   // Get current balance
