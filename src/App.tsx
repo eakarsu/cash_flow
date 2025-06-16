@@ -1,15 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Plus } from 'lucide-react';
-import Header from './components/Layout/Header';
-import CashInflowsWidget from './components/Dashboard/CashInflowsWidget';
-import CashOutflowsWidget from './components/Dashboard/CashOutflowsWidget';
-import CashRunwayWidget from './components/Dashboard/CashRunwayWidget';
-import CashForecastWidget from './components/Dashboard/CashForecastWidget';
-import TransactionList from './components/TransactionManager/TransactionList';
-import TransactionForm from './components/TransactionManager/TransactionForm';
-import { Transaction } from './types';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { parseCSV, exportToCSV } from './utils/csvParser';
+import Header from './components/Layout/Header.tsx';
+import CashInflowsWidget from './components/Dashboard/CashInflowsWidget.tsx';
+import CashOutflowsWidget from './components/Dashboard/CashOutflowsWidget.tsx';
+import CashRunwayWidget from './components/Dashboard/CashRunwayWidget.tsx';
+import CashForecastWidget from './components/Dashboard/CashForecastWidget.tsx';
+import TransactionList from './components/TransactionManager/TransactionList.tsx';
+import TransactionForm from './components/TransactionManager/TransactionForm.tsx';
+import { Transaction } from './types/index.ts';
+import { useLocalStorage } from './hooks/useLocalStorage.ts';
+import { parseCSV, exportToCSV } from './utils/csvParser.ts';
 
 function App() {
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
