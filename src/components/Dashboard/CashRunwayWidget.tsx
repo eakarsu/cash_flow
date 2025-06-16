@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
-import { calculateCashFlowSummary, getMonthlyTrends } from '../../utils/calculations';
+import { calculateCashFlowSummary, getMonthlyTrends } from '../../utils/calculations.ts';
 
 interface CashRunwayWidgetProps {
   transactions: Transaction[];

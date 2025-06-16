@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TrendingDown, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
-import { calculateCashFlowSummary, calculateCategoryBreakdown, getMonthlyTrends } from '../../utils/calculations';
+import { calculateCashFlowSummary, calculateCategoryBreakdown, getMonthlyTrends } from '../../utils/calculations.ts';
 
 interface CashOutflowsWidgetProps {
   transactions: Transaction[];
