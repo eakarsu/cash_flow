@@ -11,7 +11,7 @@ interface CashOutflowsWidgetProps {
 const COLORS = ['#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981', '#3b82f6'];
 
 const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year'>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
 
   const summary = calculateCashFlowSummary(transactions, selectedPeriod);
   const categoryBreakdown = calculateCategoryBreakdown(transactions, 'outflow', selectedPeriod);
@@ -41,9 +41,10 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
 
         <select
           value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year')}
+          onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year' | 'all')}
           className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
         >
+          <option value="all">All Time</option>
           <option value="month">This Month</option>
           <option value="quarter">This Quarter</option>
           <option value="year">This Year</option>
