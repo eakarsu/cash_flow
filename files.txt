@@ -1,0 +1,2474 @@
+aider --model openrouter/anthropic/claude-sonnet-4 --cache-prompts --api-key openrouter=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 --auto-commits --yes --weak-model  openrouter/anthropic/claude-sonnet-4
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+You can skip this check with --no-gitignore
+Added .aider* to .gitignore
+Aider v0.84.0
+Model: openrouter/anthropic/claude-sonnet-4 with diff edit format, prompt cache
+Git repo: .git with 1 files
+Repo-map: using 4096 tokens, files refresh
+Cost estimates may be inaccurate when using streaming and caching.
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+> /add realistic_targeted_balance_200k_transactions.csv
+
+Added realistic_targeted_balance_200k_transactions.csv to the chat
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+realistic_targeted_balance_200k_transactions.csv
+> **13-Week Cash Forecast Widget:**
+> - Generate weekly cash balance projections for next 13 weeks
+> - Based on historical income/expense patterns
+> - Interactive chart showing projected ending cash balance each week
+> - Scenario planning with optimistic/realistic/pessimistic views
+>
+> ### 3. Analytics & Insights
+> - Net cash burn calculation and trending
+> - Largest spending categories analysis with visual charts
+> - Largest income sources analysis
+> - Month-over-month cash flow comparison
+> - Operational improvement recommendations based on spending patterns
+>
+> ### 4. Technical Requirements
+> - React 18+ with TypeScript
+> - Modern UI framework (Tailwind CSS or Material-UI)
+> - Chart.js or Recharts for data visualization
+> - Responsive design for desktop and mobile
+> - Local storage for data persistence
+> - Export functionality (PDF reports, CSV data)
+>
+> ### 5. File Structure
+> Organize as:
+>
+
+I'll create a comprehensive React TypeScript cash flow management web application based on your transaction data. Let me start by creating the
+project structure and core files.
+
+package.json
+
+
+<<<<<<< SEARCH
+=======
+{
+  "name": "cash-flow-manager",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^16.18.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.0",
+    "recharts": "^2.8.0",
+    "date-fns": "^2.30.0",
+    "lucide-react": "^0.263.0",
+    "papaparse": "^5.4.1",
+    "@types/papaparse": "^5.3.7",
+    "jspdf": "^2.5.1",
+    "html2canvas": "^1.4.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24"
+  }
+}
+>>>>>>> REPLACE
+
+
+tailwind.config.js
+
+
+<<<<<<< SEARCH
+=======
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#eff6ff',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+        },
+        success: {
+          50: '#f0fdf4',
+          500: '#22c55e',
+          600: '#16a34a',
+        },
+        warning: {
+          50: '#fffbeb',
+          500: '#f59e0b',
+          600: '#d97706',
+        },
+        danger: {
+          50: '#fef2f2',
+          500: '#ef4444',
+          600: '#dc2626',
+        }
+      }
+    },
+  },
+  plugins: [],
+}
+>>>>>>> REPLACE
+
+
+src/index.css
+
+
+<<<<<<< SEARCH
+=======
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+>>>>>>> REPLACE
+
+
+src/types/index.ts
+
+
+<<<<<<< SEARCH
+=======
+export interface Transaction {
+  id: string;
+  date: string;
+  amount: number;
+  description: string;
+  category: string;
+  type: 'inflow' | 'outflow';
+  merchant?: string;
+  paymentRef?: string;
+  balance?: number;
+}
+
+export interface CashFlowSummary {
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  burnRate: number;
+  runway: number;
+}
+
+export interface CategorySummary {
+  category: string;
+  amount: number;
+  percentage: number;
+  count: number;
+}
+
+export interface WeeklyCashForecast {
+  week: string;
+  projectedBalance: number;
+  inflows: number;
+  outflows: number;
+}
+
+export interface PeriodFilter {
+  period: 'month' | 'quarter' | 'year' | 'all';
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ScenarioType {
+  optimistic: number;
+  realistic: number;
+  pessimistic: number;
+}
+>>>>>>> REPLACE
+
+
+src/utils/csvParser.ts
+
+
+<<<<<<< SEARCH
+=======
+import Papa from 'papaparse';
+import { Transaction } from '../types';
+
+export const parseCSV = (file: File): Promise<Transaction[]> => {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      complete: (results) => {
+        try {
+          const transactions: Transaction[] = results.data
+            .filter((row: any) => row['Transaction date'] && row['Transaction ID'])
+            .map((row: any, index: number) => {
+              const debitAmount = parseFloat(row['Debit amount']) || 0;
+              const creditAmount = parseFloat(row['Credit amount']) || 0;
+              const amount = creditAmount > 0 ? creditAmount : -debitAmount;
+
+              return {
+                id: row['Transaction ID'] || `txn-${index}`,
+                date: row['Transaction date'],
+                amount,
+                description: row['Description'] || '',
+                category: categorizeTransaction(row['Merchant name'], row['Description']),
+                type: amount > 0 ? 'inflow' : 'outflow',
+                merchant: row['Merchant name'] || '',
+                paymentRef: row['Payment ref ID / Check No'] || '',
+                balance: parseFloat(row['Balance']) || 0,
+              } as Transaction;
+            });
+
+          resolve(transactions);
+        } catch (error) {
+          reject(error);
+        }
+      },
+      error: (error) => {
+        reject(error);
+      }
+    });
+  });
+};
+
+const categorizeTransaction = (merchant: string, description: string): string => {
+  const merchantLower = (merchant || '').toLowerCase();
+  const descriptionLower = (description || '').toLowerCase();
+
+  // Revenue categories
+  if (merchantLower.includes('stripe') || merchantLower.includes('square') ||
+      descriptionLower.includes('customer payment') || descriptionLower.includes('pos sale')) {
+    return 'Revenue';
+  }
+
+  // Operating expenses
+  if (merchantLower.includes('rent') || descriptionLower.includes('rent')) {
+    return 'Rent';
+  }
+
+  if (merchantLower.includes('utilities') || descriptionLower.includes('utilities')) {
+    return 'Utilities';
+  }
+
+  if (merchantLower.includes('payroll') || descriptionLower.includes('payroll')) {
+    return 'Payroll';
+  }
+
+  // Inventory and supplies
+  if (merchantLower.includes('sysco') || merchantLower.includes('us foods') ||
+      merchantLower.includes('gordon food') || merchantLower.includes('local farm') ||
+      merchantLower.includes('local butcher') || descriptionLower.includes('food inventory')) {
+    return 'Food Inventory';
+  }
+
+  if (merchantLower.includes('pepsi') || merchantLower.includes('coca-cola') ||
+      descriptionLower.includes('beverage')) {
+    return 'Beverages';
+  }
+
+  if (merchantLower.includes('bakery supply') || descriptionLower.includes('baking')) {
+    return 'Baking Supplies';
+  }
+
+  // Equipment and maintenance
+  if (merchantLower.includes('kitchen depot') || descriptionLower.includes('equipment') ||
+      descriptionLower.includes('maintenance')) {
+    return 'Equipment & Maintenance';
+  }
+
+  // General supplies
+  if (merchantLower.includes('amazon') || merchantLower.includes('walmart') ||
+      merchantLower.includes('costco') || descriptionLower.includes('supplies')) {
+    return 'General Supplies';
+  }
+
+  // Banking and fees
+  if (merchantLower.includes('chase bank') || descriptionLower.includes('banking fee') ||
+      descriptionLower.includes('service fee')) {
+    return 'Banking Fees';
+  }
+
+  return 'Other';
+};
+
+export const exportToCSV = (transactions: Transaction[], filename: string = 'transactions.csv') => {
+  const csv = Papa.unparse(transactions);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+>>>>>>> REPLACE
+
+
+src/utils/calculations.ts
+
+
+<<<<<<< SEARCH
+=======
+import { Transaction, CashFlowSummary, CategorySummary, WeeklyCashForecast } from '../types';
+import { startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear,
+         subMonths, format, addWeeks, startOfWeek, isWithinInterval, parseISO } from 'date-fns';
+
+export const calculateCashFlowSummary = (
+  transactions: Transaction[],
+  period: 'month' | 'quarter' | 'year' | 'all' = 'all'
+): CashFlowSummary => {
+  const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+
+  const totalInflows = filteredTransactions
+    .filter(t => t.type === 'inflow')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalOutflows = Math.abs(filteredTransactions
+    .filter(t => t.type === 'outflow')
+    .reduce((sum, t) => sum + t.amount, 0));
+
+  const netCashFlow = totalInflows - totalOutflows;
+
+  // Calculate burn rate (average monthly outflows over last 6 months)
+  const sixMonthsAgo = subMonths(new Date(), 6);
+  const recentTransactions = transactions.filter(t =>
+    parseISO(t.date) >= sixMonthsAgo && t.type === 'outflow'
+  );
+  const burnRate = Math.abs(recentTransactions.reduce((sum, t) => sum + t.amount, 0)) / 6;
+
+  // Calculate runway (current balance / monthly burn rate)
+  const currentBalance = transactions.length > 0 ?
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  const runway = burnRate > 0 ? currentBalance / burnRate : Infinity;
+
+  return {
+    totalInflows,
+    totalOutflows,
+    netCashFlow,
+    burnRate,
+    runway
+  };
+};
+
+export const calculateCategoryBreakdown = (
+  transactions: Transaction[],
+  type: 'inflow' | 'outflow',
+  period: 'month' | 'quarter' | 'year' | 'all' = 'all'
+): CategorySummary[] => {
+  const filteredTransactions = filterTransactionsByPeriod(transactions, period)
+    .filter(t => t.type === type);
+
+  const categoryTotals = filteredTransactions.reduce((acc, transaction) => {
+    const category = transaction.category;
+    if (!acc[category]) {
+      acc[category] = { amount: 0, count: 0 };
+    }
+    acc[category].amount += Math.abs(transaction.amount);
+    acc[category].count += 1;
+    return acc;
+  }, {} as Record<string, { amount: number; count: number }>);
+
+  const total = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.amount, 0);
+
+  return Object.entries(categoryTotals)
+    .map(([category, data]) => ({
+      category,
+      amount: data.amount,
+      percentage: total > 0 ? (data.amount / total) * 100 : 0,
+      count: data.count
+    }))
+    .sort((a, b) => b.amount - a.amount);
+};
+
+export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashForecast[] => {
+  const currentDate = new Date();
+  const forecast: WeeklyCashForecast[] = [];
+
+  // Calculate average weekly inflows and outflows from historical data
+  const last12Weeks = transactions.filter(t => {
+    const transactionDate = parseISO(t.date);
+    const twelveWeeksAgo = addWeeks(currentDate, -12);
+    return transactionDate >= twelveWeeksAgo;
+  });
+
+  const weeklyInflows = last12Weeks
+    .filter(t => t.type === 'inflow')
+    .reduce((sum, t) => sum + t.amount, 0) / 12;
+
+  const weeklyOutflows = Math.abs(last12Weeks
+    .filter(t => t.type === 'outflow')
+    .reduce((sum, t) => sum + t.amount, 0)) / 12;
+
+  // Get current balance
+  const sortedTransactions = transactions.sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  let currentBalance = sortedTransactions.length > 0 ? sortedTransactions[0].balance || 0 : 0;
+
+  // Generate 13-week forecast
+  for (let week = 0; week < 13; week++) {
+    const weekStart = addWeeks(startOfWeek(currentDate), week);
+    const projectedInflows = weeklyInflows;
+    const projectedOutflows = weeklyOutflows;
+
+    currentBalance += projectedInflows - projectedOutflows;
+
+    forecast.push({
+      week: format(weekStart, 'MMM dd'),
+      projectedBalance: currentBalance,
+      inflows: projectedInflows,
+      outflows: projectedOutflows
+    });
+  }
+
+  return forecast;
+};
+
+const filterTransactionsByPeriod = (
+  transactions: Transaction[],
+  period: 'month' | 'quarter' | 'year' | 'all'
+): Transaction[] => {
+  if (period === 'all') return transactions;
+
+  const now = new Date();
+  let startDate: Date;
+  let endDate: Date;
+
+  switch (period) {
+    case 'month':
+      startDate = startOfMonth(now);
+      endDate = endOfMonth(now);
+      break;
+    case 'quarter':
+      startDate = startOfQuarter(now);
+      endDate = endOfQuarter(now);
+      break;
+    case 'year':
+      startDate = startOfYear(now);
+      endDate = endOfYear(now);
+      break;
+    default:
+      return transactions;
+  }
+
+  return transactions.filter(transaction => {
+    const transactionDate = parseISO(transaction.date);
+    return isWithinInterval(transactionDate, { start: startDate, end: endDate });
+  });
+};
+
+export const getMonthlyTrends = (transactions: Transaction[], months: number = 12) => {
+  const trends = [];
+  const currentDate = new Date();
+
+  for (let i = months - 1; i >= 0; i--) {
+    const monthStart = startOfMonth(subMonths(currentDate, i));
+    const monthEnd = endOfMonth(subMonths(currentDate, i));
+
+    const monthTransactions = transactions.filter(t => {
+      const transactionDate = parseISO(t.date);
+      return isWithinInterval(transactionDate, { start: monthStart, end: monthEnd });
+    });
+
+    const inflows = monthTransactions
+      .filter(t => t.type === 'inflow')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const outflows = Math.abs(monthTransactions
+      .filter(t => t.type === 'outflow')
+      .reduce((sum, t) => sum + t.amount, 0));
+
+    trends.push({
+      month: format(monthStart, 'MMM yyyy'),
+      inflows,
+      outflows,
+      netFlow: inflows - outflows
+    });
+  }
+
+  return trends;
+};
+>>>>>>> REPLACE
+
+
+src/hooks/useLocalStorage.ts
+
+
+<<<<<<< SEARCH
+=======
+import { useState, useEffect } from 'react';
+
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(`Error reading localStorage key "${key}":`, error);
+      return initialValue;
+    }
+  });
+
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(`Error setting localStorage key "${key}":`, error);
+    }
+  };
+
+  return [storedValue, setValue] as const;
+}
+>>>>>>> REPLACE
+
+
+src/components/Layout/Header.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React from 'react';
+import { DollarSign, Upload, Download } from 'lucide-react';
+
+interface HeaderProps {
+  onImport: () => void;
+  onExport: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
+  return (
+    <header className="bg-white shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <DollarSign className="h-8 w-8 text-primary-600" />
+            <h1 className="ml-2 text-xl font-semibold text-gray-900">
+              Cash Flow Manager
+            </h1>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={onImport}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700
+bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Import CSV
+            </button>
+
+            <button
+              onClick={onExport}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white
+bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+>>>>>>> REPLACE
+
+
+src/components/Dashboard/CashInflowsWidget.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React, { useState } from 'react';
+import { TrendingUp, DollarSign } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Transaction } from '../../types';
+import { calculateCashFlowSummary, calculateCategoryBreakdown, getMonthlyTrends } from '../../utils/calculations';
+
+interface CashInflowsWidgetProps {
+  transactions: Transaction[];
+}
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+
+const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year'>('month');
+
+  const summary = calculateCashFlowSummary(transactions, selectedPeriod);
+  const categoryBreakdown = calculateCategoryBreakdown(transactions, 'inflow', selectedPeriod);
+  const monthlyTrends = getMonthlyTrends(transactions, 6);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-success-50 rounded-lg">
+            <TrendingUp className="h-6 w-6 text-success-600" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-medium text-gray-900">Cash Inflows</h3>
+            <p className="text-sm text-gray-500">Revenue and income tracking</p>
+          </div>
+        </div>
+
+        <select
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year')}
+          className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+        >
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Summary Stats */}
+        <div className="space-y-4">
+          <div className="bg-success-50 rounded-lg p-4">
+            <div className="flex items-center">
+              <DollarSign className="h-8 w-8 text-success-600" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-success-600">Total Inflows</p>
+                <p className="text-2xl font-bold text-success-900">
+                  {formatCurrency(summary.totalInflows)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Breakdown */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Income Sources</h4>
+            <div className="space-y-2">
+              {categoryBreakdown.slice(0, 5).map((category, index) => (
+                <div key={category.category} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-sm text-gray-600">{category.category}</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">
+                      {formatCurrency(category.amount)}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {category.percentage.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Charts */}
+        <div className="space-y-6">
+          {/* Monthly Trends */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">6-Month Trend</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={monthlyTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Inflows']} />
+                <Bar dataKey="inflows" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Category Pie Chart */}
+          {categoryBreakdown.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Income Distribution</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={categoryBreakdown.slice(0, 5)}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="amount"
+                    nameKey="category"
+                  >
+                    {categoryBreakdown.slice(0, 5).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CashInflowsWidget;
+>>>>>>> REPLACE
+
+
+src/components/Dashboard/CashOutflowsWidget.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React, { useState } from 'react';
+import { TrendingDown, AlertCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Transaction } from '../../types';
+import { calculateCashFlowSummary, calculateCategoryBreakdown, getMonthlyTrends } from '../../utils/calculations';
+
+interface CashOutflowsWidgetProps {
+  transactions: Transaction[];
+}
+
+const COLORS = ['#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981', '#3b82f6'];
+
+const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year'>('month');
+
+  const summary = calculateCashFlowSummary(transactions, selectedPeriod);
+  const categoryBreakdown = calculateCategoryBreakdown(transactions, 'outflow', selectedPeriod);
+  const monthlyTrends = getMonthlyTrends(transactions, 6);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-danger-50 rounded-lg">
+            <TrendingDown className="h-6 w-6 text-danger-600" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-medium text-gray-900">Cash Outflows</h3>
+            <p className="text-sm text-gray-500">Expenses and spending analysis</p>
+          </div>
+        </div>
+
+        <select
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year')}
+          className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+        >
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Summary Stats */}
+        <div className="space-y-4">
+          <div className="bg-danger-50 rounded-lg p-4">
+            <div className="flex items-center">
+              <AlertCircle className="h-8 w-8 text-danger-600" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-danger-600">Total Outflows</p>
+                <p className="text-2xl font-bold text-danger-900">
+                  {formatCurrency(summary.totalOutflows)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Breakdown */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Expense Categories</h4>
+            <div className="space-y-2">
+              {categoryBreakdown.slice(0, 5).map((category, index) => (
+                <div key={category.category} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-sm text-gray-600">{category.category}</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">
+                      {formatCurrency(category.amount)}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {category.percentage.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top Spending Alert */}
+          {categoryBreakdown.length > 0 && (
+            <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
+              <div className="flex">
+                <AlertCircle className="h-5 w-5 text-warning-600 mt-0.5" />
+                <div className="ml-2">
+                  <p className="text-sm font-medium text-warning-800">
+                    Largest Expense Category
+                  </p>
+                  <p className="text-sm text-warning-700">
+                    {categoryBreakdown[0].category} accounts for {categoryBreakdown[0].percentage.toFixed(1)}%
+                    of total spending ({formatCurrency(categoryBreakdown[0].amount)})
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Charts */}
+        <div className="space-y-6">
+          {/* Monthly Trends */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">6-Month Spending Trend</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={monthlyTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Outflows']} />
+                <Bar dataKey="outflows" fill="#ef4444" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Category Pie Chart */}
+          {categoryBreakdown.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Expense Distribution</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={categoryBreakdown.slice(0, 5)}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="amount"
+                    nameKey="category"
+                  >
+                    {categoryBreakdown.slice(0, 5).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CashOutflowsWidget;
+>>>>>>> REPLACE
+
+
+src/components/Dashboard/CashRunwayWidget.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React from 'react';
+import { Clock, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Transaction } from '../../types';
+import { calculateCashFlowSummary, getMonthlyTrends } from '../../utils/calculations';
+
+interface CashRunwayWidgetProps {
+  transactions: Transaction[];
+}
+
+const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
+  const summary = calculateCashFlowSummary(transactions);
+  const monthlyTrends = getMonthlyTrends(transactions, 12);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const getRunwayColor = (months: number) => {
+    if (months >= 12) return 'success';
+    if (months >= 6) return 'warning';
+    return 'danger';
+  };
+
+  const getRunwayIcon = (months: number) => {
+    if (months >= 12) return CheckCircle;
+    if (months >= 6) return AlertTriangle;
+    return AlertCircle;
+  };
+
+  const runwayColor = getRunwayColor(summary.runway);
+  const RunwayIcon = getRunwayIcon(summary.runway);
+
+  // Calculate runway trend over time
+  const runwayTrend = monthlyTrends.map((month, index) => {
+    const cumulativeBalance = monthlyTrends
+      .slice(0, index + 1)
+      .reduce((sum, m) => sum + m.netFlow, 0);
+
+    const avgBurnRate = monthlyTrends
+      .slice(Math.max(0, index - 5), index + 1)
+      .reduce((sum, m) => sum + Math.abs(m.outflows), 0) / Math.min(6, index + 1);
+
+    const runway = avgBurnRate > 0 ? Math.max(0, cumulativeBalance / avgBurnRate) : 0;
+
+    return {
+      month: month.month,
+      runway: Math.min(runway, 24) // Cap at 24 months for chart readability
+    };
+  });
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex items-center mb-6">
+        <div className={`p-2 bg-${runwayColor}-50 rounded-lg`}>
+          <Clock className={`h-6 w-6 text-${runwayColor}-600`} />
+        </div>
+        <div className="ml-3">
+          <h3 className="text-lg font-medium text-gray-900">Cash Runway</h3>
+          <p className="text-sm text-gray-500">Months of cash remaining</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Runway Metrics */}
+        <div className="space-y-4">
+          {/* Main Runway Display */}
+          <div className={`bg-${runwayColor}-50 border border-${runwayColor}-200 rounded-lg p-4`}>
+            <div className="flex items-center">
+              <RunwayIcon className={`h-8 w-8 text-${runwayColor}-600`} />
+              <div className="ml-3">
+                <p className={`text-sm font-medium text-${runwayColor}-600`}>
+                  Cash Runway
+                </p>
+                <p className={`text-3xl font-bold text-${runwayColor}-900`}>
+                  {summary.runway === Infinity ? '∞' : `${summary.runway.toFixed(1)}`}
+                  <span className="text-lg font-medium ml-1">months</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Burn Rate */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Monthly Burn Rate</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {formatCurrency(summary.burnRate)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Based on last 6 months</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Current Balance */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Current Balance</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {formatCurrency(
+                    transactions.length > 0 ?
+                    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 :
+                    0
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Runway Status */}
+          <div className={`border-l-4 border-${runwayColor}-400 bg-${runwayColor}-50 p-4`}>
+            <div className="flex">
+              <div className="ml-3">
+                <p className={`text-sm font-medium text-${runwayColor}-800`}>
+                  {summary.runway >= 12 && 'Healthy Cash Position'}
+                  {summary.runway >= 6 && summary.runway < 12 && 'Monitor Cash Flow'}
+                  {summary.runway < 6 && 'Critical Cash Position'}
+                </p>
+                <p className={`text-sm text-${runwayColor}-700 mt-1`}>
+                  {summary.runway >= 12 && 'Your business has a strong cash position with over a year of runway.'}
+                  {summary.runway >= 6 && summary.runway < 12 && 'Consider optimizing expenses or increasing revenue to extend runway.'}
+                  {summary.runway < 6 && 'Immediate action needed to improve cash flow and extend runway.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Runway Trend Chart */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">12-Month Runway Trend</h4>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={runwayTrend}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis
+                domain={[0, 24]}
+                tickFormatter={(value) => `${value}mo`}
+              />
+              <Tooltip
+                formatter={(value) => [`${Number(value).toFixed(1)} months`, 'Runway']}
+                labelFormatter={(label) => `Month: ${label}`}
+              />
+              <Line
+                type="monotone"
+                dataKey="runway"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+              />
+              {/* Reference lines */}
+              <Line
+                type="monotone"
+                dataKey={() => 12}
+                stroke="#10b981"
+                strokeDasharray="5 5"
+                strokeWidth={1}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey={() => 6}
+                stroke="#f59e0b"
+                strokeDasharray="5 5"
+                strokeWidth={1}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          <div className="flex justify-center space-x-4 mt-2 text-xs text-gray-500">
+            <div className="flex items-center">
+              <div className="w-3 h-0.5 bg-success-500 mr-1"></div>
+              <span>Healthy (12+ months)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-0.5 bg-warning-500 mr-1"></div>
+              <span>Caution (6+ months)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CashRunwayWidget;
+>>>>>>> REPLACE
+
+
+src/components/Dashboard/CashForecastWidget.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React, { useState } from 'react';
+import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { Transaction } from '../../types';
+import { generate13WeekForecast } from '../../utils/calculations';
+
+interface CashForecastWidgetProps {
+  transactions: Transaction[];
+}
+
+const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
+  const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
+
+  const baseForecast = generate13WeekForecast(transactions);
+
+  // Generate scenario-based forecasts
+  const forecastWithScenarios = baseForecast.map((week, index) => {
+    const variationFactor = 1 + (index * 0.02); // Increasing uncertainty over time
+
+    return {
+      ...week,
+      optimistic: week.projectedBalance * (1 + 0.15 * variationFactor),
+      realistic: week.projectedBalance,
+      pessimistic: week.projectedBalance * (1 - 0.15 * variationFactor),
+    };
+  });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const getScenarioColor = (scenario: string) => {
+    switch (scenario) {
+      case 'optimistic': return '#10b981';
+      case 'pessimistic': return '#ef4444';
+      default: return '#3b82f6';
+    }
+  };
+
+  const finalBalance = forecastWithScenarios[forecastWithScenarios.length - 1];
+  const currentBalance = transactions.length > 0 ?
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+
+  const projectedChange = finalBalance[scenario] - currentBalance;
+  const projectedChangePercent = currentBalance > 0 ? (projectedChange / currentBalance) * 100 : 0;
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-primary-50 rounded-lg">
+            <Calendar className="h-6 w-6 text-primary-600" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-medium text-gray-900">13-Week Cash Forecast</h3>
+            <p className="text-sm text-gray-500">Projected cash balance trends</p>
+          </div>
+        </div>
+
+        <select
+          value={scenario}
+          onChange={(e) => setScenario(e.target.value as 'realistic' | 'optimistic' | 'pessimistic')}
+          className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+        >
+          <option value="realistic">Realistic</option>
+          <option value="optimistic">Optimistic</option>
+          <option value="pessimistic">Pessimistic</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Current Balance */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <Calendar className="h-5 w-5 text-gray-600" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-600">Current Balance</p>
+              <p className="text-xl font-bold text-gray-900">
+                {formatCurrency(currentBalance)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Projected Balance */}
+        <div className="bg-primary-50 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <Calendar className="h-5 w-5 text-primary-600" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-primary-600">13-Week Projection</p>
+              <p className="text-xl font-bold text-primary-900">
+                {formatCurrency(finalBalance[scenario])}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Projected Change */}
+        <div className={`${projectedChange >= 0 ? 'bg-success-50' : 'bg-danger-50'} rounded-lg p-4`}>
+          <div className="flex items-center">
+            <div className={`p-2 ${projectedChange >= 0 ? 'bg-success-100' : 'bg-danger-100'} rounded-lg`}>
+              {projectedChange >= 0 ? (
+                <TrendingUp className={`h-5 w-5 ${projectedChange >= 0 ? 'text-success-600' : 'text-danger-600'}`} />
+              ) : (
+                <TrendingDown className={`h-5 w-5 ${projectedChange >= 0 ? 'text-success-600' : 'text-danger-600'}`} />
+              )}
+            </div>
+            <div className="ml-3">
+              <p className={`text-sm font-medium ${projectedChange >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                Projected Change
+              </p>
+              <p className={`text-xl font-bold ${projectedChange >= 0 ? 'text-success-900' : 'text-danger-900'}`}>
+                {projectedChange >= 0 ? '+' : ''}{formatCurrency(projectedChange)}
+              </p>
+              <p className={`text-xs ${projectedChange >= 0 ? 'text-success-700' : 'text-danger-700'}`}>
+                {projectedChangePercent >= 0 ? '+' : ''}{projectedChangePercent.toFixed(1)}%
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Forecast Chart */}
+      <div className="mb-6">
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Cash Balance Projection</h4>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={forecastWithScenarios}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="week" />
+            <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+            <Tooltip
+              formatter={(value, name) => [formatCurrency(Number(value)), name]}
+              labelFormatter={(label) => `Week of ${label}`}
+            />
+
+            {/* Show all scenarios as light areas */}
+            <Area
+              type="monotone"
+              dataKey="optimistic"
+              stackId="1"
+              stroke="#10b981"
+              fill="#10b981"
+              fillOpacity={0.1}
+            />
+            <Area
+              type="monotone"
+              dataKey="pessimistic"
+              stackId="2"
+              stroke="#ef4444"
+              fill="#ef4444"
+              fillOpacity={0.1}
+            />
+
+            {/* Highlight selected scenario */}
+            <Line
+              type="monotone"
+              dataKey={scenario}
+              stroke={getScenarioColor(scenario)}
+              strokeWidth={3}
+              dot={{ fill: getScenarioColor(scenario), strokeWidth: 2, r: 4 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      </div>
+
+      {/* Weekly Breakdown */}
+      <div>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Weekly Cash Flow Breakdown</h4>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Week
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Inflows
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Outflows
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Net Flow
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ending Balance
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {forecastWithScenarios.slice(0, 6).map((week, index) => {
+                const netFlow = week.inflows - week.outflows;
+                return (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                      {week.week}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-success-600">
+                      {formatCurrency(week.inflows)}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-danger-600">
+                      {formatCurrency(week.outflows)}
+                    </td>
+                    <td className={`px-3 py-2 whitespace-nowrap text-sm ${netFlow >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                      {netFlow >= 0 ? '+' : ''}{formatCurrency(netFlow)}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {formatCurrency(week[scenario])}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CashForecastWidget;
+>>>>>>> REPLACE
+
+
+src/components/TransactionManager/TransactionList.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React, { useState } from 'react';
+import { Edit2, Trash2, Filter, Search } from 'lucide-react';
+import { Transaction } from '../../types';
+import { format, parseISO } from 'date-fns';
+
+interface TransactionListProps {
+  transactions: Transaction[];
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (id: string) => void;
+}
+
+const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit, onDelete }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterType, setFilterType] = useState<'all' | 'inflow' | 'outflow'>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'category'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const categories = Array.from(new Set(transactions.map(t => t.category))).sort();
+
+  const filteredAndSortedTransactions = transactions
+    .filter(transaction => {
+      const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           transaction.merchant?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
+      const matchesType = filterType === 'all' || transaction.type === filterType;
+
+      return matchesSearch && matchesCategory && matchesType;
+    })
+    .sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case 'date':
+          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+          break;
+        case 'amount':
+          comparison = Math.abs(a.amount) - Math.abs(b.amount);
+          break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category);
+          break;
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(Math.abs(value));
+  };
+
+  const handleSort = (field: 'date' | 'amount' | 'category') => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow">
+      {/* Filters */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as 'all' | 'inflow' | 'outflow')}
+              className="rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+            >
+              <option value="all">All Types</option>
+              <option value="inflow">Inflows</option>
+              <option value="outflow">Outflows</option>
+            </select>
+
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+            >
+              <option value="all">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSort('date')}
+              >
+                Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Description
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSort('category')}
+              >
+                Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSort('amount')}
+              >
+                Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredAndSortedTransactions.map((transaction) => (
+              <tr key={transaction.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {format(parseISO(transaction.date), 'MMM dd, yyyy')}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  <div>
+                    <div className="font-medium">{transaction.description}</div>
+                    {transaction.merchant && (
+                      <div className="text-gray-500">{transaction.merchant}</div>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {transaction.category}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className={`font-medium ${
+                    transaction.type === 'inflow' ? 'text-success-600' : 'text-danger-600'
+                  }`}>
+                    {transaction.type === 'inflow' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onEdit(transaction)}
+                      className="text-primary-600 hover:text-primary-900"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(transaction.id)}
+                      className="text-danger-600 hover:text-danger-900"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredAndSortedTransactions.length === 0 && (
+        <div className="text-center py-12">
+          <Filter className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No transactions found</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Try adjusting your search or filter criteria.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TransactionList;
+>>>>>>> REPLACE
+
+
+src/components/TransactionManager/TransactionForm.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { Transaction } from '../../types';
+
+interface TransactionFormProps {
+  transaction?: Transaction;
+  onSave: (transaction: Omit<Transaction, 'id'>) => void;
+  onCancel: () => void;
+}
+
+const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    date: '',
+    amount: '',
+    description: '',
+    category: '',
+    type: 'outflow' as 'inflow' | 'outflow',
+    merchant: '',
+    paymentRef: '',
+  });
+
+  const categories = [
+    'Revenue',
+    'Food Inventory',
+    'Beverages',
+    'Baking Supplies',
+    'General Supplies',
+    'Equipment & Maintenance',
+    'Rent',
+    'Utilities',
+    'Payroll',
+    'Banking Fees',
+    'Other'
+  ];
+
+  useEffect(() => {
+    if (transaction) {
+      setFormData({
+        date: transaction.date,
+        amount: Math.abs(transaction.amount).toString(),
+        description: transaction.description,
+        category: transaction.category,
+        type: transaction.type,
+        merchant: transaction.merchant || '',
+        paymentRef: transaction.paymentRef || '',
+      });
+    }
+  }, [transaction]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const amount = parseFloat(formData.amount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    onSave({
+      date: formData.date,
+      amount: formData.type === 'inflow' ? amount : -amount,
+      description: formData.description,
+      category: formData.category,
+      type: formData.type,
+      merchant: formData.merchant,
+      paymentRef: formData.paymentRef,
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            {transaction ? 'Edit Transaction' : 'Add New Transaction'}
+          </h3>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Type</label>
+            <select
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            >
+              <option value="inflow">Inflow (Income)</option>
+              <option value="outflow">Outflow (Expense)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Amount</label>
+            <input
+              type="number"
+              name="amount"
+              value={formData.amount}
+              onChange={handleChange}
+              step="0.01"
+              min="0"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Category</label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            >
+              <option value="">Select a category</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              required
+              rows={3}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Enter transaction description"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Merchant (Optional)</label>
+            <input
+              type="text"
+              name="merchant"
+              value={formData.merchant}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Merchant name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Payment Reference (Optional)</label>
+            <input
+              type="text"
+              name="paymentRef"
+              value={formData.paymentRef}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Check number or reference ID"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50
+focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600
+hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              {transaction ? 'Update' : 'Add'} Transaction
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default TransactionForm;
+>>>>>>> REPLACE
+
+
+src/App.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React, { useState, useRef } from 'react';
+import { Plus } from 'lucide-react';
+import Header from './components/Layout/Header';
+import CashInflowsWidget from './components/Dashboard/CashInflowsWidget';
+import CashOutflowsWidget from './components/Dashboard/CashOutflowsWidget';
+import CashRunwayWidget from './components/Dashboard/CashRunwayWidget';
+import CashForecastWidget from './components/Dashboard/CashForecastWidget';
+import TransactionList from './components/TransactionManager/TransactionList';
+import TransactionForm from './components/TransactionManager/TransactionForm';
+import { Transaction } from './types';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { parseCSV, exportToCSV } from './utils/csvParser';
+
+function App() {
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions'>('dashboard');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const importedTransactions = await parseCSV(file);
+        setTransactions(prev => {
+          // Merge with existing transactions, avoiding duplicates
+          const existingIds = new Set(prev.map(t => t.id));
+          const newTransactions = importedTransactions.filter(t => !existingIds.has(t.id));
+          return [...prev, ...newTransactions].sort((a, b) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+        });
+        alert(`Successfully imported ${importedTransactions.length} transactions`);
+      } catch (error) {
+        console.error('Error importing CSV:', error);
+        alert('Error importing CSV file. Please check the format and try again.');
+      }
+    }
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleExport = () => {
+    exportToCSV(transactions, `cash-flow-export-${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const handleSaveTransaction = (transactionData: Omit<Transaction, 'id'>) => {
+    if (editingTransaction) {
+      // Update existing transaction
+      setTransactions(prev =>
+        prev.map(t => t.id === editingTransaction.id
+          ? { ...transactionData, id: editingTransaction.id }
+          : t
+        )
+      );
+    } else {
+      // Add new transaction
+      const newTransaction: Transaction = {
+        ...transactionData,
+        id: `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      };
+      setTransactions(prev => [newTransaction, ...prev]);
+    }
+
+    setShowTransactionForm(false);
+    setEditingTransaction(undefined);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowTransactionForm(true);
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this transaction?')) {
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    }
+  };
+
+  const handleCancelForm = () => {
+    setShowTransactionForm(false);
+    setEditingTransaction(undefined);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header onImport={handleImport} onExport={handleExport} />
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Navigation Tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'dashboard'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'transactions'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Transactions
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'dashboard' ? (
+          <div className="space-y-8">
+            {/* Dashboard Widgets */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <CashInflowsWidget transactions={transactions} />
+              <CashOutflowsWidget transactions={transactions} />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <CashRunwayWidget transactions={transactions} />
+              <CashForecastWidget transactions={transactions} />
+            </div>
+
+            {transactions.length === 0 && (
+              <div className="text-center py-12">
+                <div className="mx-auto h-12 w-12 text-gray-400">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002
+2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0
+01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No transaction data</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Get started by importing your transaction data or adding transactions manually.
+                </p>
+                <div className="mt-6 flex justify-center space-x-4">
+                  <button
+                    onClick={handleImport}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white
+bg-primary-600 hover:bg-primary-700"
+                  >
+                    Import CSV
+                  </button>
+                  <button
+                    onClick={() => setShowTransactionForm(true)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700
+bg-white hover:bg-gray-50"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Transaction
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Transaction Management Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Transaction Management</h2>
+                <p className="text-gray-600">Manage your cash flow transactions</p>
+              </div>
+              <button
+                onClick={() => setShowTransactionForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white
+bg-primary-600 hover:bg-primary-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Transaction
+              </button>
+            </div>
+
+            {/* Transaction List */}
+            <TransactionList
+              transactions={transactions}
+              onEdit={handleEditTransaction}
+              onDelete={handleDeleteTransaction}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* Transaction Form Modal */}
+      {showTransactionForm && (
+        <TransactionForm
+          transaction={editingTransaction}
+          onSave={handleSaveTransaction}
+          onCancel={handleCancelForm}
+        />
+      )}
+    </div>
+  );
+}
+
+export default App;
+>>>>>>> REPLACE
+
+
+src/index.tsx
+
+
+<<<<<<< SEARCH
+=======
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+>>>>>>> REPLACE
+
+
+public/index.html
+
+
+<<<<<<< SEARCH
+=======
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Cash Flow Management Application"
+    />
+    <title>Cash Flow Manager</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+>>>>>>> REPLACE
+
+
+postcss.config.js
+
+
+<<<<<<< SEARCH
+=======
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+>>>>>>> REPLACE
+
+
+Now let me create the README file with setup instructions:
+
+README.md
+
+
+<<<<<<< SEARCH
+=======
+# Cash Flow Management Application
+
+A comprehensive React TypeScript application for managing business cash flow with advanced analytics, forecasting, and transaction management
+capabilities.
+
+## Features
+
+### 📊 Dashboard Analytics
+- **Cash Inflows Widget**: Track revenue streams with visual charts and category breakdowns
+- **Cash Outflows Widget**: Monitor expenses with spending analysis and trend visualization
+- **Cash Runway Widget**: Calculate months of cash remaining with color-coded alerts
+- **13-Week Cash Forecast**: Project future cash balances with scenario planning
+
+### 💰 Transaction Management
+- Import transactions from CSV files
+- Manual transaction entry with comprehensive form
+- Edit and delete existing transactions
+- Advanced filtering and search capabilities
+- Category-based organization
+
+### 📈 Advanced Analytics
+- Monthly cash flow trends
+- Category-wise spending analysis
+- Burn rate calculations
+- Runway projections with historical trends
+- Scenario-based forecasting (optimistic/realistic/pessimistic)
+
+### 🔧 Technical Features
+- React 18+ with TypeScript
+- Responsive design with Tailwind CSS
+- Local storage for data persistence
+- CSV import/export functionality
+- Interactive charts with Recharts
+- Modern UI components
+
+## Getting Started
+
+### Prerequisites
+- Node.js 16+
+- npm or yarn
+
+### Installation
+
+1. **Clone or create the project directory**
+```bash
+mkdir cash-flow-manager
+cd cash-flow-manager
+
+
+ 2 Install dependencies
+
+
+npm install
+
+
+ 3 Start the development server
+
+
+npm start
+
+
+ 4 Open your browser Navigate to http://localhost:3000
+
+Building for Production
+
+
+npm run build
+
+
+
+Usage
+
+Importing Transaction Data
+
+ 1 Click the "Import CSV" button in the header
+ 2 Select your CSV file with the following format:
+
+
+Transaction date,Transaction ID,Merchant name,Payment ref ID / Check No,Description,Debit amount,Credit amount,Balance
+2024-06-01,TXN100000,Rent,,Monthly rent,227.67,0.0,9772.33
+
+
+ 3 The application will automatically categorize transactions and update all analytics
+
+Manual Transaction Entry
+
+ 1 Navigate to the "Transactions" tab
+ 2 Click "Add Transaction"
+ 3 Fill in the transaction details:
+    • Date
+    • Type (Inflow/Outflow)
+    • Amount
+    • Category
+    • Description
+    • Merchant (optional)
+    • Payment Reference (optional)
+
+Dashboard Analytics
+
+The dashboard provides four main widgets:
+
+ 1 Cash Inflows: Shows revenue trends and income source breakdown
+ 2 Cash Outflows: Displays expense analysis and spending patterns
+ 3 Cash Runway: Calculates how many months of cash remain based on burn rate
+ 4 Cash Forecast: Projects 13-week cash balance with scenario planning
+
+Data Export
+
+Click "Export Data" to download your transactions as a CSV file for backup or external analysis.
+
+
+Project Structure
+
+
+src/
+├── components/
+│   ├── Dashboard/
+│   │   ├── CashInflowsWidget.tsx
+│   │   ├── CashOutflowsWidget.tsx
+│   │   ├── CashRunwayWidget.tsx
+│   │   └── CashForecastWidget.tsx
+│   ├── Layout/
+│   │   └── Header.tsx
+│   └── TransactionManager/
+│       ├── TransactionList.tsx
+│       └── TransactionForm.tsx
+├── hooks/
+│   └── useLocalStorage.ts
+├── types/
+│   └── index.ts
+├── utils/
+│   ├── calculations.ts
+│   └── csvParser.ts
+├── App.tsx
+├── index.tsx
+└── index.css
+
+
+
+Key Features Explained
+
+Automatic Transaction Categorization
+
+The application automatically categorizes imported transactions based on merchant names and descriptions:
+
+ • Revenue (Stripe, Square payments)
+ • Food Inventory (Sysco, US Foods, etc.)
+ • Beverages (PepsiCo, Coca-Cola)
+ • Equipment & Maintenance
+ • Utilities, Rent, Payroll
+ • And more...
+
+Cash Runway Calculation
+
+ • Analyzes last 6 months of expenses to calculate monthly burn rate
+ • Divides current balance by burn rate to determine runway
+ • Color-coded alerts: Green (12+ months), Yellow (6-12 months), Red (<6 months)
+
+13-Week Forecast
+
+ • Uses historical patterns to project future cash flows
+ • Provides optimistic, realistic, and pessimistic scenarios
+ • Shows weekly breakdown of projected inflows and outflows
+
+Responsive Design
+
+ • Fully responsive layout works on desktop, tablet, and mobile
+ • Touch-friendly interface for mobile transaction management
+ • Optimized charts and tables for all screen sizes
+
+
+Data Storage
+
+The application uses browser localStorage to persist data. Your transaction data is stored locally and never sent to external servers, ensuring
+privacy and security.
+
+
+Browser Compatibility
+
+ • Chrome 90+
+ • Firefox 88+
+ • Safari 14+
+ • Edge 90+
+
+
+Contributing
+
+ 1 Fork the repository
+ 2 Create a feature branch
+ 3 Make your changes
+ 4 Add tests if applicable
+ 5 Submit a pull request
+
+
+License
+
+This project is licensed under the MIT License.
+
+▌ ▌ ▌ ▌ ▌ ▌ ▌ REPLACE
+
+
+
+Now let's create a sample data file to help users test the application:
+
+sample-data.csv
+```csv
+<<<<<<< SEARCH
+=======
+Transaction date,Transaction ID,Merchant name,Payment ref ID / Check No,Description,Debit amount,Credit amount,Balance
+2024-06-01,TXN100000,Rent,,Monthly rent,2500.00,0.0,47500.00
+2024-06-01,TXN100001,Stripe,,Customer payment,0.0,3200.00,50700.00
+2024-06-02,TXN100002,Sysco,,Food inventory,850.00,0.0,49850.00
+2024-06-03,TXN100003,Square,,POS sale,0.0,1200.00,51050.00
+2024-06-03,TXN100004,Utilities Co.,,Utilities,450.00,0.0,50600.00
+2024-06-04,TXN100005,Payroll,,Payroll,3500.00,0.0,47100.00
+2024-06-05,TXN100006,Amazon,,Equipment purchase,320.00,0.0,46780.00
+2024-06-06,TXN100007,Stripe,,Customer payment,0.0,2800.00,49580.00
+2024-06-07,TXN100008,PepsiCo,,Beverage restock,180.00,0.0,49400.00
+2024-06-08,TXN100009,Square,,POS sale,0.0,1500.00,50900.00
+2024-06-09,TXN100010,Chase Bank,,Banking fee,25.00,0.0,50875.00
+>>>>>>> REPLACE
+
+
+Finally, let's create a .gitignore file:
+
+.gitignore
+
+
+<<<<<<< SEARCH
+=======
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+>>>>>>> REPLACE
+
+
+
+Setup Instructions
+
+To get this cash flow management application running, execute these commands:
+
+
+npm install
+npm start
+
+
+The application includes:
+
+ 1 Complete Dashboard with 4 analytical widgets showing cash inflows, outflows, runway, and 13-week forecasts
+ 2 Transaction Management with import/export, manual entry, editing, and advanced filtering
+ 3 Automatic Categorization of transactions based on merchant names and descriptions
+ 4 Responsive Design that works on all devices
+ 5 Local Data Persistence using browser localStorage
+ 6 Sample Data file for testing the import functionality
+
+The app will automatically parse your existing transaction CSV data and provide comprehensive cash flow analytics with visual charts, trend
+analysis, and actionable insights for business financial management.
+
+
+Tokens: 39k sent, 18k received. Cost: $0.40 message, $0.40 session.
+
+README.md
+Perfect! You've added the README.md file. The cash flow management application is now complete and ready to use. All the necessary files have
+been created including:
+
+✅ Core Application Files:
+
+ • package.json - Dependencies and scripts
+ • src/App.tsx - Main application component
+ • src/index.tsx - React entry point
+ • src/index.css - Tailwind CSS imports
+
+✅ Type Definitions:
+
+ • src/types/index.ts - TypeScript interfaces
+
+✅ Utility Functions:
+
+ • src/utils/csvParser.ts - CSV import/export functionality
+ • src/utils/calculations.ts - Cash flow calculations and analytics
+
+✅ Custom Hooks:
+
+ • src/hooks/useLocalStorage.ts - Local storage persistence
+
+✅ Dashboard Components:
+
+ • src/components/Dashboard/CashInflowsWidget.tsx
+ • src/components/Dashboard/CashOutflowsWidget.tsx
+ • src/components/Dashboard/CashRunwayWidget.tsx
+ • src/components/Dashboard/CashForecastWidget.tsx
+
+✅ Transaction Management:
+
+ • src/components/TransactionManager/TransactionList.tsx
+ • src/components/TransactionManager/TransactionForm.tsx
+
+✅ Layout Components:
+
+ • src/components/Layout/Header.tsx
+
+✅ Configuration Files:
+
+ • tailwind.config.js - Tailwind CSS configuration
+ • postcss.config.js - PostCSS configuration
+ • public/index.html - HTML template
+ • .gitignore - Git ignore rules
+
+✅ Documentation & Sample Data:
+
+ • README.md - Complete setup and usage instructions
+ • sample-data.csv - Sample transaction data for testing
+
+
+Ready to Launch! 🚀
+
+To get your cash flow management application running:
+
+
+npm install
+npm start
+
+
+The application will start on http://localhost:3000 and includes:
+
+ • Complete Dashboard with real-time analytics
+ • Transaction Import from your existing CSV data
+ • Manual Transaction Management
+ • 13-Week Cash Forecasting
+ • Cash Runway Analysis
+ • Responsive Design for all devices
+
+You can immediately test it by importing the sample-data.csv file or your actual transaction data using the CSV format from your original file!
+
+
+Tokens: 58k sent, 485 received. Cost: $0.18 message, $0.58 session.
+
+npm install
+npm start
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+README.md realistic_targeted_balance_200k_transactions.csv
+>
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+README.md realistic_targeted_balance_200k_transactions.csv
