@@ -9,11 +9,11 @@ export const calculateCashFlowSummary = (
   const filteredTransactions = filterTransactionsByPeriod(transactions, period);
 
   const totalInflows = filteredTransactions
-    .filter(t => t.type === 'inflow')
+    .filter(t => t.amount > 0)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalOutflows = Math.abs(filteredTransactions
-    .filter(t => t.type === 'outflow')
+    .filter(t => t.amount < 0)
     .reduce((sum, t) => sum + t.amount, 0));
 
   const netCashFlow = totalInflows - totalOutflows;
@@ -21,7 +21,7 @@ export const calculateCashFlowSummary = (
   // Calculate burn rate (average monthly outflows over last 6 months)
   const sixMonthsAgo = subMonths(new Date(), 6);
   const recentTransactions = transactions.filter(t =>
-    parseISO(t.date) >= sixMonthsAgo && t.type === 'outflow'
+    parseISO(t.date) >= sixMonthsAgo && t.amount < 0
   );
   const burnRate = Math.abs(recentTransactions.reduce((sum, t) => sum + t.amount, 0)) / 6;
 
@@ -45,7 +45,7 @@ export const calculateCategoryBreakdown = (
   period: 'month' | 'quarter' | 'year' | 'all' = 'all'
 ): CategorySummary[] => {
   const filteredTransactions = filterTransactionsByPeriod(transactions, period)
-    .filter(t => t.type === type);
+    .filter(t => type === 'inflow' ? t.amount > 0 : t.amount < 0);
 
   const categoryTotals = filteredTransactions.reduce((acc, transaction) => {
     const category = transaction.category;
@@ -160,11 +160,11 @@ export const getMonthlyTrends = (transactions: Transaction[], months: number = 1
     });
 
     const inflows = monthTransactions
-      .filter(t => t.type === 'inflow')
+      .filter(t => t.amount > 0)
       .reduce((sum, t) => sum + t.amount, 0);
 
     const outflows = Math.abs(monthTransactions
-      .filter(t => t.type === 'outflow')
+      .filter(t => t.amount < 0)
       .reduce((sum, t) => sum + t.amount, 0));
 
     trends.push({
