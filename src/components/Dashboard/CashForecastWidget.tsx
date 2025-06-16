@@ -171,7 +171,6 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      </div>
 
       {/* Weekly Breakdown */}
       <div>
