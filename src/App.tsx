@@ -12,7 +12,56 @@ import { useLocalStorage } from './hooks/useLocalStorage.ts';
 import { parseCSV, exportToCSV } from './utils/csvParser.ts';
 
 function App() {
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', [
+    {
+      id: 'sample-1',
+      date: '2024-06-01',
+      description: 'Revenue - Client A',
+      amount: 5000,
+      category: 'Revenue',
+      balance: 15000
+    },
+    {
+      id: 'sample-2',
+      date: '2024-06-05',
+      description: 'Office Rent',
+      amount: -2000,
+      category: 'Rent',
+      balance: 13000
+    },
+    {
+      id: 'sample-3',
+      date: '2024-06-10',
+      description: 'Marketing Campaign',
+      amount: -800,
+      category: 'Marketing',
+      balance: 12200
+    },
+    {
+      id: 'sample-4',
+      date: '2024-06-15',
+      description: 'Revenue - Client B',
+      amount: 3500,
+      category: 'Revenue',
+      balance: 15700
+    },
+    {
+      id: 'sample-5',
+      date: '2024-05-01',
+      description: 'Revenue - Client C',
+      amount: 4200,
+      category: 'Revenue',
+      balance: 10000
+    },
+    {
+      id: 'sample-6',
+      date: '2024-05-15',
+      description: 'Software Subscriptions',
+      amount: -500,
+      category: 'Software',
+      balance: 9500
+    }
+  ]);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions'>('dashboard');
