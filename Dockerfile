@@ -1,5 +1,5 @@
-# Multi-stage build for React TypeScript application
-FROM node:18-alpine as build
+# Use Node.js runtime
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -8,25 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Expose port 3000
+EXPOSE 3000
 
-# Production stage
-FROM nginx:alpine
-
-# Copy built application from build stage
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the development server
+CMD ["npm", "start"]
