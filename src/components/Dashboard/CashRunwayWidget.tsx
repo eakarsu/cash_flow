@@ -14,20 +14,16 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   const netCashFlow = totalInflows - totalOutflows;
   
   // Calculate burn rate (average monthly outflows over last 6 months)
-  const last6Months = [];
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    const monthOutflows = transactions.filter(t => {
-      const tDate = new Date(t.date);
-      return t.amount < 0 && 
-             tDate.getMonth() === date.getMonth() && 
-             tDate.getFullYear() === date.getFullYear();
-    }).reduce((sum, t) => sum + Math.abs(t.amount), 0);
-    last6Months.push(monthOutflows);
-  }
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
   
-  const burnRate = last6Months.reduce((sum, month) => sum + month, 0) / 6;
+  const recentOutflows = transactions.filter(t => {
+    const tDate = new Date(t.date);
+    return t.amount < 0 && tDate >= sixMonthsAgo;
+  });
+  
+  const totalOutflows = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const burnRate = totalOutflows / 6;
   // Calculate current balance as cumulative sum of all transactions
   const currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
   const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
