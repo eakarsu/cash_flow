@@ -147,6 +147,12 @@ Return ONLY the JSON response, no additional text.`;
     try {
       const prompt = this.createPrompt(transactions, currentBalance);
       
+      console.log('🤖 AI Cash Flow Service: Making API call to OpenRouter');
+      console.log('📊 Transaction count:', transactions.length);
+      console.log('💰 Current balance:', currentBalance);
+      console.log('🔑 API Key configured:', !!this.apiKey);
+      console.log('📝 Prompt length:', prompt.length);
+      
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
@@ -169,24 +175,33 @@ Return ONLY the JSON response, no additional text.`;
       });
 
       if (!response.ok) {
+        console.error('❌ OpenRouter API Error:', response.status, response.statusText);
         throw new Error(`OpenRouter API error: ${response.status}`);
       }
 
       const data: OpenRouterResponse = await response.json();
+      console.log('✅ AI Response received:', data);
+      
       const content = data.choices[0]?.message?.content;
 
       if (!content) {
+        console.error('❌ No content in AI response');
         throw new Error('No content received from AI model');
       }
 
+      console.log('📄 AI Response content length:', content.length);
+      console.log('🔍 AI Response preview:', content.substring(0, 200) + '...');
+
       // Parse JSON response
       const prediction = JSON.parse(content) as CashFlowPrediction;
+      console.log('✨ AI Prediction parsed successfully:', prediction);
       
       // Validate and sanitize the response
       return this.validatePrediction(prediction);
       
     } catch (error) {
-      console.error('AI prediction error:', error);
+      console.error('❌ AI prediction error:', error);
+      console.log('🔄 Falling back to historical data prediction');
       // Return fallback prediction based on historical data
       return this.generateFallbackPrediction(transactions, currentBalance);
     }

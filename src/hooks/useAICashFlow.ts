@@ -24,22 +24,25 @@ export function useAICashFlow(
 
   const fetchPrediction = async (force = false) => {
     if (!aiService) {
+      console.log('⚠️ AI Service not configured - no API key provided');
       setError('AI API key not configured');
       return;
     }
 
     if (loading && !force) return;
 
+    console.log('🚀 Starting AI prediction fetch...');
     setLoading(true);
     setError(null);
 
     try {
       const result = await aiService.getPredictions(transactions, currentBalance);
+      console.log('✅ AI prediction successful:', result);
       setPrediction(result);
       setLastUpdated(new Date());
     } catch (err) {
+      console.error('❌ AI prediction hook error:', err);
       setError(err instanceof Error ? err.message : 'Failed to get AI predictions');
-      console.error('AI prediction error:', err);
     } finally {
       setLoading(false);
     }

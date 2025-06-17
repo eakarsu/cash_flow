@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, TrendingUp, TrendingDown, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Transaction } from '../../types';
+import { useAICashFlow } from '../../hooks/useAICashFlow';
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
@@ -15,12 +16,17 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
   const currentBalance = transactions.length > 0 ? 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
-  // Temporary AI placeholders until hook is working
-  const prediction = null;
-  const aiLoading = false;
-  const aiError = null;
-  const refreshPrediction = () => {};
-  const isConfigured = false;
+  // AI predictions hook
+  const { 
+    prediction, 
+    loading: aiLoading, 
+    error: aiError, 
+    refreshPrediction, 
+    isConfigured 
+  } = useAICashFlow(transactions, currentBalance, {
+    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
+    autoRefresh: useAI
+  });
 
   // Calculate average weekly cash flows
   const weeklyData = transactions.reduce((acc, transaction) => {
@@ -48,29 +54,35 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     ? weeklyEntries.reduce((sum, week) => sum + week.outflows, 0) / weeklyEntries.length 
     : 0;
 
-  // Generate 13-week forecast using historical data
-  const forecastWithScenarios = [];
-  let balance = currentBalance;
-  
-  for (let week = 0; week < 13; week++) {
-    const date = new Date();
-    date.setDate(date.getDate() + (week * 7));
-    
-    const variationFactor = 1 + (week * 0.02); // Increasing uncertainty over time
-    const weeklyNetFlow = avgWeeklyInflows - avgWeeklyOutflows;
-    
-    balance += weeklyNetFlow;
-    
-    forecastWithScenarios.push({
-      week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      projectedBalance: balance,
-      inflows: avgWeeklyInflows,
-      outflows: avgWeeklyOutflows,
-      optimistic: balance * (1 + 0.15 * variationFactor),
-      realistic: balance,
-      pessimistic: balance * (1 - 0.15 * variationFactor),
-    });
-  }
+  // Use AI predictions if available and enabled, otherwise fall back to historical calculation
+  const forecastWithScenarios = useAI && prediction?.weeklyForecasts ? 
+    prediction.weeklyForecasts : 
+    (() => {
+      // Generate 13-week forecast using historical data
+      const forecast = [];
+      let balance = currentBalance;
+      
+      for (let week = 0; week < 13; week++) {
+        const date = new Date();
+        date.setDate(date.getDate() + (week * 7));
+        
+        const variationFactor = 1 + (week * 0.02); // Increasing uncertainty over time
+        const weeklyNetFlow = avgWeeklyInflows - avgWeeklyOutflows;
+        
+        balance += weeklyNetFlow;
+        
+        forecast.push({
+          week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          projectedBalance: balance,
+          inflows: avgWeeklyInflows,
+          outflows: avgWeeklyOutflows,
+          optimistic: balance * (1 + 0.15 * variationFactor),
+          realistic: balance,
+          pessimistic: balance * (1 - 0.15 * variationFactor),
+        });
+      }
+      return forecast;
+    })();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
