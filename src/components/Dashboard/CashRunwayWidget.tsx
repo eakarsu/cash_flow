@@ -43,15 +43,6 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   const recentOutflowsTotal = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
   // If no recent outflows, use all-time average
   const burnRate = recentOutflowsTotal > 0 ? recentOutflowsTotal / 6 : totalOutflows / Math.max(1, transactions.length > 0 ? 12 : 1);
-  // Get current balance from the most recent transaction's balance field if available
-  let currentBalance = 0;
-  if (transactions.length > 0) {
-    const sortedTransactions = [...transactions].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    currentBalance = (sortedTransactions[0] as any).balance || 
-                    transactions.reduce((sum, t) => sum + t.amount, 0);
-  }
   // Use AI runway analysis if available, otherwise use calculated runway
   const runway = useAI && prediction?.runwayAnalysis?.currentRunway 
     ? prediction.runwayAnalysis.currentRunway 
