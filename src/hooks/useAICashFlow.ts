@@ -71,7 +71,7 @@ export function useAICashFlow(
       autoRefresh: autoRefresh
     });
     
-    if (aiService && transactions.length > 0 && autoRefresh) {
+    if (aiService && transactions.length > 0) {
       console.log('✅ Conditions met, calling fetchPrediction');
       fetchPrediction();
     } else {
@@ -81,7 +81,15 @@ export function useAICashFlow(
         autoRefresh
       });
     }
-  }, [transactions.length, currentBalance, apiKey, autoRefresh]);
+  }, [transactions.length, currentBalance, apiKey]);
+
+  // Separate effect for when autoRefresh changes (when user checks AI checkbox)
+  useEffect(() => {
+    if (autoRefresh && aiService && transactions.length > 0) {
+      console.log('🔄 AutoRefresh enabled, fetching AI predictions');
+      fetchPrediction();
+    }
+  }, [autoRefresh]);
 
   return {
     prediction,
