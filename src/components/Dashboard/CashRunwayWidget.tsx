@@ -15,6 +15,9 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   const currentBalance = transactions.length > 0 ? 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
+  // Get API key from environment
+  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
+  
   // AI predictions hook
   const { 
     prediction, 
@@ -23,7 +26,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     refreshPrediction, 
     isConfigured 
   } = useAICashFlow(transactions, currentBalance, {
-    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
+    apiKey,
     autoRefresh: useAI
   });
   // Calculate cash flow summary

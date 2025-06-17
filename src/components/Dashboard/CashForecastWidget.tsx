@@ -16,6 +16,11 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
   const currentBalance = transactions.length > 0 ? 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
+  // Get API key from environment
+  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
+  console.log('🔑 API Key status:', apiKey ? 'CONFIGURED' : 'NOT CONFIGURED');
+  console.log('🔑 Environment check:', { apiKey: apiKey?.substring(0, 10) + '...' });
+  
   // AI predictions hook
   const { 
     prediction, 
@@ -24,8 +29,17 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     refreshPrediction, 
     isConfigured 
   } = useAICashFlow(transactions, currentBalance, {
-    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
+    apiKey,
     autoRefresh: useAI
+  });
+  
+  console.log('🤖 AI Hook State:', {
+    prediction: !!prediction,
+    aiLoading,
+    aiError,
+    isConfigured,
+    useAI,
+    transactionCount: transactions.length
   });
 
   // Calculate average weekly cash flows

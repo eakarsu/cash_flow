@@ -63,8 +63,19 @@ export function useAICashFlow(
 
   // Initial fetch when dependencies change
   useEffect(() => {
+    console.log('🔍 useAICashFlow effect triggered:', {
+      hasAiService: !!aiService,
+      transactionCount: transactions.length,
+      currentBalance,
+      apiKey: apiKey ? 'SET' : 'NOT SET',
+      autoRefresh: autoRefresh
+    });
+    
     if (aiService && transactions.length > 0) {
+      console.log('✅ Conditions met, calling fetchPrediction');
       fetchPrediction();
+    } else {
+      console.log('❌ Conditions not met for AI prediction');
     }
   }, [transactions.length, currentBalance, apiKey]);
 
