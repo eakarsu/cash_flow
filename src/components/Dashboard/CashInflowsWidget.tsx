@@ -122,7 +122,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
           <div>
             <h4 className="text-sm font-medium text-gray-900 mb-3">Income Sources</h4>
             <div className="space-y-2">
-              {categoryBreakdown.slice(0, 5).map((category, index) => (
+              {categoryArray.slice(0, 5).map((category, index) => (
                 <div key={category.category} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div
