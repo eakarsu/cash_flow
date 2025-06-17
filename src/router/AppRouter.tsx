@@ -4,7 +4,6 @@ import Layout from '../components/Layout/Layout';
 import HomePage from '../pages/HomePage';
 import PlaceholderPage from '../components/PlaceholderPage';
 import { useTransactions } from '../context/TransactionContext';
-import { parseCSV } from '../utils/csvParser';
 
 // Import only the pages that actually exist
 import TransactionsPage from '../pages/Transactions/TransactionsPage';
@@ -52,7 +51,25 @@ const AppRouter: React.FC = () => {
     if (file) {
       setIsImporting(true);
       try {
-        const importedTransactions = await parseCSV(file);
+        // Simple CSV parsing
+        const text = await file.text();
+        const lines = text.split('\n');
+        const headers = lines[0].split(',');
+        
+        const importedTransactions = lines.slice(1)
+          .filter(line => line.trim())
+          .map((line, index) => {
+            const values = line.split(',');
+            return {
+              id: `imported-${Date.now()}-${index}`,
+              date: values[0] || new Date().toISOString().split('T')[0],
+              description: values[1] || 'Imported transaction',
+              amount: parseFloat(values[2]) || 0,
+              category: values[3] || 'Other',
+              balance: parseFloat(values[4]) || 0
+            };
+          });
+
         setTransactions(prev => {
           const existingIds = new Set(prev.map(t => t.id));
           const newTransactions = importedTransactions.filter(t => !existingIds.has(t.id));
