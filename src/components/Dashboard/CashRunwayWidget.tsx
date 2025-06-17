@@ -77,15 +77,16 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
 
   // Calculate runway trend over time
   const runwayTrend = monthlyTrends.map((month, index) => {
-    // Calculate cumulative balance starting from current balance and working backwards
-    const futureMonths = monthlyTrends.slice(index);
-    const projectedBalance = currentBalance + futureMonths.reduce((sum, m) => sum + m.netFlow, 0);
+    // Calculate balance at each point in time by working backwards from current balance
+    const monthsFromNow = monthlyTrends.length - 1 - index;
+    const futureNetFlows = monthlyTrends.slice(index).reduce((sum, m) => sum + m.netFlow, 0);
+    const balanceAtThisPoint = currentBalance - futureNetFlows;
 
     const avgBurnRate = monthlyTrends
       .slice(Math.max(0, index - 5), index + 1)
       .reduce((sum, m) => sum + Math.abs(m.outflows), 0) / Math.min(6, index + 1);
 
-    const runway = avgBurnRate > 0 && projectedBalance > 0 ? Math.max(0, projectedBalance / avgBurnRate) : 0;
+    const runway = avgBurnRate > 0 && balanceAtThisPoint > 0 ? Math.max(0, balanceAtThisPoint / avgBurnRate) : 0;
 
     return {
       month: month.month,
