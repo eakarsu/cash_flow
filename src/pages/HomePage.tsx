@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
+import Layout from '../components/Layout/Layout';
 import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
 import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
 import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
@@ -15,6 +16,32 @@ const HomePage: React.FC = () => {
 
   const handleImport = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleExport = () => {
+    // Create CSV content
+    const headers = ['Date', 'Description', 'Amount', 'Category', 'Balance'];
+    const csvContent = [
+      headers.join(','),
+      ...transactions.map(t => [
+        t.date,
+        `"${t.description}"`,
+        t.amount,
+        t.category,
+        t.balance
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +80,7 @@ const HomePage: React.FC = () => {
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Layout onImport={handleImport} onExport={handleExport}>
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -277,7 +304,7 @@ const HomePage: React.FC = () => {
           </Link>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

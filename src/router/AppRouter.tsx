@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from '../components/Layout/Layout';
 import HomePage from '../pages/HomePage';
 import CashInflowsPage from '../pages/Analytics/CashInflowsPage';
 import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage';
@@ -37,8 +36,7 @@ import RefundPolicyPage from '../pages/Legal/RefundPolicyPage';
 const AppRouter: React.FC = () => {
   return (
     <Router>
-      <Layout>
-        <Routes>
+      <Routes>
           {/* Main Application Pages */}
           <Route path="/" element={<HomePage />} />
           
@@ -89,7 +87,6 @@ const AppRouter: React.FC = () => {
           <Route path="/data-processing" element={<DataProcessingPage />} />
           <Route path="/refund-policy" element={<RefundPolicyPage />} />
         </Routes>
-      </Layout>
     </Router>
   );
 };
