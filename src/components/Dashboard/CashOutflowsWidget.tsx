@@ -19,7 +19,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
   // Get API key from environment
-  const apiKey = getOpenRouterApiKey();
+  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
   
   // AI predictions hook
   const { 
@@ -30,7 +30,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     isConfigured 
   } = useAICashFlow(transactions, currentBalance, {
     apiKey,
-    autoRefresh: useAI
+    autoRefresh: useAI && isConfigured
   });
 
   // Filter transactions based on selected period
@@ -159,33 +159,39 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
         </div>
 
         <div className="flex items-center space-x-3">
-          {isConfigured && (
-            <div className="flex items-center">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={useAI}
-                  onChange={(e) => {
+          <div className="flex items-center">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={useAI && isConfigured}
+                onChange={(e) => {
+                  if (isConfigured) {
                     console.log('🎯 AI checkbox toggled:', e.target.checked);
                     setUseAI(e.target.checked);
-                  }}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">AI Insights</span>
-              </label>
-              <button
-                onClick={() => {
-                  console.log('🔄 Manual refresh triggered');
-                  refreshPrediction();
+                  }
                 }}
-                disabled={aiLoading}
-                className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                title="Refresh AI insights"
-              >
-                <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-          )}
+                disabled={!isConfigured}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <span className={`ml-2 text-sm ${isConfigured ? 'text-gray-700' : 'text-gray-400'}`}>
+                AI Insights
+                {!isConfigured && (
+                  <span className="ml-1 text-xs text-gray-400">(API key required)</span>
+                )}
+              </span>
+            </label>
+            <button
+              onClick={() => {
+                console.log('🔄 Manual refresh triggered');
+                refreshPrediction();
+              }}
+              disabled={aiLoading || !isConfigured}
+              className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isConfigured ? "Refresh AI insights" : "API key required for AI insights"}
+            >
+              <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
           
           <select
             value={selectedPeriod}
