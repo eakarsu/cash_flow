@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Transaction } from '../../types';
+import { useAICashFlow } from '../../hooks/useAICashFlow';
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
@@ -9,6 +10,23 @@ interface CashForecastWidgetProps {
 
 const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
   const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
+  const [useAI, setUseAI] = useState(false);
+  
+  // Get current balance
+  const currentBalance = transactions.length > 0 ? 
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  
+  // AI predictions hook
+  const { 
+    prediction, 
+    loading: aiLoading, 
+    error: aiError, 
+    refreshPrediction, 
+    isConfigured 
+  } = useAICashFlow(transactions, currentBalance, {
+    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
+    autoRefresh: useAI
+  });
 
   // Calculate average weekly cash flows
   const weeklyData = transactions.reduce((acc, transaction) => {
@@ -36,32 +54,35 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     ? weeklyEntries.reduce((sum, week) => sum + week.outflows, 0) / weeklyEntries.length 
     : 0;
 
-  // Generate 13-week forecast
-  const currentBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
-  
-  const forecastWithScenarios = [];
-  let balance = currentBalance;
-  
-  for (let week = 0; week < 13; week++) {
-    const date = new Date();
-    date.setDate(date.getDate() + (week * 7));
-    
-    const variationFactor = 1 + (week * 0.02); // Increasing uncertainty over time
-    const weeklyNetFlow = avgWeeklyInflows - avgWeeklyOutflows;
-    
-    balance += weeklyNetFlow;
-    
-    forecastWithScenarios.push({
-      week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      projectedBalance: balance,
-      inflows: avgWeeklyInflows,
-      outflows: avgWeeklyOutflows,
-      optimistic: balance * (1 + 0.15 * variationFactor),
-      realistic: balance,
-      pessimistic: balance * (1 - 0.15 * variationFactor),
-    });
-  }
+  // Use AI predictions if available and enabled, otherwise fall back to historical calculation
+  const forecastWithScenarios = useAI && prediction?.weeklyForecasts ? 
+    prediction.weeklyForecasts : 
+    (() => {
+      // Generate 13-week forecast using historical data
+      const forecast = [];
+      let balance = currentBalance;
+      
+      for (let week = 0; week < 13; week++) {
+        const date = new Date();
+        date.setDate(date.getDate() + (week * 7));
+        
+        const variationFactor = 1 + (week * 0.02); // Increasing uncertainty over time
+        const weeklyNetFlow = avgWeeklyInflows - avgWeeklyOutflows;
+        
+        balance += weeklyNetFlow;
+        
+        forecast.push({
+          week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          projectedBalance: balance,
+          inflows: avgWeeklyInflows,
+          outflows: avgWeeklyOutflows,
+          optimistic: balance * (1 + 0.15 * variationFactor),
+          realistic: balance,
+          pessimistic: balance * (1 - 0.15 * variationFactor),
+        });
+      }
+      return forecast;
+    })();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -89,23 +110,62 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <div className="p-2 bg-primary-50 rounded-lg">
-            <Calendar className="h-6 w-6 text-primary-600" />
+            {useAI && isConfigured ? (
+              <Brain className="h-6 w-6 text-primary-600" />
+            ) : (
+              <Calendar className="h-6 w-6 text-primary-600" />
+            )}
           </div>
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900">13-Week Cash Forecast</h3>
-            <p className="text-sm text-gray-500">Projected cash balance trends</p>
+            <h3 className="text-lg font-medium text-gray-900">
+              13-Week Cash Forecast
+              {useAI && isConfigured && (
+                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                  AI-Powered
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {useAI && isConfigured ? 'AI-generated predictions' : 'Historical trend-based projections'}
+            </p>
           </div>
         </div>
 
-        <select
-          value={scenario}
-          onChange={(e) => setScenario(e.target.value as 'realistic' | 'optimistic' | 'pessimistic')}
-          className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-        >
-          <option value="realistic">Realistic</option>
-          <option value="optimistic">Optimistic</option>
-          <option value="pessimistic">Pessimistic</option>
-        </select>
+        <div className="flex items-center space-x-3">
+          {isConfigured && (
+            <div className="flex items-center">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={useAI}
+                  onChange={(e) => setUseAI(e.target.checked)}
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">AI Predictions</span>
+              </label>
+              {useAI && (
+                <button
+                  onClick={refreshPrediction}
+                  disabled={aiLoading}
+                  className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  title="Refresh AI predictions"
+                >
+                  <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </div>
+          )}
+          
+          <select
+            value={scenario}
+            onChange={(e) => setScenario(e.target.value as 'realistic' | 'optimistic' | 'pessimistic')}
+            className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+          >
+            <option value="realistic">Realistic</option>
+            <option value="optimistic">Optimistic</option>
+            <option value="pessimistic">Pessimistic</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -164,9 +224,42 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
         </div>
       </div>
 
+      {/* AI Insights */}
+      {useAI && prediction?.summary && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-blue-900 mb-2">AI Insights</h4>
+          <div className="space-y-2">
+            {prediction.summary.keyInsights.map((insight, index) => (
+              <p key={index} className="text-sm text-blue-800">• {insight}</p>
+            ))}
+          </div>
+          {prediction.summary.actionItems.length > 0 && (
+            <div className="mt-3">
+              <p className="text-sm font-medium text-blue-900">Recommended Actions:</p>
+              {prediction.summary.actionItems.map((action, index) => (
+                <p key={index} className="text-sm text-blue-800">• {action}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Error Display */}
+      {aiError && useAI && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-800">AI Prediction Error: {aiError}</p>
+          <p className="text-xs text-red-600 mt-1">Falling back to historical data analysis</p>
+        </div>
+      )}
+
       {/* Forecast Chart */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">Cash Balance Projection</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">
+          Cash Balance Projection
+          {aiLoading && (
+            <span className="ml-2 text-xs text-gray-500">Updating AI predictions...</span>
+          )}
+        </h4>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={forecastWithScenarios}>
             <CartesianGrid strokeDasharray="3 3" />
