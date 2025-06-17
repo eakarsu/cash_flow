@@ -26,9 +26,9 @@ export const calculateCashFlowSummary = (
   const burnRate = Math.abs(recentTransactions.reduce((sum, t) => sum + t.amount, 0)) / 6;
 
   // Calculate runway (current balance / monthly burn rate)
-  const currentBalance = transactions.length > 0 ?
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
-  const runway = burnRate > 0 ? currentBalance / burnRate : Infinity;
+  // Current balance is the cumulative sum of all transactions
+  const currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
 
   return {
     totalInflows,

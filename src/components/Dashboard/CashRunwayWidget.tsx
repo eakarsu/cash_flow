@@ -28,9 +28,9 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   }
   
   const burnRate = last6Months.reduce((sum, month) => sum + month, 0) / 6;
-  const currentBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
-  const runway = burnRate > 0 ? currentBalance / burnRate : Infinity;
+  // Calculate current balance as cumulative sum of all transactions
+  const currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
 
   // Generate monthly trends for the last 12 months
   const monthlyTrends = [];
@@ -120,7 +120,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
                   Cash Runway
                 </p>
                 <p className={`text-3xl font-bold text-${runwayColor}-900`}>
-                  {runway === Infinity ? '∞' : `${runway.toFixed(1)}`}
+                  {runway.toFixed(1)}
                   <span className="text-lg font-medium ml-1">months</span>
                 </p>
               </div>
