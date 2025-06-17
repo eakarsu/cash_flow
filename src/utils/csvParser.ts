@@ -23,12 +23,13 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           
           // Try to find common column patterns
           const dateIndex = findColumnIndex(headers, ['date', 'transaction date', 'trans date']);
-          const descIndex = findColumnIndex(headers, ['description', 'desc', 'memo', 'details']);
+          const descIndex = findColumnIndex(headers, ['description', 'desc', 'memo', 'details', 'merchant name']);
           const amountIndex = findColumnIndex(headers, ['amount', 'transaction amount']);
           const debitIndex = findColumnIndex(headers, ['debit', 'debit amount']);
           const creditIndex = findColumnIndex(headers, ['credit', 'credit amount']);
           const categoryIndex = findColumnIndex(headers, ['category', 'type']);
           const balanceIndex = findColumnIndex(headers, ['balance', 'running balance']);
+          const merchantIndex = findColumnIndex(headers, ['merchant name', 'merchant', 'payee']);
           
           let amount = 0;
           if (amountIndex >= 0) {
@@ -36,16 +37,20 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           } else if (debitIndex >= 0 && creditIndex >= 0) {
             const debit = parseFloat(values[debitIndex]) || 0;
             const credit = parseFloat(values[creditIndex]) || 0;
-            amount = credit > 0 ? credit : -debit;
+            // Credit amount - Debit amount (credit is positive inflow, debit is negative outflow)
+            amount = credit - debit;
           }
           
-          const transaction: Transaction = {
+          // Get description from either description column or merchant name
+          const description = values[descIndex] || values[merchantIndex] || 'Imported transaction';
+          
+          const transaction: Transaction & { balance: number } = {
             id: `imported-${Date.now()}-${i}`,
             date: values[dateIndex] || new Date().toISOString().split('T')[0],
-            description: values[descIndex] || 'Imported transaction',
+            description: description,
             amount: amount,
             type: amount >= 0 ? 'inflow' : 'outflow',
-            category: values[categoryIndex] || categorizeTransaction(values[descIndex] || ''),
+            category: values[categoryIndex] || categorizeTransaction(description),
             balance: parseFloat(values[balanceIndex]) || 0
           };
           
@@ -99,9 +104,11 @@ const findColumnIndex = (headers: string[], possibleNames: string[]): number => 
 const categorizeTransaction = (description: string): string => {
   const descriptionLower = (description || '').toLowerCase();
 
-  // Revenue categories
-  if (descriptionLower.includes('payment') || descriptionLower.includes('revenue') ||
-      descriptionLower.includes('income') || descriptionLower.includes('sale')) {
+  // Revenue categories - check for payment processors and sales
+  if (descriptionLower.includes('stripe') || descriptionLower.includes('square') ||
+      descriptionLower.includes('payment') || descriptionLower.includes('revenue') ||
+      descriptionLower.includes('income') || descriptionLower.includes('sale') ||
+      descriptionLower.includes('pos sale') || descriptionLower.includes('customer payment')) {
     return 'Revenue';
   }
 
@@ -111,7 +118,8 @@ const categorizeTransaction = (description: string): string => {
   }
 
   if (descriptionLower.includes('utilities') || descriptionLower.includes('electric') ||
-      descriptionLower.includes('gas') || descriptionLower.includes('water')) {
+      descriptionLower.includes('gas') || descriptionLower.includes('water') ||
+      descriptionLower.includes('utilities co')) {
     return 'Utilities';
   }
 
@@ -124,7 +132,8 @@ const categorizeTransaction = (description: string): string => {
     return 'Marketing';
   }
 
-  if (descriptionLower.includes('office') || descriptionLower.includes('supplies')) {
+  if (descriptionLower.includes('office') || descriptionLower.includes('supplies') ||
+      descriptionLower.includes('amazon') || descriptionLower.includes('equipment')) {
     return 'Office Supplies';
   }
 
@@ -137,8 +146,16 @@ const categorizeTransaction = (description: string): string => {
     return 'Travel';
   }
 
-  if (descriptionLower.includes('bank') || descriptionLower.includes('fee')) {
+  if (descriptionLower.includes('bank') || descriptionLower.includes('fee') ||
+      descriptionLower.includes('chase bank') || descriptionLower.includes('banking fee')) {
     return 'Banking Fees';
+  }
+
+  // Food and inventory
+  if (descriptionLower.includes('sysco') || descriptionLower.includes('food') ||
+      descriptionLower.includes('inventory') || descriptionLower.includes('pepsico') ||
+      descriptionLower.includes('beverage')) {
+    return 'Inventory';
   }
 
   return 'Other';

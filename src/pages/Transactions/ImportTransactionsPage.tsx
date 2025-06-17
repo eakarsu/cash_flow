@@ -17,13 +17,10 @@ const ImportTransactionsPage: React.FC = () => {
       setIsImporting(true);
       try {
         const importedTransactions = await parseCSV(file);
-        setTransactions(prev => {
-          const existingIds = new Set(prev.map(t => t.id));
-          const newTransactions = importedTransactions.filter(t => !existingIds.has(t.id));
-          return [...prev, ...newTransactions].sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-        });
+        // Replace all transactions with imported ones
+        setTransactions(importedTransactions.sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        ));
         setImportResult(`Successfully imported ${importedTransactions.length} transactions`);
       } catch (error) {
         console.error('Error importing CSV:', error);
