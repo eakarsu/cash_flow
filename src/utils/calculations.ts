@@ -97,22 +97,15 @@ export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashF
     const projectedInflows = weeklyInflows;
     const projectedOutflows = weeklyOutflows;
 
-    // For week 0, use the actual current balance, then project forward
-    if (week > 0) {
-      currentBalance += projectedInflows - projectedOutflows;
-    }
-
     forecast.push({
       week: format(weekStart, 'MMM dd'),
-      projectedBalance: currentBalance + (week > 0 ? 0 : 0), // Show current balance for first week
+      projectedBalance: currentBalance,
       inflows: projectedInflows,
       outflows: projectedOutflows
     });
     
-    // Apply the change after recording the balance for this week
-    if (week === 0) {
-      currentBalance += projectedInflows - projectedOutflows;
-    }
+    // Apply the change for next week
+    currentBalance += projectedInflows - projectedOutflows;
   }
 
   return forecast;
