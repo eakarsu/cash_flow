@@ -66,7 +66,7 @@ const AppRouter: React.FC = () => {
               date: values[0] || new Date().toISOString().split('T')[0],
               description: values[1] || 'Imported transaction',
               amount: amount,
-              type: (amount >= 0 ? 'inflow' : 'outflow') as const,
+              type: amount >= 0 ? 'inflow' : 'outflow',
               category: values[3] || 'Other',
               balance: parseFloat(values[4]) || 0
             };

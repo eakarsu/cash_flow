@@ -44,6 +44,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             date: values[dateIndex] || new Date().toISOString().split('T')[0],
             description: values[descIndex] || 'Imported transaction',
             amount: amount,
+            type: amount >= 0 ? 'inflow' : 'outflow',
             category: values[categoryIndex] || categorizeTransaction(values[descIndex] || ''),
             balance: parseFloat(values[balanceIndex]) || 0
           };
