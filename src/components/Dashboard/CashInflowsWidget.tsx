@@ -52,7 +52,11 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
   })).sort((a, b) => b.amount - a.amount);
 
   // Generate monthly trends for the last 6 months
-  const monthlyTrends = [];
+  const monthlyTrends: Array<{
+    month: string;
+    inflows: number;
+    outflows: number;
+  }> = [];
   for (let i = 5; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);

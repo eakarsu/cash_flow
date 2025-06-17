@@ -53,7 +53,12 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     : runway;
 
   // Generate monthly trends for the last 12 months
-  const monthlyTrends = [];
+  const monthlyTrends: Array<{
+    month: string;
+    inflows: number;
+    outflows: number;
+    netFlow: number;
+  }> = [];
   for (let i = 11; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
