@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DollarSign, Menu, X, ChevronDown, User, LogOut, Upload, Download } from 'lucide-react';
 
@@ -13,6 +13,33 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock auth state
   const location = useLocation();
+  
+  const analyticsRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (analyticsRef.current && !analyticsRef.current.contains(event.target as Node)) {
+        setIsAnalyticsOpen(false);
+      }
+      if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
+        setIsAccountOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close dropdowns on route change
+  useEffect(() => {
+    setIsAnalyticsOpen(false);
+    setIsAccountOpen(false);
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -47,9 +74,12 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
             </Link>
 
             {/* Analytics Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={analyticsRef}>
               <button
-                onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+                onClick={() => {
+                  setIsAnalyticsOpen(!isAnalyticsOpen);
+                  setIsAccountOpen(false);
+                }}
                 className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
               >
                 Analytics
@@ -160,9 +190,12 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
             {/* User Account / Auth */}
             <div className="hidden lg:flex items-center space-x-4">
               {isLoggedIn ? (
-                <div className="relative">
+                <div className="relative" ref={accountRef}>
                   <button
-                    onClick={() => setIsAccountOpen(!isAccountOpen)}
+                    onClick={() => {
+                      setIsAccountOpen(!isAccountOpen);
+                      setIsAnalyticsOpen(false);
+                    }}
                     className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
                   >
                     <User className="h-5 w-5 mr-1" />
