@@ -1,29 +1,6 @@
-console.log('TransactionContext.tsx: Module loading started...');
-
 import React, { createContext, useContext, ReactNode } from 'react';
-
-console.log('TransactionContext.tsx: React imported successfully');
-
-try {
-  console.log('TransactionContext.tsx: Attempting to import Transaction type...');
-  const { Transaction } = require('../types/index');
-  console.log('TransactionContext.tsx: Transaction type imported successfully');
-} catch (error) {
-  console.error('TransactionContext.tsx: Failed to import Transaction type:', error);
-}
-
-try {
-  console.log('TransactionContext.tsx: Attempting to import useLocalStorage...');
-  const { useLocalStorage } = require('../hooks/useLocalStorage');
-  console.log('TransactionContext.tsx: useLocalStorage imported successfully');
-} catch (error) {
-  console.error('TransactionContext.tsx: Failed to import useLocalStorage:', error);
-}
-
 import { Transaction } from '../types/index';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-
-console.log('TransactionContext.tsx: All imports completed');
 
 interface TransactionContextType {
   transactions: Transaction[];

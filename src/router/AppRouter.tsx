@@ -1,48 +1,9 @@
-console.log('AppRouter.tsx: Module loading started...');
-
 import React, { useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-console.log('AppRouter.tsx: React and router imports successful');
-
-try {
-  console.log('AppRouter.tsx: Attempting to import Layout...');
-  const Layout = require('../components/Layout/Layout').default;
-  console.log('AppRouter.tsx: Layout imported successfully');
-} catch (error) {
-  console.error('AppRouter.tsx: Failed to import Layout:', error);
-}
-
-try {
-  console.log('AppRouter.tsx: Attempting to import HomePage...');
-  const HomePage = require('../pages/HomePage').default;
-  console.log('AppRouter.tsx: HomePage imported successfully');
-} catch (error) {
-  console.error('AppRouter.tsx: Failed to import HomePage:', error);
-}
-
-try {
-  console.log('AppRouter.tsx: Attempting to import PlaceholderPage...');
-  const PlaceholderPage = require('../components/PlaceholderPage').default;
-  console.log('AppRouter.tsx: PlaceholderPage imported successfully');
-} catch (error) {
-  console.error('AppRouter.tsx: Failed to import PlaceholderPage:', error);
-}
-
-try {
-  console.log('AppRouter.tsx: Attempting to import useTransactions...');
-  const { useTransactions } = require('../context/TransactionContext');
-  console.log('AppRouter.tsx: useTransactions imported successfully');
-} catch (error) {
-  console.error('AppRouter.tsx: Failed to import useTransactions:', error);
-}
-
 import Layout from '../components/Layout/Layout';
 import HomePage from '../pages/HomePage';
 import PlaceholderPage from '../components/PlaceholderPage';
 import { useTransactions } from '../context/TransactionContext';
-
-console.log('AppRouter.tsx: All imports completed');
 
 // Import only the pages that actually exist
 import TransactionsPage from '../pages/Transactions/TransactionsPage';
