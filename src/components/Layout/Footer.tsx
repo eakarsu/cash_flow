@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { DollarSign, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 
 const Footer: React.FC = () => {
@@ -48,12 +47,12 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-300 hover:text-white text-sm">Dashboard</Link></li>
-              <li><Link to="/transactions" className="text-gray-300 hover:text-white text-sm">Transactions</Link></li>
-              <li><Link to="/reports" className="text-gray-300 hover:text-white text-sm">Reports</Link></li>
-              <li><Link to="/analytics/forecast" className="text-gray-300 hover:text-white text-sm">Forecasting</Link></li>
-              <li><Link to="/features" className="text-gray-300 hover:text-white text-sm">Features</Link></li>
-              <li><Link to="/pricing" className="text-gray-300 hover:text-white text-sm">Pricing</Link></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Dashboard</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Transactions</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Reports</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Forecasting</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Features</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Pricing</button></li>
             </ul>
           </div>
 
@@ -61,12 +60,12 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
-              <li><Link to="/help" className="text-gray-300 hover:text-white text-sm">Help Center</Link></li>
-              <li><Link to="/documentation" className="text-gray-300 hover:text-white text-sm">Documentation</Link></li>
-              <li><Link to="/tutorials" className="text-gray-300 hover:text-white text-sm">Video Tutorials</Link></li>
-              <li><Link to="/support" className="text-gray-300 hover:text-white text-sm">Contact Support</Link></li>
-              <li><Link to="/about" className="text-gray-300 hover:text-white text-sm">About Us</Link></li>
-              <li><Link to="/contact" className="text-gray-300 hover:text-white text-sm">Contact</Link></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Help Center</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Documentation</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Video Tutorials</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Contact Support</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">About Us</button></li>
+              <li><button className="text-gray-300 hover:text-white text-sm">Contact</button></li>
             </ul>
           </div>
 
@@ -113,10 +112,10 @@ const Footer: React.FC = () => {
               </a>
             </div>
             <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-sm text-gray-400">
-              <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
-              <Link to="/terms" className="hover:text-white">Terms of Service</Link>
-              <Link to="/cookies" className="hover:text-white">Cookie Policy</Link>
-              <Link to="/refund-policy" className="hover:text-white">Refund Policy</Link>
+              <button className="hover:text-white">Privacy Policy</button>
+              <button className="hover:text-white">Terms of Service</button>
+              <button className="hover:text-white">Cookie Policy</button>
+              <button className="hover:text-white">Refund Policy</button>
             </div>
           </div>
           <div className="mt-4 text-center text-sm text-gray-400">
