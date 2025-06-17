@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TrendingDown, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlow } from '../../hooks/useAICashFlow';
+import { useAICashFlow } from '../../hooks/useAICashFlow.ts';
 
 interface CashOutflowsWidgetProps {
   transactions: Transaction[];

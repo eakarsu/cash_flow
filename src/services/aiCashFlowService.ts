@@ -1,4 +1,4 @@
-interface OpenRouterResponse {
+export interface OpenRouterResponse {
   choices: Array<{
     message: {
       content: string;
@@ -6,7 +6,7 @@ interface OpenRouterResponse {
   }>;
 }
 
-interface CashFlowPrediction {
+export interface CashFlowPrediction {
   weeklyForecasts: Array<{
     week: string;
     projectedBalance: number;
