@@ -33,7 +33,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
     }
   });
 
-  const inflowTransactions = filteredTransactions.filter(t => t.type === 'inflow');
+  const inflowTransactions = filteredTransactions.filter(t => t.amount > 0);
   const totalInflows = inflowTransactions.reduce((sum, t) => sum + t.amount, 0);
   
   const categoryBreakdown = inflowTransactions.reduce((acc, transaction) => {
@@ -64,8 +64,8 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
     
     monthlyTrends.push({
       month: date.toLocaleDateString('en-US', { month: 'short' }),
-      inflows: monthTransactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0),
-      outflows: monthTransactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0)
+      inflows: monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
+      outflows: monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
     });
   }
 

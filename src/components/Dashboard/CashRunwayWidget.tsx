@@ -9,8 +9,8 @@ interface CashRunwayWidgetProps {
 
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
   // Calculate cash flow summary
-  const totalInflows = transactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0);
-  const totalOutflows = transactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0);
+  const totalInflows = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+  const totalOutflows = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
   const netCashFlow = totalInflows - totalOutflows;
   
   // Calculate burn rate (average monthly outflows over last 6 months)
@@ -20,10 +20,10 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     date.setMonth(date.getMonth() - i);
     const monthOutflows = transactions.filter(t => {
       const tDate = new Date(t.date);
-      return t.type === 'outflow' && 
+      return t.amount < 0 && 
              tDate.getMonth() === date.getMonth() && 
              tDate.getFullYear() === date.getFullYear();
-    }).reduce((sum, t) => sum + t.amount, 0);
+    }).reduce((sum, t) => sum + Math.abs(t.amount), 0);
     last6Months.push(monthOutflows);
   }
   
@@ -43,8 +43,8 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
              tDate.getFullYear() === date.getFullYear();
     });
     
-    const inflows = monthTransactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0);
-    const outflows = monthTransactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0);
+    const inflows = monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+    const outflows = monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
     
     monthlyTrends.push({
       month: date.toLocaleDateString('en-US', { month: 'short' }),

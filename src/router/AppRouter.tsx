@@ -5,11 +5,34 @@ import HomePage from '../pages/HomePage.tsx';
 import PlaceholderPage from '../components/PlaceholderPage.tsx';
 import { useTransactions } from '../context/TransactionContext.tsx';
 
-// Import only the pages that actually exist
+// Transaction pages
 import TransactionsPage from '../pages/Transactions/TransactionsPage.tsx';
 import AddTransactionPage from '../pages/Transactions/AddTransactionPage.tsx';
 import EditTransactionPage from '../pages/Transactions/EditTransactionPage.tsx';
 import ImportTransactionsPage from '../pages/Transactions/ImportTransactionsPage.tsx';
+
+// Analytics pages
+import CashInflowsPage from '../pages/Analytics/CashInflowsPage.tsx';
+import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage.tsx';
+import CashRunwayPage from '../pages/Analytics/CashRunwayPage.tsx';
+import CashForecastPage from '../pages/Analytics/CashForecastPage.tsx';
+
+// Reports pages
+import ReportsPage from '../pages/Reports/ReportsPage.tsx';
+
+// Company pages
+import AboutPage from '../pages/Company/AboutPage.tsx';
+import ContactPage from '../pages/Company/ContactPage.tsx';
+
+// Marketing pages
+import FeaturesPage from '../pages/Marketing/FeaturesPage.tsx';
+import PricingPage from '../pages/Marketing/PricingPage.tsx';
+
+// Support pages
+import HelpPage from '../pages/Support/HelpPage.tsx';
+import DocumentationPage from '../pages/Support/DocumentationPage.tsx';
+import TutorialsPage from '../pages/Support/TutorialsPage.tsx';
+import SupportContactPage from '../pages/Support/SupportContactPage.tsx';
 
 const AppRouter: React.FC = () => {
   const { transactions, setTransactions } = useTransactions();
@@ -108,11 +131,11 @@ const AppRouter: React.FC = () => {
             {/* Main Application Pages */}
             <Route path="/" element={<HomePage />} />
             
-            {/* Analytics Pages - Using PlaceholderPage for now */}
-            <Route path="/analytics/inflows" element={<PlaceholderPage title="Cash Inflows Analysis" description="Analyze your incoming cash flows and revenue streams" />} />
-            <Route path="/analytics/outflows" element={<PlaceholderPage title="Cash Outflows Analysis" description="Track and analyze your business expenses" />} />
-            <Route path="/analytics/runway" element={<PlaceholderPage title="Cash Runway Analysis" description="See how long your current cash will last" />} />
-            <Route path="/analytics/forecast" element={<PlaceholderPage title="13-Week Cash Forecast" description="Plan your cash flow for the next quarter" />} />
+            {/* Analytics Pages */}
+            <Route path="/analytics/inflows" element={<CashInflowsPage />} />
+            <Route path="/analytics/outflows" element={<CashOutflowsPage />} />
+            <Route path="/analytics/runway" element={<CashRunwayPage />} />
+            <Route path="/analytics/forecast" element={<CashForecastPage />} />
             
             {/* Transaction Management Pages */}
             <Route path="/transactions" element={<TransactionsPage />} />
@@ -121,8 +144,8 @@ const AppRouter: React.FC = () => {
             <Route path="/transactions/import" element={<ImportTransactionsPage />} />
             <Route path="/transactions/categories" element={<PlaceholderPage title="Transaction Categories" description="Manage and organize your transaction categories" />} />
             
-            {/* Reports Pages - Using PlaceholderPage for now */}
-            <Route path="/reports" element={<PlaceholderPage title="Financial Reports" description="Generate comprehensive financial reports" />} />
+            {/* Reports Pages */}
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/reports/custom" element={<PlaceholderPage title="Custom Reports" description="Create custom financial reports" />} />
             <Route path="/reports/export" element={<PlaceholderPage title="Export Data" description="Export your financial data in various formats" />} />
             
@@ -131,22 +154,22 @@ const AppRouter: React.FC = () => {
             <Route path="/account/settings" element={<PlaceholderPage title="Account Settings" description="Configure your account preferences and settings" />} />
             <Route path="/account/billing" element={<PlaceholderPage title="Billing & Subscription" description="Manage your subscription and billing information" />} />
             
-            {/* Company Pages - Using PlaceholderPage for now */}
-            <Route path="/about" element={<PlaceholderPage title="About Us" description="Learn more about our company and mission" />} />
-            <Route path="/contact" element={<PlaceholderPage title="Contact Us" description="Get in touch with our team" />} />
+            {/* Company Pages */}
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             
-            {/* Marketing Pages - Using PlaceholderPage for now */}
-            <Route path="/features" element={<PlaceholderPage title="Features" description="Explore all the powerful features of our platform" />} />
-            <Route path="/pricing" element={<PlaceholderPage title="Pricing Plans" description="Choose the perfect plan for your business" />} />
+            {/* Marketing Pages */}
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/testimonials" element={<PlaceholderPage title="Customer Testimonials" description="See what our customers are saying about us" />} />
             <Route path="/case-studies" element={<PlaceholderPage title="Case Studies" description="Real-world examples of how our platform helps businesses" />} />
             <Route path="/blog" element={<PlaceholderPage title="Blog" description="Latest insights and tips for cash flow management" />} />
             
-            {/* Support Pages - Using PlaceholderPage for now */}
-            <Route path="/help" element={<PlaceholderPage title="Help Center" description="Find answers to frequently asked questions" />} />
-            <Route path="/documentation" element={<PlaceholderPage title="Documentation" description="Comprehensive guides and API documentation" />} />
-            <Route path="/tutorials" element={<PlaceholderPage title="Video Tutorials" description="Learn how to use our platform with step-by-step videos" />} />
-            <Route path="/support" element={<PlaceholderPage title="Contact Support" description="Get help from our support team" />} />
+            {/* Support Pages */}
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/documentation" element={<DocumentationPage />} />
+            <Route path="/tutorials" element={<TutorialsPage />} />
+            <Route path="/support" element={<SupportContactPage />} />
             
             {/* Legal Pages - Using PlaceholderPage for now */}
             <Route path="/privacy" element={<PlaceholderPage title="Privacy Policy" description="Our commitment to protecting your privacy" />} />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, DollarSign, TrendingDown, AlertTriangle } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext';
-import CashRunwayWidget from '../../components/Dashboard/CashRunwayWidget';
+import { useTransactions } from '../../context/TransactionContext.tsx';
+import CashRunwayWidget from '../../components/Dashboard/CashRunwayWidget.tsx';
 
 const CashRunwayPage: React.FC = () => {
   const { transactions } = useTransactions();

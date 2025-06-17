@@ -11,7 +11,8 @@ const HomePage: React.FC = () => {
   const { transactions } = useTransactions();
 
   const recentTransactions = transactions.slice(0, 5);
-  const totalBalance = transactions.length > 0 ? transactions[0].balance : 0;
+  const totalBalance = transactions.length > 0 ? 
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance : 0;
   const monthlyInflow = transactions
     .filter(t => t.amount > 0 && new Date(t.date).getMonth() === new Date().getMonth())
     .reduce((sum, t) => sum + t.amount, 0);

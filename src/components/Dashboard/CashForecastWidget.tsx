@@ -19,10 +19,10 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
       acc[weekKey] = { inflows: 0, outflows: 0 };
     }
     
-    if (transaction.type === 'inflow') {
+    if (transaction.amount > 0) {
       acc[weekKey].inflows += transaction.amount;
     } else {
-      acc[weekKey].outflows += transaction.amount;
+      acc[weekKey].outflows += Math.abs(transaction.amount);
     }
     
     return acc;

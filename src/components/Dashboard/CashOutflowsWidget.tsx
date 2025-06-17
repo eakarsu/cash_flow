@@ -33,7 +33,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     }
   });
 
-  const outflowTransactions = filteredTransactions.filter(t => t.type === 'outflow');
+  const outflowTransactions = filteredTransactions.filter(t => t.amount < 0);
   const totalOutflows = outflowTransactions.reduce((sum, t) => sum + t.amount, 0);
   
   const categoryBreakdown = outflowTransactions.reduce((acc, transaction) => {
@@ -41,7 +41,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     if (!acc[category]) {
       acc[category] = { category, amount: 0, count: 0 };
     }
-    acc[category].amount += transaction.amount;
+    acc[category].amount += Math.abs(transaction.amount);
     acc[category].count += 1;
     return acc;
   }, {} as Record<string, { category: string; amount: number; count: number }>);
@@ -64,8 +64,8 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     
     monthlyTrends.push({
       month: date.toLocaleDateString('en-US', { month: 'short' }),
-      inflows: monthTransactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0),
-      outflows: monthTransactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0)
+      inflows: monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
+      outflows: monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
     });
   }
 
