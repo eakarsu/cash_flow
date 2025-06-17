@@ -1,6 +1,6 @@
 import React from 'react';
-import { TransactionProvider } from './context/TransactionContext';
-import AppRouter from './router/AppRouter';
+import { TransactionProvider } from './context/TransactionContext.tsx';
+import AppRouter from './router/AppRouter.tsx';
 
 function App() {
   return (
