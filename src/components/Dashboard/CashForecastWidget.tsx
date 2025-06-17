@@ -69,9 +69,20 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     : 0;
 
   // Use AI predictions if available and enabled, otherwise fall back to historical calculation
-  const forecastWithScenarios = useAI && prediction?.weeklyForecasts ? 
-    prediction.weeklyForecasts : 
+  console.log('📊 Forecast data decision:', {
+    useAI,
+    hasPrediction: !!prediction,
+    hasWeeklyForecasts: !!prediction?.weeklyForecasts,
+    forecastLength: prediction?.weeklyForecasts?.length || 0
+  });
+  
+  const forecastWithScenarios = useAI && prediction?.weeklyForecasts && prediction.weeklyForecasts.length > 0 ? 
     (() => {
+      console.log('✅ Using AI predictions for forecast');
+      return prediction.weeklyForecasts;
+    })() :
+    (() => {
+      console.log('📈 Using historical calculation for forecast');
       // Generate 13-week forecast using historical data
       const forecast: Array<{
         week: string;
@@ -167,7 +178,10 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
               </label>
               {useAI && (
                 <button
-                  onClick={refreshPrediction}
+                  onClick={() => {
+                    console.log('🔄 Manual refresh triggered');
+                    refreshPrediction();
+                  }}
                   disabled={aiLoading}
                   className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
                   title="Refresh AI predictions"

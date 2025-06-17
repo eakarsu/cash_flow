@@ -47,6 +47,13 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   // If no recent outflows, use all-time average
   const burnRate = recentOutflowsTotal > 0 ? recentOutflowsTotal / 6 : totalOutflows / Math.max(1, transactions.length > 0 ? 12 : 1);
   // Use AI runway analysis if available, otherwise use calculated runway
+  console.log('🛣️ Runway calculation:', {
+    useAI,
+    hasRunwayAnalysis: !!prediction?.runwayAnalysis,
+    aiCurrentRunway: prediction?.runwayAnalysis?.currentRunway,
+    calculatedRunway: burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0
+  });
+  
   const runway = useAI && prediction?.runwayAnalysis?.currentRunway 
     ? prediction.runwayAnalysis.currentRunway 
     : (burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0);

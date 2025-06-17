@@ -71,13 +71,17 @@ export function useAICashFlow(
       autoRefresh: autoRefresh
     });
     
-    if (aiService && transactions.length > 0) {
+    if (aiService && transactions.length > 0 && autoRefresh) {
       console.log('✅ Conditions met, calling fetchPrediction');
       fetchPrediction();
     } else {
-      console.log('❌ Conditions not met for AI prediction');
+      console.log('❌ Conditions not met for AI prediction', {
+        hasAiService: !!aiService,
+        hasTransactions: transactions.length > 0,
+        autoRefresh
+      });
     }
-  }, [transactions.length, currentBalance, apiKey]);
+  }, [transactions.length, currentBalance, apiKey, autoRefresh]);
 
   return {
     prediction,
