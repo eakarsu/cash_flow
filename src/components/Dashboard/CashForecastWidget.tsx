@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, TrendingUp, TrendingDown, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlow } from '../../hooks/useAICashFlow.ts';
+import { useAICashFlowContext } from '../../context/AICashFlowContext.tsx';
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
@@ -10,27 +10,21 @@ interface CashForecastWidgetProps {
 
 const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
   const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
-  const [useAI, setUseAI] = useState(false);
   
   // Get current balance
   const currentBalance = transactions.length > 0 ? 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
-  // Get API key from environment
-  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
-  console.log('🔑 API Key status:', apiKey ? 'CONFIGURED' : 'NOT CONFIGURED');
-  
-  // AI predictions hook
+  // Use shared AI context
   const { 
     prediction, 
     loading: aiLoading, 
     error: aiError, 
     refreshPrediction, 
-    isConfigured 
-  } = useAICashFlow(transactions, currentBalance, {
-    apiKey,
-    autoRefresh: useAI && isConfigured
-  });
+    isConfigured,
+    useAI,
+    setUseAI
+  } = useAICashFlowContext();
   
   console.log('🤖 AI Hook State:', {
     prediction: !!prediction,

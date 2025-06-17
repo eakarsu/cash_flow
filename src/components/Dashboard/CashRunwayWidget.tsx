@@ -2,33 +2,27 @@ import React, { useState } from 'react';
 import { Clock, AlertTriangle, CheckCircle, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlow } from '../../hooks/useAICashFlow.ts';
+import { useAICashFlowContext } from '../../context/AICashFlowContext.tsx';
 
 interface CashRunwayWidgetProps {
   transactions: Transaction[];
 }
 
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
-  const [useAI, setUseAI] = useState(false);
-  
   // Get current balance
   const currentBalance = transactions.length > 0 ? 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
-  // Get API key from environment
-  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
-  
-  // AI predictions hook
+  // Use shared AI context
   const { 
     prediction, 
     loading: aiLoading, 
     error: aiError, 
     refreshPrediction, 
-    isConfigured 
-  } = useAICashFlow(transactions, currentBalance, {
-    apiKey,
-    autoRefresh: useAI && isConfigured
-  });
+    isConfigured,
+    useAI,
+    setUseAI
+  } = useAICashFlowContext();
   // Calculate cash flow summary
   const totalInflows = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
   const totalOutflows = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
