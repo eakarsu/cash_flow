@@ -81,9 +81,6 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
   };
 
   const finalBalance = forecastWithScenarios[forecastWithScenarios.length - 1];
-  const currentBalance = transactions.length > 0 ?
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
-
   const projectedChange = finalBalance[scenario] - currentBalance;
   const projectedChangePercent = currentBalance > 0 ? (projectedChange / currentBalance) * 100 : 0;
 
