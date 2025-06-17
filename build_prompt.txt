@@ -1,0 +1,100 @@
+Create a complete, production-ready cash flow management website with React TypeScript that has NO missing links, NO unclickable elements, and ALL pages fully implemented. Every navigation item, footer link, and button must lead to a working page with real content.
+
+## CORE REQUIREMENTS - NO MISSING LINKS ALLOWED
+
+### 1. Complete Navigation Structure
+- Implement React Router with proper routing for ALL pages[4]
+- Every navigation link must lead to a fully functional page
+- No placeholder pages or "Coming Soon" content
+- All internal links must be working Link components, not anchor tags[7]
+
+### 2. Header Component Requirements
+Create a comprehensive header with:
+- Company logo/branding
+- Main navigation menu with ALL working links[6]
+- User authentication status (Login/Logout buttons)
+- Mobile-responsive hamburger menu
+- Search functionality (if applicable)
+- All navigation items must have corresponding pages
+
+### 3. Footer Component Requirements  
+Create a complete footer with ALL functional links[6]:
+- Company information and contact details
+- Quick links to all main pages
+- Social media links (with proper external link handling)
+- Legal pages (Privacy Policy, Terms of Service, etc.)
+- Newsletter signup functionality
+- Copyright information
+- All footer links must lead to real, content-filled pages
+
+## COMPLETE PAGE STRUCTURE TO IMPLEMENT
+
+### Main Application Pages
+1. **Home/Dashboard Page**
+   - Cash flow overview widgets
+   - Quick action buttons (all functional)
+   - Recent transactions summary
+   - Navigation to all other sections
+
+2. **Cash Flow Analytics Pages**
+   - Cash Inflows page with detailed charts and data
+   - Cash Outflows page with expense breakdowns  
+   - Cash Runway calculator page
+   - 13-Week Forecast page with interactive charts
+   - Historical trends and comparisons
+
+3. **Transaction Management Pages**
+   - Transaction list page with filtering/search
+   - Add new transaction page with full form
+   - Edit transaction page
+   - Import transactions page (CSV upload)
+   - Transaction categories management
+
+4. **Reports & Analytics Pages**
+   - Financial reports dashboard
+   - Custom report builder
+   - Export functionality page
+   - Print-friendly report views
+
+5. **User Account Pages**
+   - User profile/settings page
+   - Account preferences
+   - Subscription/billing information
+   - Data export/import tools
+
+### Essential Business Pages
+6. **About Us Page**
+   - Company story and mission
+   - Team member profiles
+   - Company history and values
+
+7. **Contact Page**
+   - Contact form (fully functional)
+   - Office locations and hours
+   - Phone, email, and address information
+   - Google Maps integration
+
+8. **Support Pages**
+   - Help/FAQ page with searchable content
+   - User guide/documentation
+   - Video tutorials page
+   - Contact support form
+
+9. **Legal Pages** (All Required)
+   - Privacy Policy (complete legal document)
+   - Terms of Service (comprehensive terms)
+   - Cookie Policy
+   - Data Processing Agreement
+   - Refund Policy
+
+10. **Marketing Pages**
+    - Features overview page
+    - Pricing plans page
+    - Customer testimonials
+    - Case studies page
+    - Blog/News section
+
+## TECHNICAL IMPLEMENTATION REQUIREMENTS
+
+### 1. React Router Setup
+
