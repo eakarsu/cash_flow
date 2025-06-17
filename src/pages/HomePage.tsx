@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
-import Layout from '../components/Layout/Layout';
 import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
 import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
 import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
@@ -80,7 +79,7 @@ const HomePage: React.FC = () => {
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
   return (
-    <Layout onImport={handleImport} onExport={handleExport}>
+    <>
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -304,7 +303,7 @@ const HomePage: React.FC = () => {
           </Link>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 
