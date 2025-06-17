@@ -25,9 +25,18 @@ export const calculateCashFlowSummary = (
   );
   const burnRate = Math.abs(recentTransactions.reduce((sum, t) => sum + t.amount, 0)) / 6;
 
-  // Calculate runway (current balance / monthly burn rate)
-  // Current balance is the cumulative sum of all transactions
-  const currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+  // Get current balance from the most recent transaction's balance field if available
+  // Otherwise fall back to cumulative calculation
+  let currentBalance = 0;
+  if (transactions.length > 0) {
+    const sortedTransactions = [...transactions].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    // Check if transaction has balance property (from CSV import)
+    currentBalance = (sortedTransactions[0] as any).balance || 
+                    transactions.reduce((sum, t) => sum + t.amount, 0);
+  }
+  
   const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
 
   return {
@@ -48,7 +57,8 @@ export const calculateCategoryBreakdown = (
     .filter(t => type === 'inflow' ? t.amount > 0 : t.amount < 0);
 
   const categoryTotals = filteredTransactions.reduce((acc, transaction) => {
-    const category = transaction.category;
+    // Use merchant name as category if category field is missing
+    const category = transaction.category || transaction.description || 'Other';
     if (!acc[category]) {
       acc[category] = { amount: 0, count: 0 };
     }
@@ -88,8 +98,15 @@ export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashF
     .filter(t => t.amount < 0)
     .reduce((sum, t) => sum + t.amount, 0)) / 12;
 
-  // Get current balance as cumulative sum of all transactions
-  let currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+  // Get current balance from the most recent transaction's balance field if available
+  let currentBalance = 0;
+  if (transactions.length > 0) {
+    const sortedTransactions = [...transactions].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    currentBalance = (sortedTransactions[0] as any).balance || 
+                    transactions.reduce((sum, t) => sum + t.amount, 0);
+  }
 
   // Generate 13-week forecast
   for (let week = 0; week < 13; week++) {

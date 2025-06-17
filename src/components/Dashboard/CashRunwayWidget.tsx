@@ -25,8 +25,15 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   const recentOutflowsTotal = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
   // If no recent outflows, use all-time average
   const burnRate = recentOutflowsTotal > 0 ? recentOutflowsTotal / 6 : totalOutflows / Math.max(1, transactions.length > 0 ? 12 : 1);
-  // Calculate current balance as cumulative sum of all transactions
-  const currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+  // Get current balance from the most recent transaction's balance field if available
+  let currentBalance = 0;
+  if (transactions.length > 0) {
+    const sortedTransactions = [...transactions].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    currentBalance = (sortedTransactions[0] as any).balance || 
+                    transactions.reduce((sum, t) => sum + t.amount, 0);
+  }
   const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
 
   // Generate monthly trends for the last 12 months
