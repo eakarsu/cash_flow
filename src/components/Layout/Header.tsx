@@ -330,6 +330,13 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
                 Pricing
               </Link>
               <Link
+                to="/about"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link
                 to="/help"
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
