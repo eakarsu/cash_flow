@@ -67,7 +67,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     const outflows = monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
     
     monthlyTrends.push({
-      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      month: date.toLocaleDateString('en-US', { month: 'short' } as Intl.DateTimeFormatOptions),
       inflows,
       outflows,
       netFlow: inflows - outflows

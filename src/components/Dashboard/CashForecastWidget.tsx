@@ -59,7 +59,15 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     prediction.weeklyForecasts : 
     (() => {
       // Generate 13-week forecast using historical data
-      const forecast = [];
+      const forecast: Array<{
+        week: string;
+        projectedBalance: number;
+        inflows: number;
+        outflows: number;
+        optimistic: number;
+        realistic: number;
+        pessimistic: number;
+      }> = [];
       let balance = currentBalance;
       
       for (let week = 0; week < 13; week++) {
