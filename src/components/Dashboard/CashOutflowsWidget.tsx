@@ -136,21 +136,25 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
                 <input
                   type="checkbox"
                   checked={useAI}
-                  onChange={(e) => setUseAI(e.target.checked)}
+                  onChange={(e) => {
+                    console.log('🎯 AI checkbox toggled:', e.target.checked);
+                    setUseAI(e.target.checked);
+                  }}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="ml-2 text-sm text-gray-700">AI Insights</span>
               </label>
-              {useAI && (
-                <button
-                  onClick={refreshPrediction}
-                  disabled={aiLoading}
-                  className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                  title="Refresh AI insights"
-                >
-                  <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  console.log('🔄 Manual refresh triggered');
+                  refreshPrediction();
+                }}
+                disabled={aiLoading}
+                className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                title="Refresh AI insights"
+              >
+                <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+              </button>
             </div>
           )}
           
