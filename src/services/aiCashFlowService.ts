@@ -40,8 +40,8 @@ class AICashFlowService {
   private baseUrl = 'https://openrouter.ai/api/v1/chat/completions';
   private model = 'anthropic/claude-3.5-sonnet';
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || process.env.REACT_APP_OPENROUTER_API_KEY || '';
   }
 
   private createPrompt(transactions: any[], currentBalance: number): string {

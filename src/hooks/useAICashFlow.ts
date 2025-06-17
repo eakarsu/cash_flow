@@ -20,12 +20,14 @@ export function useAICashFlow(
 
   const { apiKey, autoRefresh = false, refreshInterval = 300000 } = options; // 5 minutes default
 
-  const aiService = apiKey ? new AICashFlowService(apiKey) : null;
+  // Use provided API key or fall back to environment variable
+  const effectiveApiKey = apiKey || process.env.REACT_APP_OPENROUTER_API_KEY;
+  const aiService = effectiveApiKey ? new AICashFlowService(effectiveApiKey) : null;
 
   const fetchPrediction = async (force = false) => {
-    if (!aiService) {
+    if (!aiService || !effectiveApiKey) {
       console.log('⚠️ AI Service not configured - no API key provided');
-      setError('AI API key not configured');
+      setError('AI API key not configured. Set REACT_APP_OPENROUTER_API_KEY environment variable.');
       return;
     }
 
@@ -67,7 +69,7 @@ export function useAICashFlow(
       hasAiService: !!aiService,
       transactionCount: transactions.length,
       currentBalance,
-      apiKey: apiKey ? 'SET' : 'NOT SET',
+      apiKey: effectiveApiKey ? 'SET' : 'NOT SET',
       autoRefresh: autoRefresh
     });
     
@@ -81,7 +83,7 @@ export function useAICashFlow(
         autoRefresh
       });
     }
-  }, [transactions.length, currentBalance, apiKey]);
+  }, [transactions.length, currentBalance, effectiveApiKey]);
 
   // Separate effect for when autoRefresh changes (when user checks AI checkbox)
   useEffect(() => {
