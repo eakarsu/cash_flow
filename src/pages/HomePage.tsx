@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import { useTransactions } from '../context/TransactionContext.tsx';
+import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget.tsx';
+import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget.tsx';
+import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget.tsx';
+import CashForecastWidget from '../components/Dashboard/CashForecastWidget.tsx';
 
 const HomePage: React.FC = () => {
   const { transactions } = useTransactions();
@@ -134,27 +138,15 @@ const HomePage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Dashboard Widgets - Placeholder for now */}
+            {/* Dashboard Widgets */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Inflows</h3>
-                <p className="text-gray-500">Widget coming soon...</p>
-              </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Outflows</h3>
-                <p className="text-gray-500">Widget coming soon...</p>
-              </div>
+              <CashInflowsWidget transactions={transactions} />
+              <CashOutflowsWidget transactions={transactions} />
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Runway</h3>
-                <p className="text-gray-500">Widget coming soon...</p>
-              </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Forecast</h3>
-                <p className="text-gray-500">Widget coming soon...</p>
-              </div>
+              <CashRunwayWidget transactions={transactions} />
+              <CashForecastWidget transactions={transactions} />
             </div>
 
             {/* Recent Transactions */}
