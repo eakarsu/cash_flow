@@ -156,6 +156,15 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
             </Link>
 
             <Link
+              to="/about"
+              className={`text-sm font-medium ${
+                isActive('/about') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
+              }`}
+            >
+              About
+            </Link>
+
+            <Link
               to="/help"
               className={`text-sm font-medium ${
                 isActive('/help') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
