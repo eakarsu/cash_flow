@@ -31,6 +31,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       date: '2024-06-01',
       description: 'Revenue - Client A',
       amount: 5000,
+      type: 'income',
       category: 'Revenue',
       balance: 15000
     },
@@ -39,6 +40,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       date: '2024-06-05',
       description: 'Office Rent',
       amount: -2000,
+      type: 'expense',
       category: 'Rent',
       balance: 13000
     },
@@ -47,6 +49,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       date: '2024-06-10',
       description: 'Marketing Campaign',
       amount: -800,
+      type: 'expense',
       category: 'Marketing',
       balance: 12200
     },
@@ -55,6 +58,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       date: '2024-06-15',
       description: 'Revenue - Client B',
       amount: 3500,
+      type: 'income',
       category: 'Revenue',
       balance: 15700
     },
@@ -63,6 +67,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       date: '2024-05-01',
       description: 'Revenue - Client C',
       amount: 4200,
+      type: 'income',
       category: 'Revenue',
       balance: 10000
     },
@@ -71,6 +76,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       date: '2024-05-15',
       description: 'Software Subscriptions',
       amount: -500,
+      type: 'expense',
       category: 'Software',
       balance: 9500
     }

@@ -60,11 +60,13 @@ const AppRouter: React.FC = () => {
           .filter(line => line.trim())
           .map((line, index) => {
             const values = line.split(',');
+            const amount = parseFloat(values[2]) || 0;
             return {
               id: `imported-${Date.now()}-${index}`,
               date: values[0] || new Date().toISOString().split('T')[0],
               description: values[1] || 'Imported transaction',
-              amount: parseFloat(values[2]) || 0,
+              amount: amount,
+              type: amount >= 0 ? 'income' : 'expense',
               category: values[3] || 'Other',
               balance: parseFloat(values[4]) || 0
             };
