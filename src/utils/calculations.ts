@@ -88,11 +88,8 @@ export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashF
     .filter(t => t.amount < 0)
     .reduce((sum, t) => sum + t.amount, 0)) / 12;
 
-  // Get current balance
-  const sortedTransactions = transactions.sort((a, b) =>
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  let currentBalance = sortedTransactions.length > 0 ? sortedTransactions[0].balance || 0 : 0;
+  // Get current balance as cumulative sum of all transactions
+  let currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   // Generate 13-week forecast
   for (let week = 0; week < 13; week++) {
