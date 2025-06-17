@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { DollarSign, Menu, X, ChevronDown, User, LogOut } from 'lucide-react';
+import { DollarSign, Menu, X, ChevronDown, User, LogOut, Upload, Download } from 'lucide-react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onImport?: () => void;
+  onExport?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock auth state
-  const location = useLocation();
-
-  const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -22,24 +23,17 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <DollarSign className="h-8 w-8 text-primary-600" />
-              <h1 className="ml-2 text-xl font-semibold text-gray-900">
-                Cash Flow Manager
-              </h1>
-            </Link>
+            <DollarSign className="h-8 w-8 text-primary-600" />
+            <h1 className="ml-2 text-xl font-semibold text-gray-900">
+              Cash Flow Manager
+            </h1>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
-            <Link
-              to="/"
-              className={`text-sm font-medium ${
-                isActive('/') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
+            <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
               Dashboard
-            </Link>
+            </button>
 
             {/* Analytics Dropdown */}
             <div className="relative">
@@ -52,150 +46,141 @@ const Header: React.FC = () => {
               </button>
               {isAnalyticsOpen && (
                 <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
-                  <Link
-                    to="/analytics/inflows"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsAnalyticsOpen(false)}
                   >
                     Cash Inflows
-                  </Link>
-                  <Link
-                    to="/analytics/outflows"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  </button>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsAnalyticsOpen(false)}
                   >
                     Cash Outflows
-                  </Link>
-                  <Link
-                    to="/analytics/runway"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  </button>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsAnalyticsOpen(false)}
                   >
                     Cash Runway
-                  </Link>
-                  <Link
-                    to="/analytics/forecast"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  </button>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsAnalyticsOpen(false)}
                   >
                     13-Week Forecast
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
 
-            <Link
-              to="/transactions"
-              className={`text-sm font-medium ${
-                isActive('/transactions') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
+            <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
               Transactions
-            </Link>
+            </button>
 
-            <Link
-              to="/reports"
-              className={`text-sm font-medium ${
-                isActive('/reports') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
+            <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
               Reports
-            </Link>
+            </button>
 
-            <Link
-              to="/features"
-              className={`text-sm font-medium ${
-                isActive('/features') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
+            <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
               Features
-            </Link>
+            </button>
 
-            <Link
-              to="/pricing"
-              className={`text-sm font-medium ${
-                isActive('/pricing') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
+            <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
               Pricing
-            </Link>
+            </button>
 
-            <Link
-              to="/help"
-              className={`text-sm font-medium ${
-                isActive('/help') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
+            <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
               Help
-            </Link>
+            </button>
           </nav>
 
-          {/* User Account / Auth */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {isLoggedIn ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
-                >
-                  <User className="h-5 w-5 mr-1" />
-                  Account
-                  <ChevronDown className="ml-1 h-4 w-4" />
-                </button>
-                {isAccountOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
-                    <Link
-                      to="/account/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsAccountOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                    <Link
-                      to="/account/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsAccountOpen(false)}
-                    >
-                      Settings
-                    </Link>
-                    <Link
-                      to="/account/billing"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsAccountOpen(false)}
-                    >
-                      Billing
-                    </Link>
-                    <hr className="my-1" />
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
-                  Login
-                </button>
-                <button className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                  Sign Up
-                </button>
-              </div>
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-4">
+            {onImport && (
+              <button
+                onClick={onImport}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Import CSV
+              </button>
             )}
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-primary-600"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            {onExport && (
+              <button
+                onClick={onExport}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+              </button>
+            )}
+
+            {/* User Account / Auth */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {isLoggedIn ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsAccountOpen(!isAccountOpen)}
+                    className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
+                  >
+                    <User className="h-5 w-5 mr-1" />
+                    Account
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </button>
+                  {isAccountOpen && (
+                    <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsAccountOpen(false)}
+                      >
+                        Profile
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsAccountOpen(false)}
+                      >
+                        Settings
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsAccountOpen(false)}
+                      >
+                        Billing
+                      </button>
+                      <hr className="my-1" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
+                    Login
+                  </button>
+                  <button className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                    Sign Up
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="lg:hidden">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-700 hover:text-primary-600"
+              >
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -203,79 +188,69 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 py-4">
             <div className="space-y-2">
-              <Link
-                to="/"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Dashboard
-              </Link>
-              <Link
-                to="/analytics/inflows"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Cash Inflows
-              </Link>
-              <Link
-                to="/analytics/outflows"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Cash Outflows
-              </Link>
-              <Link
-                to="/analytics/forecast"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Forecast
-              </Link>
-              <Link
-                to="/transactions"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Transactions
-              </Link>
-              <Link
-                to="/reports"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Reports
-              </Link>
-              <Link
-                to="/features"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Features
-              </Link>
-              <Link
-                to="/pricing"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Pricing
-              </Link>
-              <Link
-                to="/help"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Help
-              </Link>
+              </button>
               {isLoggedIn && (
                 <>
                   <hr className="my-2" />
-                  <Link
-                    to="/account/profile"
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+                  <button
+                    className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Profile
-                  </Link>
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
