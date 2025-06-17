@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
+import PlaceholderPage from '../components/PlaceholderPage';
+
+// Import existing pages
 import CashInflowsPage from '../pages/Analytics/CashInflowsPage';
 import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage';
 import CashRunwayPage from '../pages/Analytics/CashRunwayPage';
@@ -51,7 +54,7 @@ const AppRouter: React.FC = () => {
           <Route path="/transactions/add" element={<AddTransactionPage />} />
           <Route path="/transactions/edit/:id" element={<EditTransactionPage />} />
           <Route path="/transactions/import" element={<ImportTransactionsPage />} />
-          <Route path="/transactions/categories" element={<CategoriesPage />} />
+          <Route path="/transactions/categories" element={<PlaceholderPage title="Transaction Categories" description="Manage and organize your transaction categories" />} />
           
           {/* Reports Pages */}
           <Route path="/reports" element={<ReportsPage />} />
@@ -70,9 +73,9 @@ const AppRouter: React.FC = () => {
           {/* Marketing Pages */}
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/testimonials" element={<TestimonialsPage />} />
-          <Route path="/case-studies" element={<CaseStudiesPage />} />
-          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/testimonials" element={<PlaceholderPage title="Customer Testimonials" description="See what our customers are saying about us" />} />
+          <Route path="/case-studies" element={<PlaceholderPage title="Case Studies" description="Real-world examples of how our platform helps businesses" />} />
+          <Route path="/blog" element={<PlaceholderPage title="Blog" description="Latest insights and tips for cash flow management" />} />
           
           {/* Support Pages */}
           <Route path="/help" element={<HelpPage />} />
