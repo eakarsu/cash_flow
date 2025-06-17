@@ -1,13 +1,27 @@
-import React from 'react';
-import { Clock, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Clock, AlertTriangle, CheckCircle, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
+import { useAICashFlow } from '../../hooks/useAICashFlow';
 
 interface CashRunwayWidgetProps {
   transactions: Transaction[];
 }
 
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
+  const [useAI, setUseAI] = useState(false);
+  
+  // AI predictions hook
+  const { 
+    prediction, 
+    loading: aiLoading, 
+    error: aiError, 
+    refreshPrediction, 
+    isConfigured 
+  } = useAICashFlow(transactions, 0, {
+    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
+    autoRefresh: useAI
+  });
   // Calculate cash flow summary
   const totalInflows = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
   const totalOutflows = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
@@ -34,7 +48,14 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     currentBalance = (sortedTransactions[0] as any).balance || 
                     transactions.reduce((sum, t) => sum + t.amount, 0);
   }
-  const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
+  // Use AI runway analysis if available, otherwise use calculated runway
+  const runway = useAI && prediction?.runwayAnalysis?.currentRunway 
+    ? prediction.runwayAnalysis.currentRunway 
+    : (burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0);
+  
+  const projectedRunway = useAI && prediction?.runwayAnalysis?.projectedRunway 
+    ? prediction.runwayAnalysis.projectedRunway 
+    : runway;
 
   // Generate monthly trends for the last 12 months
   const monthlyTrends = [];
@@ -112,15 +133,84 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center mb-6">
-        <div className={`p-2 bg-${runwayColor}-50 rounded-lg`}>
-          <Clock className={`h-6 w-6 text-${runwayColor}-600`} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className={`p-2 bg-${runwayColor}-50 rounded-lg`}>
+            {useAI && isConfigured ? (
+              <Brain className={`h-6 w-6 text-${runwayColor}-600`} />
+            ) : (
+              <Clock className={`h-6 w-6 text-${runwayColor}-600`} />
+            )}
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-medium text-gray-900">
+              Cash Runway
+              {useAI && isConfigured && (
+                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                  AI-Enhanced
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {useAI && isConfigured ? 'AI-enhanced runway analysis' : 'Months of cash remaining'}
+            </p>
+          </div>
         </div>
-        <div className="ml-3">
-          <h3 className="text-lg font-medium text-gray-900">Cash Runway</h3>
-          <p className="text-sm text-gray-500">Months of cash remaining</p>
-        </div>
+
+        {isConfigured && (
+          <div className="flex items-center">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={(e) => setUseAI(e.target.checked)}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">AI Analysis</span>
+            </label>
+            {useAI && (
+              <button
+                onClick={refreshPrediction}
+                disabled={aiLoading}
+                className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                title="Refresh AI analysis"
+              >
+                <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* AI Runway Insights */}
+      {useAI && prediction?.runwayAnalysis?.recommendations && prediction.runwayAnalysis.recommendations.length > 0 && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-blue-900 mb-3">AI Runway Recommendations</h4>
+          <div className="space-y-2">
+            {prediction.runwayAnalysis.recommendations.map((recommendation, index) => (
+              <p key={index} className="text-sm text-blue-800">• {recommendation}</p>
+            ))}
+          </div>
+          {projectedRunway !== runway && (
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <p className="text-sm text-blue-900">
+                <span className="font-medium">Projected Runway:</span> {projectedRunway.toFixed(1)} months
+                <span className={`ml-2 ${projectedRunway > runway ? 'text-green-700' : 'text-red-700'}`}>
+                  ({projectedRunway > runway ? '+' : ''}{(projectedRunway - runway).toFixed(1)} months)
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Error Display */}
+      {aiError && useAI && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-800">AI Analysis Error: {aiError}</p>
+          <p className="text-xs text-red-600 mt-1">Showing calculated runway only</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Runway Metrics */}

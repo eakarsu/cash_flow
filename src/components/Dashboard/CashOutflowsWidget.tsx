@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { TrendingDown, AlertCircle } from 'lucide-react';
+import { TrendingDown, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
+import { useAICashFlow } from '../../hooks/useAICashFlow';
 
 interface CashOutflowsWidgetProps {
   transactions: Transaction[];
@@ -11,6 +12,23 @@ const COLORS = ['#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981', '#3b82f6'
 
 const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
+  const [useAI, setUseAI] = useState(false);
+  
+  // Get current balance
+  const currentBalance = transactions.length > 0 ? 
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  
+  // AI predictions hook
+  const { 
+    prediction, 
+    loading: aiLoading, 
+    error: aiError, 
+    refreshPrediction, 
+    isConfigured 
+  } = useAICashFlow(transactions, currentBalance, {
+    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
+    autoRefresh: useAI
+  });
 
   // Filter transactions based on selected period
   const filteredTransactions = transactions.filter(t => {
@@ -83,25 +101,103 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <div className="p-2 bg-danger-50 rounded-lg">
-            <TrendingDown className="h-6 w-6 text-danger-600" />
+            {useAI && isConfigured ? (
+              <Brain className="h-6 w-6 text-danger-600" />
+            ) : (
+              <TrendingDown className="h-6 w-6 text-danger-600" />
+            )}
           </div>
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900">Cash Outflows</h3>
-            <p className="text-sm text-gray-500">Expenses and spending analysis</p>
+            <h3 className="text-lg font-medium text-gray-900">
+              Cash Outflows
+              {useAI && isConfigured && (
+                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-danger-100 text-danger-800">
+                  AI-Enhanced
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {useAI && isConfigured ? 'AI-enhanced expense analysis' : 'Expenses and spending analysis'}
+            </p>
           </div>
         </div>
 
-        <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year' | 'all')}
-          className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-        >
-          <option value="all">All Time</option>
-          <option value="month">This Month</option>
-          <option value="quarter">This Quarter</option>
-          <option value="year">This Year</option>
-        </select>
+        <div className="flex items-center space-x-3">
+          {isConfigured && (
+            <div className="flex items-center">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={useAI}
+                  onChange={(e) => setUseAI(e.target.checked)}
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">AI Insights</span>
+              </label>
+              {useAI && (
+                <button
+                  onClick={refreshPrediction}
+                  disabled={aiLoading}
+                  className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  title="Refresh AI insights"
+                >
+                  <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </div>
+          )}
+          
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year' | 'all')}
+            className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+          >
+            <option value="all">All Time</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
       </div>
+
+      {/* AI Category Insights */}
+      {useAI && prediction?.categoryInsights && prediction.categoryInsights.length > 0 && (
+        <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-orange-900 mb-3">AI Category Insights</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {prediction.categoryInsights.map((insight, index) => (
+              <div key={index} className="bg-white rounded-lg p-3 border border-orange-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900">{insight.category}</span>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    insight.riskLevel === 'high' ? 'bg-red-100 text-red-800' :
+                    insight.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {insight.riskLevel} risk
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600">
+                    Trend: {insight.trend}
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {formatCurrency(insight.projectedAmount)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Error Display */}
+      {aiError && useAI && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-800">AI Analysis Error: {aiError}</p>
+          <p className="text-xs text-red-600 mt-1">Showing historical data only</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Summary Stats */}
