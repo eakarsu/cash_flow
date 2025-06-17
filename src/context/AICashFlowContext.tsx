@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useTransactions } from './TransactionContext';
-import AICashFlowService, { CashFlowPrediction } from '../services/aiCashFlowService';
+import { useTransactions } from './TransactionContext.tsx';
+import AICashFlowService, { CashFlowPrediction } from '../services/aiCashFlowService.ts';
 
 interface AICashFlowContextType {
   prediction: CashFlowPrediction | null;
