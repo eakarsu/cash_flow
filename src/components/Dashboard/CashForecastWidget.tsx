@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Transaction } from '../../types';
-import { generate13WeekForecast } from '../../utils/calculations.ts';
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
@@ -11,19 +10,58 @@ interface CashForecastWidgetProps {
 const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
   const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
 
-  const baseForecast = generate13WeekForecast(transactions);
+  // Calculate average weekly cash flows
+  const weeklyData = transactions.reduce((acc, transaction) => {
+    const date = new Date(transaction.date);
+    const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
+    
+    if (!acc[weekKey]) {
+      acc[weekKey] = { inflows: 0, outflows: 0 };
+    }
+    
+    if (transaction.type === 'inflow') {
+      acc[weekKey].inflows += transaction.amount;
+    } else {
+      acc[weekKey].outflows += transaction.amount;
+    }
+    
+    return acc;
+  }, {} as Record<string, { inflows: number; outflows: number }>);
 
-  // Generate scenario-based forecasts
-  const forecastWithScenarios = baseForecast.map((week, index) => {
-    const variationFactor = 1 + (index * 0.02); // Increasing uncertainty over time
+  const weeklyEntries = Object.values(weeklyData);
+  const avgWeeklyInflows = weeklyEntries.length > 0 
+    ? weeklyEntries.reduce((sum, week) => sum + week.inflows, 0) / weeklyEntries.length 
+    : 0;
+  const avgWeeklyOutflows = weeklyEntries.length > 0 
+    ? weeklyEntries.reduce((sum, week) => sum + week.outflows, 0) / weeklyEntries.length 
+    : 0;
 
-    return {
-      ...week,
-      optimistic: week.projectedBalance * (1 + 0.15 * variationFactor),
-      realistic: week.projectedBalance,
-      pessimistic: week.projectedBalance * (1 - 0.15 * variationFactor),
-    };
-  });
+  // Generate 13-week forecast
+  const currentBalance = transactions.length > 0 ? 
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  
+  const forecastWithScenarios = [];
+  let balance = currentBalance;
+  
+  for (let week = 0; week < 13; week++) {
+    const date = new Date();
+    date.setDate(date.getDate() + (week * 7));
+    
+    const variationFactor = 1 + (week * 0.02); // Increasing uncertainty over time
+    const weeklyNetFlow = avgWeeklyInflows - avgWeeklyOutflows;
+    
+    balance += weeklyNetFlow;
+    
+    forecastWithScenarios.push({
+      week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      projectedBalance: balance,
+      inflows: avgWeeklyInflows,
+      outflows: avgWeeklyOutflows,
+      optimistic: balance * (1 + 0.15 * variationFactor),
+      realistic: balance,
+      pessimistic: balance * (1 - 0.15 * variationFactor),
+    });
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

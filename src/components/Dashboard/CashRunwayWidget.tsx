@@ -2,15 +2,57 @@ import React from 'react';
 import { Clock, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
-import { calculateCashFlowSummary, getMonthlyTrends } from '../../utils/calculations.ts';
 
 interface CashRunwayWidgetProps {
   transactions: Transaction[];
 }
 
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
-  const summary = calculateCashFlowSummary(transactions);
-  const monthlyTrends = getMonthlyTrends(transactions, 12);
+  // Calculate cash flow summary
+  const totalInflows = transactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0);
+  const totalOutflows = transactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0);
+  const netCashFlow = totalInflows - totalOutflows;
+  
+  // Calculate burn rate (average monthly outflows over last 6 months)
+  const last6Months = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthOutflows = transactions.filter(t => {
+      const tDate = new Date(t.date);
+      return t.type === 'outflow' && 
+             tDate.getMonth() === date.getMonth() && 
+             tDate.getFullYear() === date.getFullYear();
+    }).reduce((sum, t) => sum + t.amount, 0);
+    last6Months.push(monthOutflows);
+  }
+  
+  const burnRate = last6Months.reduce((sum, month) => sum + month, 0) / 6;
+  const currentBalance = transactions.length > 0 ? 
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  const runway = burnRate > 0 ? currentBalance / burnRate : Infinity;
+
+  // Generate monthly trends for the last 12 months
+  const monthlyTrends = [];
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthTransactions = transactions.filter(t => {
+      const tDate = new Date(t.date);
+      return tDate.getMonth() === date.getMonth() && 
+             tDate.getFullYear() === date.getFullYear();
+    });
+    
+    const inflows = monthTransactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0);
+    const outflows = monthTransactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0);
+    
+    monthlyTrends.push({
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      inflows,
+      outflows,
+      netFlow: inflows - outflows
+    });
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -33,8 +75,8 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     return AlertCircle;
   };
 
-  const runwayColor = getRunwayColor(summary.runway);
-  const RunwayIcon = getRunwayIcon(summary.runway);
+  const runwayColor = getRunwayColor(runway);
+  const RunwayIcon = getRunwayIcon(runway);
 
   // Calculate runway trend over time
   const runwayTrend = monthlyTrends.map((month, index) => {
@@ -78,7 +120,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
                   Cash Runway
                 </p>
                 <p className={`text-3xl font-bold text-${runwayColor}-900`}>
-                  {summary.runway === Infinity ? '∞' : `${summary.runway.toFixed(1)}`}
+                  {runway === Infinity ? '∞' : `${runway.toFixed(1)}`}
                   <span className="text-lg font-medium ml-1">months</span>
                 </p>
               </div>
@@ -91,7 +133,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
               <div>
                 <p className="text-sm font-medium text-gray-600">Monthly Burn Rate</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {formatCurrency(summary.burnRate)}
+                  {formatCurrency(burnRate)}
                 </p>
               </div>
               <div className="text-right">
@@ -106,11 +148,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
               <div>
                 <p className="text-sm font-medium text-gray-600">Current Balance</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {formatCurrency(
-                    transactions.length > 0 ?
-                    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 :
-                    0
-                  )}
+                  {formatCurrency(currentBalance)}
                 </p>
               </div>
             </div>
@@ -121,14 +159,14 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
             <div className="flex">
               <div className="ml-3">
                 <p className={`text-sm font-medium text-${runwayColor}-800`}>
-                  {summary.runway >= 12 && 'Healthy Cash Position'}
-                  {summary.runway >= 6 && summary.runway < 12 && 'Monitor Cash Flow'}
-                  {summary.runway < 6 && 'Critical Cash Position'}
+                  {runway >= 12 && 'Healthy Cash Position'}
+                  {runway >= 6 && runway < 12 && 'Monitor Cash Flow'}
+                  {runway < 6 && 'Critical Cash Position'}
                 </p>
                 <p className={`text-sm text-${runwayColor}-700 mt-1`}>
-                  {summary.runway >= 12 && 'Your business has a strong cash position with over a year of runway.'}
-                  {summary.runway >= 6 && summary.runway < 12 && 'Consider optimizing expenses or increasing revenue to extend runway.'}
-                  {summary.runway < 6 && 'Immediate action needed to improve cash flow and extend runway.'}
+                  {runway >= 12 && 'Your business has a strong cash position with over a year of runway.'}
+                  {runway >= 6 && runway < 12 && 'Consider optimizing expenses or increasing revenue to extend runway.'}
+                  {runway < 6 && 'Immediate action needed to improve cash flow and extend runway.'}
                 </p>
               </div>
             </div>

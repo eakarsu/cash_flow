@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { TrendingUp, DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
-import { calculateCashFlowSummary, calculateCategoryBreakdown, getMonthlyTrends } from '../../utils/calculations.ts';
 
 interface CashInflowsWidgetProps {
   transactions: Transaction[];
@@ -13,9 +12,62 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
 const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
 
-  const summary = calculateCashFlowSummary(transactions, selectedPeriod);
-  const categoryBreakdown = calculateCategoryBreakdown(transactions, 'inflow', selectedPeriod);
-  const monthlyTrends = getMonthlyTrends(transactions, 6);
+  // Filter transactions based on selected period
+  const filteredTransactions = transactions.filter(t => {
+    const transactionDate = new Date(t.date);
+    const now = new Date();
+    
+    switch (selectedPeriod) {
+      case 'month':
+        return transactionDate.getMonth() === now.getMonth() && 
+               transactionDate.getFullYear() === now.getFullYear();
+      case 'quarter':
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        const transactionQuarter = Math.floor(transactionDate.getMonth() / 3);
+        return transactionQuarter === currentQuarter && 
+               transactionDate.getFullYear() === now.getFullYear();
+      case 'year':
+        return transactionDate.getFullYear() === now.getFullYear();
+      default:
+        return true;
+    }
+  });
+
+  const inflowTransactions = filteredTransactions.filter(t => t.type === 'inflow');
+  const totalInflows = inflowTransactions.reduce((sum, t) => sum + t.amount, 0);
+  
+  const categoryBreakdown = inflowTransactions.reduce((acc, transaction) => {
+    const category = transaction.category;
+    if (!acc[category]) {
+      acc[category] = { category, amount: 0, count: 0 };
+    }
+    acc[category].amount += transaction.amount;
+    acc[category].count += 1;
+    return acc;
+  }, {} as Record<string, { category: string; amount: number; count: number }>);
+
+  const categoryArray = Object.values(categoryBreakdown).map(cat => ({
+    ...cat,
+    percentage: totalInflows > 0 ? (cat.amount / totalInflows) * 100 : 0
+  })).sort((a, b) => b.amount - a.amount);
+
+  // Generate monthly trends for the last 6 months
+  const monthlyTrends = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthTransactions = transactions.filter(t => {
+      const tDate = new Date(t.date);
+      return tDate.getMonth() === date.getMonth() && 
+             tDate.getFullYear() === date.getFullYear();
+    });
+    
+    monthlyTrends.push({
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      inflows: monthTransactions.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0),
+      outflows: monthTransactions.filter(t => t.type === 'outflow').reduce((sum, t) => sum + t.amount, 0)
+    });
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -60,7 +112,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
               <div className="ml-3">
                 <p className="text-sm font-medium text-success-600">Total Inflows</p>
                 <p className="text-2xl font-bold text-success-900">
-                  {formatCurrency(summary.totalInflows)}
+                  {formatCurrency(totalInflows)}
                 </p>
               </div>
             </div>
@@ -110,20 +162,20 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
           </div>
 
           {/* Category Pie Chart */}
-          {categoryBreakdown.length > 0 && (
+          {categoryArray.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-gray-900 mb-3">Income Distribution</h4>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={categoryBreakdown.slice(0, 5)}
+                    data={categoryArray.slice(0, 5)}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="amount"
                     nameKey="category"
                   >
-                    {categoryBreakdown.slice(0, 5).map((entry, index) => (
+                    {categoryArray.slice(0, 5).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

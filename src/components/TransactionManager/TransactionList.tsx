@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, Filter, Search } from 'lucide-react';
 import { Transaction } from '../../types';
 import { format, parseISO } from 'date-fns';
@@ -10,6 +11,7 @@ interface TransactionListProps {
 }
 
 const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit, onDelete }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterType, setFilterType] = useState<'all' | 'inflow' | 'outflow'>('all');
@@ -166,7 +168,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit,
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => onEdit(transaction)}
+                      onClick={() => navigate(`/transactions/edit/${transaction.id}`)}
                       className="text-primary-600 hover:text-primary-900"
                     >
                       <Edit2 className="h-4 w-4" />
