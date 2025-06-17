@@ -77,20 +77,25 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
 
   // Calculate runway trend over time
   const runwayTrend = monthlyTrends.map((month, index) => {
-    // Calculate cumulative balance up to this month
-    const cumulativeNetFlow = monthlyTrends
-      .slice(0, index + 1)
+    // Calculate balance at each historical point by working backwards from current balance
+    // Sum all net flows from this month to present
+    const netFlowFromThisMonth = monthlyTrends
+      .slice(index)
       .reduce((sum, m) => sum + m.netFlow, 0);
     
-    // Estimate balance at this point (this is a simplified approach)
-    // In reality, you'd want to track actual balances over time
-    const estimatedBalance = Math.max(0, currentBalance - cumulativeNetFlow);
+    // Balance at this historical point = current balance - all flows since then
+    const historicalBalance = Math.max(0, currentBalance - netFlowFromThisMonth);
 
-    const avgBurnRate = monthlyTrends
-      .slice(Math.max(0, index - 5), index + 1)
-      .reduce((sum, m) => sum + Math.abs(m.outflows), 0) / Math.min(6, index + 1);
+    // Calculate average burn rate for the 6 months leading up to this point
+    const burnRateMonths = monthlyTrends.slice(Math.max(0, index - 5), index + 1);
+    const avgBurnRate = burnRateMonths.length > 0 
+      ? burnRateMonths.reduce((sum, m) => sum + m.outflows, 0) / burnRateMonths.length
+      : 0;
 
-    const runway = avgBurnRate > 0 && estimatedBalance > 0 ? estimatedBalance / avgBurnRate : 0;
+    // Calculate runway: if no burn rate or negative balance, runway is 0
+    const runway = avgBurnRate > 0 && historicalBalance > 0 
+      ? historicalBalance / avgBurnRate 
+      : historicalBalance > 0 ? 24 : 0; // If no outflows but positive balance, cap at 24
 
     return {
       month: month.month,
