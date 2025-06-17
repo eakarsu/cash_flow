@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { TrendingDown, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlow } from '../../hooks/useAICashFlow';
 
 interface CashOutflowsWidgetProps {
   transactions: Transaction[];
@@ -14,21 +13,12 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
   const [useAI, setUseAI] = useState(false);
   
-  // Get current balance
-  const currentBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
-  
-  // AI predictions hook
-  const { 
-    prediction, 
-    loading: aiLoading, 
-    error: aiError, 
-    refreshPrediction, 
-    isConfigured 
-  } = useAICashFlow(transactions, currentBalance, {
-    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
-    autoRefresh: useAI
-  });
+  // Temporary AI placeholders until hook is working
+  const prediction = null;
+  const aiLoading = false;
+  const aiError = null;
+  const refreshPrediction = () => {};
+  const isConfigured = false;
 
   // Filter transactions based on selected period
   const filteredTransactions = transactions.filter(t => {

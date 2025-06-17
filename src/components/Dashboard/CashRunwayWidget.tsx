@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Clock, AlertTriangle, CheckCircle, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlow } from '../../hooks/useAICashFlow';
 
 interface CashRunwayWidgetProps {
   transactions: Transaction[];
@@ -11,17 +10,12 @@ interface CashRunwayWidgetProps {
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
   const [useAI, setUseAI] = useState(false);
   
-  // AI predictions hook
-  const { 
-    prediction, 
-    loading: aiLoading, 
-    error: aiError, 
-    refreshPrediction, 
-    isConfigured 
-  } = useAICashFlow(transactions, 0, {
-    apiKey: process.env.REACT_APP_OPENROUTER_API_KEY,
-    autoRefresh: useAI
-  });
+  // Temporary AI placeholders until hook is working
+  const prediction = null;
+  const aiLoading = false;
+  const aiError = null;
+  const refreshPrediction = () => {};
+  const isConfigured = false;
   // Calculate cash flow summary
   const totalInflows = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
   const totalOutflows = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
