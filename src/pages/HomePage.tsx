@@ -1,10 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
-import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
-import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
-import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
-import CashForecastWidget from '../components/Dashboard/CashForecastWidget';
 import { useTransactions } from '../context/TransactionContext';
 
 const HomePage: React.FC = () => {
@@ -138,15 +134,27 @@ const HomePage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Dashboard Widgets */}
+            {/* Dashboard Widgets - Placeholder for now */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-              <CashInflowsWidget transactions={transactions} />
-              <CashOutflowsWidget transactions={transactions} />
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Inflows</h3>
+                <p className="text-gray-500">Widget coming soon...</p>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Outflows</h3>
+                <p className="text-gray-500">Widget coming soon...</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-              <CashRunwayWidget transactions={transactions} />
-              <CashForecastWidget transactions={transactions} />
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Runway</h3>
+                <p className="text-gray-500">Widget coming soon...</p>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Cash Forecast</h3>
+                <p className="text-gray-500">Widget coming soon...</p>
+              </div>
             </div>
 
             {/* Recent Transactions */}
