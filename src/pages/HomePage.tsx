@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
@@ -6,68 +6,9 @@ import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
 import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
 import CashForecastWidget from '../components/Dashboard/CashForecastWidget';
 import { useTransactions } from '../context/TransactionContext';
-import { parseCSV } from '../utils/csvParser';
 
 const HomePage: React.FC = () => {
-  const { transactions, setTransactions } = useTransactions();
-  const [isImporting, setIsImporting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImport = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleExport = () => {
-    // Create CSV content
-    const headers = ['Date', 'Description', 'Amount', 'Category', 'Balance'];
-    const csvContent = [
-      headers.join(','),
-      ...transactions.map(t => [
-        t.date,
-        `"${t.description}"`,
-        t.amount,
-        t.category,
-        t.balance
-      ].join(','))
-    ].join('\n');
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setIsImporting(true);
-      try {
-        const importedTransactions = await parseCSV(file);
-        setTransactions(prev => {
-          const existingIds = new Set(prev.map(t => t.id));
-          const newTransactions = importedTransactions.filter(t => !existingIds.has(t.id));
-          return [...prev, ...newTransactions].sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-        });
-        alert(`Successfully imported ${importedTransactions.length} transactions`);
-      } catch (error) {
-        console.error('Error importing CSV:', error);
-        alert('Error importing CSV file. Please check the format and try again.');
-      } finally {
-        setIsImporting(false);
-      }
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  const { transactions } = useTransactions();
 
   const recentTransactions = transactions.slice(0, 5);
   const totalBalance = transactions.length > 0 ? transactions[0].balance : 0;
@@ -80,15 +21,6 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -105,14 +37,13 @@ const HomePage: React.FC = () => {
                 <Plus className="h-5 w-5 inline mr-2" />
                 Add Transaction
               </Link>
-              <button
-                onClick={handleImport}
-                disabled={isImporting}
-                className="bg-primary-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-400 transition-colors disabled:opacity-50"
+              <Link
+                to="/transactions/import"
+                className="bg-primary-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-400 transition-colors"
               >
                 <Upload className="h-5 w-5 inline mr-2" />
-                {isImporting ? 'Importing...' : 'Import Data'}
-              </button>
+                Import Data
+              </Link>
             </div>
           </div>
         </div>
@@ -190,12 +121,12 @@ const HomePage: React.FC = () => {
               Get started by importing your transaction data or adding transactions manually.
             </p>
             <div className="mt-6 flex justify-center space-x-4">
-              <button
-                onClick={handleImport}
+              <Link
+                to="/transactions/import"
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
               >
                 Import CSV
-              </button>
+              </Link>
               <Link
                 to="/transactions/add"
                 className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
