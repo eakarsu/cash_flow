@@ -171,24 +171,25 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
                 <input
                   type="checkbox"
                   checked={useAI}
-                  onChange={(e) => setUseAI(e.target.checked)}
+                  onChange={(e) => {
+                    console.log('🎯 AI checkbox toggled:', e.target.checked);
+                    setUseAI(e.target.checked);
+                  }}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="ml-2 text-sm text-gray-700">AI Predictions</span>
               </label>
-              {useAI && (
-                <button
-                  onClick={() => {
-                    console.log('🔄 Manual refresh triggered');
-                    refreshPrediction();
-                  }}
-                  disabled={aiLoading}
-                  className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                  title="Refresh AI predictions"
-                >
-                  <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  console.log('🔄 Manual refresh triggered');
+                  refreshPrediction();
+                }}
+                disabled={aiLoading}
+                className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                title="Refresh AI predictions"
+              >
+                <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+              </button>
             </div>
           )}
           
@@ -224,10 +225,19 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
         <div className="bg-primary-50 rounded-lg p-4">
           <div className="flex items-center">
             <div className="p-2 bg-primary-100 rounded-lg">
-              <Calendar className="h-5 w-5 text-primary-600" />
+              {useAI && prediction?.weeklyForecasts ? (
+                <Brain className="h-5 w-5 text-primary-600" />
+              ) : (
+                <Calendar className="h-5 w-5 text-primary-600" />
+              )}
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-primary-600">13-Week Projection</p>
+              <p className="text-sm font-medium text-primary-600">
+                13-Week Projection
+                {useAI && prediction?.weeklyForecasts && (
+                  <span className="ml-1 text-xs bg-primary-200 text-primary-800 px-1 rounded">AI</span>
+                )}
+              </p>
               <p className="text-xl font-bold text-primary-900">
                 {formatCurrency(finalBalance[scenario])}
               </p>
