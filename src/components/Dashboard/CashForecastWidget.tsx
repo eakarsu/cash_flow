@@ -64,18 +64,22 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
   // Use AI predictions if available and enabled, otherwise fall back to historical calculation
   console.log('📊 Forecast data decision:', {
     useAI,
+    isConfigured,
     hasPrediction: !!prediction,
     hasWeeklyForecasts: !!prediction?.weeklyForecasts,
-    forecastLength: prediction?.weeklyForecasts?.length || 0
+    forecastLength: prediction?.weeklyForecasts?.length || 0,
+    aiLoading
   });
   
-  const forecastWithScenarios = useAI && prediction?.weeklyForecasts && prediction.weeklyForecasts.length > 0 ? 
+  const forecastWithScenarios = useAI && isConfigured && prediction?.weeklyForecasts && prediction.weeklyForecasts.length > 0 ? 
     (() => {
       console.log('✅ Using AI predictions for forecast');
       return prediction.weeklyForecasts;
     })() :
     (() => {
-      console.log('📈 Using historical calculation for forecast');
+      console.log('📈 Using historical calculation for forecast', {
+        reason: !useAI ? 'AI disabled' : !isConfigured ? 'API key not configured' : !prediction ? 'No prediction data' : 'No weekly forecasts'
+      });
       // Generate 13-week forecast using historical data
       const forecast: Array<{
         week: string;
