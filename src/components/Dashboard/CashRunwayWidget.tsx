@@ -22,8 +22,8 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     return t.amount < 0 && tDate >= sixMonthsAgo;
   });
   
-  const totalOutflows = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  const burnRate = totalOutflows / 6;
+  const recentOutflowsTotal = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const burnRate = recentOutflowsTotal / 6;
   // Calculate current balance as cumulative sum of all transactions
   const currentBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
   const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
