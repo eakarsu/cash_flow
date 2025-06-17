@@ -268,19 +268,19 @@ const SupportContactPage: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Critical Issues</span>
-                  <span className="font-medium text-red-600">< 2 hours</span>
+                  <span className="font-medium text-red-600">&lt; 2 hours</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">High Priority</span>
-                  <span className="font-medium text-orange-600">< 4 hours</span>
+                  <span className="font-medium text-orange-600">&lt; 4 hours</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Standard Support</span>
-                  <span className="font-medium text-blue-600">< 24 hours</span>
+                  <span className="font-medium text-blue-600">&lt; 24 hours</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">General Inquiries</span>
-                  <span className="font-medium text-green-600">< 48 hours</span>
+                  <span className="font-medium text-green-600">&lt; 48 hours</span>
                 </div>
               </div>
             </div>
