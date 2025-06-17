@@ -13,6 +13,8 @@ const COLORS = ['#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981', '#3b82f6'
 const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
 
+  console.log('CashOutflowsWidget rendering with', transactions.length, 'transactions');
+
   const summary = calculateCashFlowSummary(transactions, selectedPeriod);
   const categoryBreakdown = calculateCategoryBreakdown(transactions, 'outflow', selectedPeriod);
   const monthlyTrends = getMonthlyTrends(transactions, 6);

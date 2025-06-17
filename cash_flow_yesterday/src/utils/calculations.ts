@@ -6,7 +6,20 @@ export const calculateCashFlowSummary = (
   transactions: Transaction[],
   period: 'month' | 'quarter' | 'year' | 'all' = 'all'
 ): CashFlowSummary => {
+  console.log('calculateCashFlowSummary called with:', transactions.length, 'transactions, period:', period);
+  
+  if (!transactions || transactions.length === 0) {
+    return {
+      totalInflows: 0,
+      totalOutflows: 0,
+      netCashFlow: 0,
+      burnRate: 0,
+      runway: 0
+    };
+  }
+
   const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+  console.log('Filtered transactions:', filteredTransactions.length);
 
   const totalInflows = filteredTransactions
     .filter(t => t.amount > 0)
@@ -20,15 +33,30 @@ export const calculateCashFlowSummary = (
 
   // Calculate burn rate (average monthly outflows over last 6 months)
   const sixMonthsAgo = subMonths(new Date(), 6);
-  const recentTransactions = transactions.filter(t =>
-    parseISO(t.date) >= sixMonthsAgo && t.amount < 0
-  );
+  const recentTransactions = transactions.filter(t => {
+    try {
+      const transactionDate = parseISO(t.date);
+      return transactionDate >= sixMonthsAgo && t.amount < 0;
+    } catch (error) {
+      console.warn('Error parsing date:', t.date, error);
+      return false;
+    }
+  });
   const burnRate = Math.abs(recentTransactions.reduce((sum, t) => sum + t.amount, 0)) / 6;
 
   // Calculate runway (current balance / monthly burn rate)
-  const currentBalance = transactions.length > 0 ?
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    try {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    } catch (error) {
+      console.warn('Error sorting by date:', error);
+      return 0;
+    }
+  });
+  const currentBalance = sortedTransactions.length > 0 ? sortedTransactions[0].balance || 0 : 0;
   const runway = burnRate > 0 ? currentBalance / burnRate : Infinity;
+
+  console.log('Summary calculated:', { totalInflows, totalOutflows, netCashFlow, burnRate, runway });
 
   return {
     totalInflows,
@@ -44,11 +72,19 @@ export const calculateCategoryBreakdown = (
   type: 'inflow' | 'outflow',
   period: 'month' | 'quarter' | 'year' | 'all' = 'all'
 ): CategorySummary[] => {
+  console.log('calculateCategoryBreakdown called with:', transactions.length, 'transactions, type:', type, 'period:', period);
+  
+  if (!transactions || transactions.length === 0) {
+    return [];
+  }
+
   const filteredTransactions = filterTransactionsByPeriod(transactions, period)
     .filter(t => type === 'inflow' ? t.amount > 0 : t.amount < 0);
 
+  console.log('Filtered transactions for category breakdown:', filteredTransactions.length);
+
   const categoryTotals = filteredTransactions.reduce((acc, transaction) => {
-    const category = transaction.category;
+    const category = transaction.category || 'Uncategorized';
     if (!acc[category]) {
       acc[category] = { amount: 0, count: 0 };
     }
@@ -59,7 +95,7 @@ export const calculateCategoryBreakdown = (
 
   const total = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.amount, 0);
 
-  return Object.entries(categoryTotals)
+  const result = Object.entries(categoryTotals)
     .map(([category, data]) => ({
       category,
       amount: data.amount,
@@ -67,6 +103,9 @@ export const calculateCategoryBreakdown = (
       count: data.count
     }))
     .sort((a, b) => b.amount - a.amount);
+
+  console.log('Category breakdown result:', result);
+  return result;
 };
 
 export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashForecast[] => {
@@ -117,6 +156,8 @@ const filterTransactionsByPeriod = (
   transactions: Transaction[],
   period: 'month' | 'quarter' | 'year' | 'all'
 ): Transaction[] => {
+  console.log('filterTransactionsByPeriod called with period:', period);
+  
   if (period === 'all') return transactions;
 
   const now = new Date();
@@ -140,13 +181,30 @@ const filterTransactionsByPeriod = (
       return transactions;
   }
 
-  return transactions.filter(transaction => {
-    const transactionDate = parseISO(transaction.date);
-    return isWithinInterval(transactionDate, { start: startDate, end: endDate });
+  console.log('Date range:', startDate, 'to', endDate);
+
+  const filtered = transactions.filter(transaction => {
+    try {
+      const transactionDate = parseISO(transaction.date);
+      const isInRange = isWithinInterval(transactionDate, { start: startDate, end: endDate });
+      return isInRange;
+    } catch (error) {
+      console.warn('Error filtering transaction by date:', transaction.date, error);
+      return false;
+    }
   });
+
+  console.log('Filtered', filtered.length, 'transactions from', transactions.length);
+  return filtered;
 };
 
 export const getMonthlyTrends = (transactions: Transaction[], months: number = 12) => {
+  console.log('getMonthlyTrends called with', transactions.length, 'transactions for', months, 'months');
+  
+  if (!transactions || transactions.length === 0) {
+    return [];
+  }
+
   const trends = [];
   const currentDate = new Date();
 
@@ -155,8 +213,13 @@ export const getMonthlyTrends = (transactions: Transaction[], months: number = 1
     const monthEnd = endOfMonth(subMonths(currentDate, i));
 
     const monthTransactions = transactions.filter(t => {
-      const transactionDate = parseISO(t.date);
-      return isWithinInterval(transactionDate, { start: monthStart, end: monthEnd });
+      try {
+        const transactionDate = parseISO(t.date);
+        return isWithinInterval(transactionDate, { start: monthStart, end: monthEnd });
+      } catch (error) {
+        console.warn('Error parsing date in monthly trends:', t.date, error);
+        return false;
+      }
     });
 
     const inflows = monthTransactions
@@ -175,5 +238,6 @@ export const getMonthlyTrends = (transactions: Transaction[], months: number = 1
     });
   }
 
+  console.log('Monthly trends result:', trends);
   return trends;
 };
