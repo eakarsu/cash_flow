@@ -1,15 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from '../components/Layout/Layout';
-import HomePage from '../pages/HomePage';
-import PlaceholderPage from '../components/PlaceholderPage';
-import { useTransactions } from '../context/TransactionContext';
+import Layout from '../components/Layout/Layout.tsx';
+import HomePage from '../pages/HomePage.tsx';
+import PlaceholderPage from '../components/PlaceholderPage.tsx';
+import { useTransactions } from '../context/TransactionContext.tsx';
 
 // Import only the pages that actually exist
-import TransactionsPage from '../pages/Transactions/TransactionsPage';
-import AddTransactionPage from '../pages/Transactions/AddTransactionPage';
-import EditTransactionPage from '../pages/Transactions/EditTransactionPage';
-import ImportTransactionsPage from '../pages/Transactions/ImportTransactionsPage';
+import TransactionsPage from '../pages/Transactions/TransactionsPage.tsx';
+import AddTransactionPage from '../pages/Transactions/AddTransactionPage.tsx';
+import EditTransactionPage from '../pages/Transactions/EditTransactionPage.tsx';
+import ImportTransactionsPage from '../pages/Transactions/ImportTransactionsPage.tsx';
 
 const AppRouter: React.FC = () => {
   const { transactions, setTransactions } = useTransactions();
