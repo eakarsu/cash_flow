@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Transaction } from '../../types';
-import { generate13WeekForecast } from '../../utils/calculations.ts';
+import { generate13WeekForecast } from '../../utils/calculations';
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
