@@ -16,7 +16,8 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
   
   // Get API key from environment
-  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
+  // Get API key from environment (runtime or build-time)
+  const apiKey = getOpenRouterApiKey();
   
   // AI predictions hook
   const { 
