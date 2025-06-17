@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext';
-import TransactionForm from '../../components/TransactionManager/TransactionForm';
+import { useTransactions } from '../../context/TransactionContext.tsx';
+import TransactionForm from '../../components/TransactionManager/TransactionForm.tsx';
 
 const EditTransactionPage: React.FC = () => {
   const navigate = useNavigate();

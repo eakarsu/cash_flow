@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
-import { useTransactions } from '../context/TransactionContext';
+import { useTransactions } from '../context/TransactionContext.tsx';
 
 const HomePage: React.FC = () => {
   const { transactions } = useTransactions();

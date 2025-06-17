@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, FileText, AlertCircle } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext';
-import { parseCSV } from '../../utils/csvParser';
+import { useTransactions } from '../../context/TransactionContext.tsx';
+import { parseCSV } from '../../utils/csvParser.ts';
 
 const ImportTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
