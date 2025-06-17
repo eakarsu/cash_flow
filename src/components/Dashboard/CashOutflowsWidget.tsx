@@ -72,6 +72,35 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     percentage: totalOutflows > 0 ? (cat.amount / totalOutflows) * 100 : 0
   })).sort((a, b) => b.amount - a.amount);
 
+  console.log('💰 CashOutflows AI State:', {
+    useAI,
+    prediction: !!prediction,
+    categoryInsights: prediction?.categoryInsights?.length || 0,
+    isConfigured
+  });
+
+  // Use AI category insights to modify the category breakdown if available
+  const enhancedCategoryArray = useAI && prediction?.categoryInsights && prediction.categoryInsights.length > 0 
+    ? categoryArray.map(category => {
+        const aiInsight = prediction.categoryInsights.find(insight => 
+          insight.category.toLowerCase() === category.category.toLowerCase()
+        );
+        return {
+          ...category,
+          aiProjected: aiInsight?.projectedAmount || category.amount,
+          aiTrend: aiInsight?.trend || 'stable',
+          aiRisk: aiInsight?.riskLevel || 'medium'
+        };
+      })
+    : categoryArray;
+
+  console.log('📊 Category data decision:', {
+    useAI,
+    originalCategories: categoryArray.length,
+    enhancedCategories: enhancedCategoryArray.length,
+    hasAIInsights: !!(prediction?.categoryInsights?.length)
+  });
+
   // Generate monthly trends for the last 6 months
   const monthlyTrends: Array<{
     month: string;
