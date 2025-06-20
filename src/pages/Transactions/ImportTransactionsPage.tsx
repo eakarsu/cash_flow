@@ -29,10 +29,6 @@ const ImportTransactionsPage: React.FC = () => {
     
     if (file) {
       console.log('🔥🔥🔥 FILE FOUND! Name:', file.name, 'Size:', file.size, 'Type:', file.type);
-      
-      // FORCE clear all existing data first
-      console.log('🗑️ FORCE clearing all existing transactions before import');
-      resetAppState();
       setIsImporting(true);
       setImportResult(null);
       
@@ -112,13 +108,22 @@ const ImportTransactionsPage: React.FC = () => {
               ref={fileInputRef}
               type="file"
               accept=".csv"
-              onChange={handleFileChange}
-              className="hidden"
+              onChange={(e) => {
+                console.log('🔥🔥🔥 INPUT ONCHANGE TRIGGERED!', e);
+                console.log('🔥 Input files:', e.target.files);
+                console.log('🔥 About to call handleFileChange...');
+                handleFileChange(e);
+                console.log('🔥 handleFileChange call completed');
+              }}
+              style={{ display: 'none' }}
             />
             
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 console.log('🔥 Button clicked!');
+                console.log('🔥 File input ref:', fileInputRef.current);
+                console.log('🔥 File input exists:', !!fileInputRef.current);
                 if (fileInputRef.current) {
                   console.log('🔥 Triggering file input click');
                   fileInputRef.current.click();

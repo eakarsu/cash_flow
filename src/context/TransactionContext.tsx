@@ -109,20 +109,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 FORCE REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
+    console.log('🔄 COMPLETELY REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
     
-    // FORCE clear everything
+    // Clear localStorage completely
     localStorage.clear();
     
-    // Set transactions to empty first
-    setTransactions([]);
+    // Set ONLY the new transactions
+    setTransactions(newTransactions);
     
-    // Then set ONLY the new transactions
-    setTimeout(() => {
-      setTransactions(newTransactions);
-      localStorage.setItem('transactions', JSON.stringify(newTransactions));
-      console.log('✅ FORCED replacement complete. Final count:', newTransactions.length);
-    }, 0);
+    // Save ONLY the new transactions to localStorage
+    localStorage.setItem('transactions', JSON.stringify(newTransactions));
+    
+    console.log('✅ Complete replacement done. Final count:', newTransactions.length);
   };
 
   const value = {
