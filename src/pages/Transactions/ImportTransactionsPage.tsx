@@ -15,20 +15,42 @@ const ImportTransactionsPage: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       setIsImporting(true);
+      setImportResult(null);
+      
       try {
+        console.log('📁 Starting file import:', file.name, 'Size:', file.size, 'bytes');
+        
         const importedTransactions = await parseCSV(file);
-        // Replace all transactions with imported ones
-        setTransactions(importedTransactions.sort((a, b) =>
+        
+        if (importedTransactions.length === 0) {
+          throw new Error('No valid transactions found in the CSV file');
+        }
+        
+        console.log('✅ Parsed transactions:', importedTransactions.length);
+        
+        // Sort transactions by date (newest first) and replace all existing transactions
+        const sortedTransactions = importedTransactions.sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
-        ));
-        setImportResult(`Successfully imported ${importedTransactions.length} transactions`);
+        );
+        
+        setTransactions(sortedTransactions);
+        setImportResult(`Successfully imported ${importedTransactions.length} transactions. All previous data has been replaced.`);
+        
+        // Auto-navigate back to transactions page after successful import
+        setTimeout(() => {
+          navigate('/transactions');
+        }, 2000);
+        
       } catch (error) {
-        console.error('Error importing CSV:', error);
-        setImportResult('Error importing CSV file. Please check the format and try again.');
+        console.error('❌ Error importing CSV:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        setImportResult(`Error importing CSV file: ${errorMessage}. Please check the format and try again.`);
       } finally {
         setIsImporting(false);
       }
     }
+    
+    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

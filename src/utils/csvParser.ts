@@ -33,25 +33,25 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           
           let amount = 0;
           if (amountIndex >= 0) {
-            amount = parseFloat(values[amountIndex]) || 0;
+            amount = parseAmount(values[amountIndex]);
           } else if (debitIndex >= 0 && creditIndex >= 0) {
-            const debit = parseFloat(values[debitIndex]) || 0;
-            const credit = parseFloat(values[creditIndex]) || 0;
+            const debit = parseAmount(values[debitIndex]);
+            const credit = parseAmount(values[creditIndex]);
             // Credit amount - Debit amount (credit is positive inflow, debit is negative outflow)
             amount = credit - debit;
           }
           
           // Get description from either description column or merchant name
-          const description = values[descIndex] || values[merchantIndex] || 'Imported transaction';
+          const description = (values[descIndex] || values[merchantIndex] || 'Imported transaction').replace(/"/g, '').trim();
           
-          const transaction: Transaction & { balance: number } = {
-            id: `imported-${Date.now()}-${i}`,
-            date: values[dateIndex] || new Date().toISOString().split('T')[0],
+          const transaction: Transaction = {
+            id: `imported-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`,
+            date: normalizeDate(values[dateIndex]),
             description: description,
-            amount: amount,
+            amount: Math.abs(amount), // Store absolute value
             type: amount >= 0 ? 'inflow' : 'outflow',
-            category: values[categoryIndex] || categorizeTransaction(description),
-            balance: parseFloat(values[balanceIndex]) || 0
+            category: values[categoryIndex]?.replace(/"/g, '').trim() || categorizeTransaction(description),
+            balance: parseAmount(values[balanceIndex])
           };
           
           transactions.push(transaction);
@@ -95,7 +95,7 @@ const parseCSVLine = (line: string): string[] => {
 
 const findColumnIndex = (headers: string[], possibleNames: string[]): number => {
   for (const name of possibleNames) {
-    const index = headers.findIndex(h => h.includes(name));
+    const index = headers.findIndex(h => h.includes(name) || h === name);
     if (index >= 0) return index;
   }
   return -1;

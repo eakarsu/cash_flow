@@ -39,7 +39,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       id: 'sample-2',
       date: '2024-06-05',
       description: 'Office Rent',
-      amount: -2000,
+      amount: 2000,
       type: 'outflow' as const,
       category: 'Rent',
       balance: 13000
@@ -48,7 +48,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       id: 'sample-3',
       date: '2024-06-10',
       description: 'Marketing Campaign',
-      amount: -800,
+      amount: 800,
       type: 'outflow' as const,
       category: 'Marketing',
       balance: 12200
@@ -75,7 +75,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       id: 'sample-6',
       date: '2024-05-15',
       description: 'Software Subscriptions',
-      amount: -500,
+      amount: 500,
       type: 'outflow' as const,
       category: 'Software',
       balance: 9500
