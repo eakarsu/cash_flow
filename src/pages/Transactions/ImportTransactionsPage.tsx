@@ -12,8 +12,12 @@ const ImportTransactionsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🔥 handleFileChange called!', event);
+    console.log('🔥 Files:', event.target.files);
+    
     const file = event.target.files?.[0];
     if (file) {
+      console.log('🔥 File selected:', file.name);
       setIsImporting(true);
       setImportResult(null);
       
@@ -99,12 +103,19 @@ const ImportTransactionsPage: React.FC = () => {
               ref={fileInputRef}
               type="file"
               accept=".csv"
-              onChange={handleFileChange}
+              onChange={(e) => {
+                console.log('🔥 Input onChange triggered!', e);
+                handleFileChange(e);
+              }}
               className="hidden"
             />
             
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                console.log('🔥 Button clicked!');
+                console.log('🔥 File input ref:', fileInputRef.current);
+                fileInputRef.current?.click();
+              }}
               disabled={isImporting}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
             >
