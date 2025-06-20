@@ -28,8 +28,21 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Start with empty array - NO automatic loading from localStorage
-  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  // Load from localStorage on initialization
+  const [transactions, setTransactions] = React.useState<Transaction[]>(() => {
+    try {
+      const stored = localStorage.getItem('transactions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        console.log('🔄 Loading existing transactions from localStorage:', parsed.length);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (error) {
+      console.error('Error loading transactions from localStorage:', error);
+    }
+    console.log('🔄 No existing transactions found, starting with empty array');
+    return [];
+  });
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -94,23 +107,19 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 FORCE REPLACING all transactions with uploaded data:', newTransactions.length);
+    console.log('🔄 COMPLETELY REPLACING all transactions with uploaded data:', newTransactions.length);
+    console.log('🗑️ Current transaction count before replacement:', transactions.length);
     
-    // Immediately clear everything
+    // Clear localStorage completely
     localStorage.clear();
     
-    // Force set the new transactions
-    setTransactions([...newTransactions]);
+    // Set ONLY the new transactions (complete replacement)
+    setTransactions(newTransactions);
     
-    // Force save to localStorage
+    // Save ONLY the new transactions to localStorage
     localStorage.setItem('transactions', JSON.stringify(newTransactions));
     
-    console.log('✅ FORCED transaction replacement complete. Count:', newTransactions.length);
-    
-    // Force re-render
-    setTimeout(() => {
-      setTransactions([...newTransactions]);
-    }, 0);
+    console.log('✅ Transaction replacement complete. New count:', newTransactions.length);
   };
 
   const value = {
