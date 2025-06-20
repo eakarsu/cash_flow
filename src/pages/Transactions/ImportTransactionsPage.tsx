@@ -33,10 +33,7 @@ const ImportTransactionsPage: React.FC = () => {
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         
-        // First completely reset the app state to ensure no sample data
-        resetAppState();
-        
-        // Then set the new transactions
+        // Replace all transactions with imported data
         replaceAllTransactions(sortedTransactions);
         
         // Verify the replacement worked

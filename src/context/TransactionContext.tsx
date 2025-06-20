@@ -28,13 +28,21 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Force clear any existing data on app start and start with empty array
-  React.useEffect(() => {
-    console.log('🔄 TransactionProvider initializing - clearing any existing data');
-    localStorage.removeItem('transactions');
-  }, []);
-
-  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  // Load existing transactions from localStorage on initialization
+  const [transactions, setTransactions] = React.useState<Transaction[]>(() => {
+    try {
+      const stored = localStorage.getItem('transactions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        console.log('🔄 TransactionProvider: Loading existing transactions from localStorage:', parsed.length);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (error) {
+      console.error('Error loading transactions from localStorage:', error);
+    }
+    console.log('🔄 TransactionProvider: No existing transactions found, starting with empty array');
+    return [];
+  });
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -110,16 +118,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
       console.warn('⚠️ Filtered out', newTransactions.length - importedTransactions.length, 'non-imported transactions');
     }
     
-    console.log('🗑️ Clearing localStorage completely');
-    localStorage.clear();
-    
-    // Set only the imported transactions
+    // Set the imported transactions immediately
     setTransactions(importedTransactions);
     
     // Save to localStorage
     localStorage.setItem('transactions', JSON.stringify(importedTransactions));
     
     console.log('✅ New transactions set. Count:', importedTransactions.length);
+    
+    // Force a re-render by triggering a state update
+    setTimeout(() => {
+      console.log('🔍 Post-replace verification - Context transaction count:', importedTransactions.length);
+    }, 100);
   };
 
   const value = {
