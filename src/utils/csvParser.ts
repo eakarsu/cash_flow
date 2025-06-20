@@ -51,7 +51,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             amount: Math.abs(amount), // Store absolute value
             type: amount >= 0 ? 'inflow' : 'outflow',
             category: values[categoryIndex]?.replace(/"/g, '').trim() || categorizeTransaction(description),
-            balance: parseAmount(values[balanceIndex])
+            balance: balanceIndex >= 0 ? parseAmount(values[balanceIndex]) : 0
           };
           
           transactions.push(transaction);

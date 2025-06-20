@@ -106,6 +106,8 @@ Return ONLY the JSON response, no additional text.`;
     const monthlyData: Record<string, any> = {};
     const categoryData: Record<string, any> = {};
 
+    console.log('📊 Summarizing transactions:', transactions.length);
+
     transactions.forEach(transaction => {
       const date = new Date(transaction.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -116,21 +118,25 @@ Return ONLY the JSON response, no additional text.`;
         monthlyData[monthKey] = { inflows: 0, outflows: 0, netFlow: 0 };
       }
       
-      if (transaction.amount > 0) {
-        monthlyData[monthKey].inflows += transaction.amount;
-      } else {
+      // Use transaction type to determine if it's inflow or outflow
+      if (transaction.type === 'inflow') {
+        monthlyData[monthKey].inflows += Math.abs(transaction.amount);
+      } else if (transaction.type === 'outflow') {
         monthlyData[monthKey].outflows += Math.abs(transaction.amount);
       }
       monthlyData[monthKey].netFlow = monthlyData[monthKey].inflows - monthlyData[monthKey].outflows;
 
       // Category aggregation
       if (!categoryData[category]) {
-        categoryData[category] = { total: 0, count: 0, avgAmount: 0 };
+        categoryData[category] = { total: 0, count: 0, avgAmount: 0, type: transaction.type };
       }
       categoryData[category].total += Math.abs(transaction.amount);
       categoryData[category].count += 1;
       categoryData[category].avgAmount = categoryData[category].total / categoryData[category].count;
     });
+
+    console.log('📊 Monthly trends:', Object.keys(monthlyData).length, 'months');
+    console.log('📊 Categories:', Object.keys(categoryData).length, 'categories');
 
     return {
       monthlyTrends: monthlyData,
@@ -143,13 +149,19 @@ Return ONLY the JSON response, no additional text.`;
     };
   }
 
-  async getPredictions(transactions: any[], currentBalance: number): Promise<CashFlowPrediction> {
+  async getPredictions(transactions: any[], currentBalance?: number): Promise<CashFlowPrediction> {
     try {
-      const prompt = this.createPrompt(transactions, currentBalance);
+      // Calculate current balance from transactions if not provided or if it seems incorrect
+      const calculatedBalance = this.calculateCurrentBalance(transactions);
+      const actualCurrentBalance = currentBalance && currentBalance !== 0 ? currentBalance : calculatedBalance;
+      
+      const prompt = this.createPrompt(transactions, actualCurrentBalance);
       
       console.log('🤖 AI Cash Flow Service: Making API call to OpenRouter');
       console.log('📊 Transaction count:', transactions.length);
-      console.log('💰 Current balance:', currentBalance);
+      console.log('💰 Provided balance:', currentBalance);
+      console.log('💰 Calculated balance:', calculatedBalance);
+      console.log('💰 Using balance:', actualCurrentBalance);
       console.log('🔑 API Key configured:', !!this.apiKey);
       console.log('📝 Prompt length:', prompt.length);
       
@@ -203,7 +215,9 @@ Return ONLY the JSON response, no additional text.`;
       console.error('❌ AI prediction error:', error);
       console.log('🔄 Falling back to historical data prediction');
       // Return fallback prediction based on historical data
-      return this.generateFallbackPrediction(transactions, currentBalance);
+      const calculatedBalance = this.calculateCurrentBalance(transactions);
+      const actualCurrentBalance = currentBalance && currentBalance !== 0 ? currentBalance : calculatedBalance;
+      return this.generateFallbackPrediction(transactions, actualCurrentBalance);
     }
   }
 
@@ -257,15 +271,49 @@ Return ONLY the JSON response, no additional text.`;
     return validated;
   }
 
+  private calculateCurrentBalance(transactions: any[]): number {
+    if (!transactions || transactions.length === 0) return 0;
+    
+    // Sort transactions by date to get chronological order
+    const sortedTransactions = [...transactions].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    // If transactions have balance field, use the most recent one
+    const transactionsWithBalance = sortedTransactions.filter(t => t.balance && t.balance !== 0);
+    if (transactionsWithBalance.length > 0) {
+      const mostRecentWithBalance = transactionsWithBalance[transactionsWithBalance.length - 1];
+      console.log('📊 Using balance from most recent transaction:', mostRecentWithBalance.balance);
+      return mostRecentWithBalance.balance;
+    }
+    
+    // Otherwise, calculate balance by summing all transactions
+    // Assuming we start from 0 and add/subtract based on transaction type
+    let balance = 0;
+    for (const transaction of sortedTransactions) {
+      if (transaction.type === 'inflow') {
+        balance += Math.abs(transaction.amount);
+      } else if (transaction.type === 'outflow') {
+        balance -= Math.abs(transaction.amount);
+      }
+    }
+    
+    console.log('📊 Calculated balance from transaction flow:', balance);
+    return balance;
+  }
+
   private generateFallbackPrediction(transactions: any[], currentBalance: number): CashFlowPrediction {
     // Generate basic predictions based on historical averages
     const recentTransactions = transactions.slice(-30); // Last 30 transactions
-    const avgInflows = recentTransactions
-      .filter(t => t.amount > 0)
-      .reduce((sum, t) => sum + t.amount, 0) / Math.max(1, recentTransactions.filter(t => t.amount > 0).length);
-    const avgOutflows = recentTransactions
-      .filter(t => t.amount < 0)
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0) / Math.max(1, recentTransactions.filter(t => t.amount < 0).length);
+    const inflowTransactions = recentTransactions.filter(t => t.type === 'inflow');
+    const outflowTransactions = recentTransactions.filter(t => t.type === 'outflow');
+    
+    const avgInflows = inflowTransactions.length > 0 
+      ? inflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0) / inflowTransactions.length
+      : 0;
+    const avgOutflows = outflowTransactions.length > 0
+      ? outflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0) / outflowTransactions.length
+      : 0;
 
     const weeklyForecasts = [];
     let balance = currentBalance;
