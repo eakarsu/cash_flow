@@ -28,8 +28,19 @@ const ImportTransactionsPage: React.FC = () => {
         
         console.log('✅ Parsed transactions:', importedTransactions.length);
         
+        // Additional deduplication check
+        const uniqueTransactions = importedTransactions.filter((transaction, index, self) => 
+          index === self.findIndex(t => 
+            t.date === transaction.date && 
+            t.description === transaction.description && 
+            t.amount === transaction.amount
+          )
+        );
+        
+        console.log('✅ Final unique transactions:', uniqueTransactions.length);
+        
         // Sort transactions by date (newest first) and completely replace all existing transactions
-        const sortedTransactions = importedTransactions.sort((a, b) =>
+        const sortedTransactions = uniqueTransactions.sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         

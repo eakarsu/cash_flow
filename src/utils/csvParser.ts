@@ -153,7 +153,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           }
           
           const transaction: Transaction = {
-            id: `imported-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`,
+            id: `imported-${file.name}-${i}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             date: date,
             description: description,
             amount: Math.abs(amount),
@@ -166,8 +166,24 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           transactions.push(transaction);
         }
         
+        // Remove any potential duplicates based on date, description, and amount
+        const uniqueTransactions = transactions.filter((transaction, index, self) => 
+          index === self.findIndex(t => 
+            t.date === transaction.date && 
+            t.description === transaction.description && 
+            t.amount === transaction.amount &&
+            t.type === transaction.type
+          )
+        );
+        
         console.log('✅ Total transactions parsed:', transactions.length);
-        resolve(transactions);
+        console.log('✅ Unique transactions after deduplication:', uniqueTransactions.length);
+        
+        if (uniqueTransactions.length !== transactions.length) {
+          console.warn('⚠️ Removed', transactions.length - uniqueTransactions.length, 'duplicate transactions');
+        }
+        
+        resolve(uniqueTransactions);
       } catch (error) {
         console.error('❌ CSV parsing error:', error);
         reject(error);
