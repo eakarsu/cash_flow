@@ -28,21 +28,24 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Load existing transactions from localStorage on initialization
-  const [transactions, setTransactions] = React.useState<Transaction[]>(() => {
+  // Start with empty array - only load uploaded transactions
+  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  
+  // Load from localStorage only once on mount
+  React.useEffect(() => {
     try {
       const stored = localStorage.getItem('transactions');
       if (stored) {
         const parsed = JSON.parse(stored);
-        console.log('🔄 TransactionProvider: Loading existing transactions from localStorage:', parsed.length);
-        return Array.isArray(parsed) ? parsed : [];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          console.log('🔄 Loading transactions from localStorage:', parsed.length);
+          setTransactions(parsed);
+        }
       }
     } catch (error) {
       console.error('Error loading transactions from localStorage:', error);
     }
-    console.log('🔄 TransactionProvider: No existing transactions found, starting with empty array');
-    return [];
-  });
+  }, []);
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -107,29 +110,20 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 Replacing all transactions with', newTransactions.length, 'new transactions');
+    console.log('🔄 COMPLETELY REPLACING all transactions with', newTransactions.length, 'new transactions');
     console.log('🔍 Current transaction count before replace:', transactions.length);
     
-    // Only allow imported transactions
-    const importedTransactions = newTransactions.filter(t => t.id.startsWith('imported-'));
-    console.log('🧹 Filtered to only imported transactions:', importedTransactions.length);
+    // Clear localStorage completely first
+    localStorage.clear();
     
-    if (importedTransactions.length !== newTransactions.length) {
-      console.warn('⚠️ Filtered out', newTransactions.length - importedTransactions.length, 'non-imported transactions');
-    }
-    
-    // Set the imported transactions immediately
-    setTransactions(importedTransactions);
+    // Set the new transactions (all of them, not just imported ones)
+    console.log('✅ Setting new transactions:', newTransactions.length);
+    setTransactions(newTransactions);
     
     // Save to localStorage
-    localStorage.setItem('transactions', JSON.stringify(importedTransactions));
+    localStorage.setItem('transactions', JSON.stringify(newTransactions));
     
-    console.log('✅ New transactions set. Count:', importedTransactions.length);
-    
-    // Force a re-render by triggering a state update
-    setTimeout(() => {
-      console.log('🔍 Post-replace verification - Context transaction count:', importedTransactions.length);
-    }, 100);
+    console.log('✅ Transactions completely replaced. New count:', newTransactions.length);
   };
 
   const value = {
