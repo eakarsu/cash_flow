@@ -28,8 +28,23 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Start with empty array - NO automatic loading from localStorage
-  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  // Load from localStorage on initialization to get uploaded transactions
+  const [transactions, setTransactions] = React.useState<Transaction[]>(() => {
+    try {
+      const stored = localStorage.getItem('transactions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          console.log('🔄 Loading transactions from localStorage on init:', parsed.length);
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading transactions from localStorage:', error);
+    }
+    console.log('🔄 No transactions in localStorage, starting with empty array');
+    return [];
+  });
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -94,14 +109,19 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 COMPLETELY REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
+    console.log('🔄 FORCE REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
     
-    // Synchronously clear everything and set new transactions
+    // Clear ALL localStorage first
     localStorage.clear();
+    
+    // Force set to empty array first to clear any cached state
+    setTransactions([]);
+    
+    // Then set the new transactions
     setTransactions(newTransactions);
     localStorage.setItem('transactions', JSON.stringify(newTransactions));
     
-    console.log('✅ Replacement complete. Final count:', newTransactions.length);
+    console.log('✅ FORCED replacement complete. Final count should be:', newTransactions.length);
   };
 
   const value = {

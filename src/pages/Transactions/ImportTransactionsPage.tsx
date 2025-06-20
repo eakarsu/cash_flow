@@ -44,10 +44,17 @@ const ImportTransactionsPage: React.FC = () => {
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         
-        // Completely replace all transactions with ONLY uploaded data
-        console.log('🚀 Importing ONLY uploaded data:', sortedTransactions.length);
+        // FORCE complete replacement with ONLY uploaded data
+        console.log('🚀 FORCE replacing with ONLY uploaded data:', sortedTransactions.length);
+        console.log('🗑️ Clearing all existing data first');
+        
+        // Clear everything first
+        localStorage.clear();
+        
+        // Then replace with only uploaded transactions
         replaceAllTransactions(sortedTransactions);
-        setImportResult(`Successfully imported ${uniqueTransactions.length} transactions. All previous data has been replaced.`);
+        
+        setImportResult(`Successfully imported ${uniqueTransactions.length} transactions. All previous data has been completely replaced.`);
         
         // Auto-navigate back to transactions page after successful import
         setTimeout(() => {
