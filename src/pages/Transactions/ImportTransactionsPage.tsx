@@ -11,9 +11,17 @@ const ImportTransactionsPage: React.FC = () => {
   const [importResult, setImportResult] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Debug: Log component mount
+  React.useEffect(() => {
+    console.log('🔥 ImportTransactionsPage mounted');
+    console.log('🔥 File input ref on mount:', fileInputRef.current);
+  }, []);
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('🔥 handleFileChange called!', event);
+    console.log('🔥 Event target:', event.target);
     console.log('🔥 Files:', event.target.files);
+    console.log('🔥 Files length:', event.target.files?.length);
     
     const file = event.target.files?.[0];
     if (file) {
@@ -105,16 +113,24 @@ const ImportTransactionsPage: React.FC = () => {
               accept=".csv"
               onChange={(e) => {
                 console.log('🔥 Input onChange triggered!', e);
+                console.log('🔥 Input files:', e.target.files);
                 handleFileChange(e);
               }}
-              className="hidden"
+              style={{ display: 'none' }}
             />
             
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 console.log('🔥 Button clicked!');
                 console.log('🔥 File input ref:', fileInputRef.current);
-                fileInputRef.current?.click();
+                console.log('🔥 File input exists:', !!fileInputRef.current);
+                if (fileInputRef.current) {
+                  console.log('🔥 Triggering file input click');
+                  fileInputRef.current.click();
+                } else {
+                  console.error('🔥 File input ref is null!');
+                }
               }}
               disabled={isImporting}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
