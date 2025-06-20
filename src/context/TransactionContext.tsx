@@ -27,83 +27,7 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Check if there are any existing transactions in localStorage
-  const getInitialTransactions = (): Transaction[] => {
-    try {
-      const stored = localStorage.getItem('transactions');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // If we have stored transactions, use them (could be imported data)
-          console.log('📊 Loading existing transactions from localStorage:', parsed.length);
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.error('Error reading transactions from localStorage:', error);
-    }
-    
-    // Only return sample data if no transactions exist
-    console.log('📊 No existing transactions found, using sample data');
-    return [
-      {
-        id: 'sample-1',
-        date: '2024-06-01',
-        description: 'Revenue - Client A',
-        amount: 5000,
-        type: 'inflow' as const,
-        category: 'Revenue',
-        balance: 15000
-      },
-      {
-        id: 'sample-2',
-        date: '2024-06-05',
-        description: 'Office Rent',
-        amount: 2000,
-        type: 'outflow' as const,
-        category: 'Rent',
-        balance: 13000
-      },
-      {
-        id: 'sample-3',
-        date: '2024-06-10',
-        description: 'Marketing Campaign',
-        amount: 800,
-        type: 'outflow' as const,
-        category: 'Marketing',
-        balance: 12200
-      },
-      {
-        id: 'sample-4',
-        date: '2024-06-15',
-        description: 'Revenue - Client B',
-        amount: 3500,
-        type: 'inflow' as const,
-        category: 'Revenue',
-        balance: 15700
-      },
-      {
-        id: 'sample-5',
-        date: '2024-05-01',
-        description: 'Revenue - Client C',
-        amount: 4200,
-        type: 'inflow' as const,
-        category: 'Revenue',
-        balance: 10000
-      },
-      {
-        id: 'sample-6',
-        date: '2024-05-15',
-        description: 'Software Subscriptions',
-        amount: 500,
-        type: 'outflow' as const,
-        category: 'Software',
-        balance: 9500
-      }
-    ];
-  };
-
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', getInitialTransactions());
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
 
   const addTransaction = (transactionData: Omit<Transaction, 'id'>) => {
     const newTransaction: Transaction = {
@@ -131,8 +55,12 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
     console.log('🔄 Replacing all transactions with', newTransactions.length, 'new transactions');
-    localStorage.removeItem('transactions');
+    console.log('🗑️ Clearing localStorage completely');
+    localStorage.clear();
     setTransactions(newTransactions);
+    // Force update localStorage immediately
+    localStorage.setItem('transactions', JSON.stringify(newTransactions));
+    console.log('✅ New transactions stored in localStorage');
   };
 
   const value = {

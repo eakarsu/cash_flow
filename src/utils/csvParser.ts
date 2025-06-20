@@ -1,5 +1,50 @@
 import { Transaction } from '../types';
 
+const normalizeDate = (dateStr: string): string => {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  
+  // Remove quotes and trim
+  const cleaned = dateStr.replace(/"/g, '').trim();
+  
+  // Try to parse various date formats
+  const date = new Date(cleaned);
+  if (!isNaN(date.getTime())) {
+    return date.toISOString().split('T')[0];
+  }
+  
+  // Try MM/DD/YYYY format
+  const mmddyyyy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mmddyyyy) {
+    const [, month, day, year] = mmddyyyy;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  // Try DD/MM/YYYY format
+  const ddmmyyyy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (ddmmyyyy) {
+    const [, day, month, year] = ddmmyyyy;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  return new Date().toISOString().split('T')[0];
+};
+
+const parseAmount = (amountStr: string): number => {
+  if (!amountStr) return 0;
+  
+  // Remove quotes, dollar signs, commas, and trim
+  const cleaned = amountStr.replace(/["$,]/g, '').trim();
+  
+  // Handle parentheses as negative (accounting format)
+  if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
+    const amount = parseFloat(cleaned.slice(1, -1));
+    return isNaN(amount) ? 0 : -Math.abs(amount);
+  }
+  
+  const amount = parseFloat(cleaned);
+  return isNaN(amount) ? 0 : amount;
+};
+
 export const parseCSV = (file: File): Promise<Transaction[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
