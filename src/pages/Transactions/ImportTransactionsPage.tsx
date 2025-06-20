@@ -29,6 +29,10 @@ const ImportTransactionsPage: React.FC = () => {
     
     if (file) {
       console.log('🔥🔥🔥 FILE FOUND! Name:', file.name, 'Size:', file.size, 'Type:', file.type);
+      
+      // FORCE clear all existing data first
+      console.log('🗑️ FORCE clearing all existing transactions before import');
+      resetAppState();
       setIsImporting(true);
       setImportResult(null);
       
@@ -41,8 +45,6 @@ const ImportTransactionsPage: React.FC = () => {
           throw new Error('No valid transactions found in the CSV file');
         }
         
-        console.log('✅ Parsed transactions:', importedTransactions.length);
-        
         console.log('✅ Parsed transactions from CSV:', importedTransactions.length);
         
         // Validate transaction count makes sense
@@ -50,13 +52,13 @@ const ImportTransactionsPage: React.FC = () => {
           throw new Error('No valid transactions found in the CSV file');
         }
         
-        // Sort transactions by date (newest first) and completely replace all existing transactions
+        // Sort transactions by date (newest first)
         const sortedTransactions = importedTransactions.sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         
-        // COMPLETELY replace with ONLY uploaded data
-        console.log('🚀 Replacing ALL data with uploaded file:', sortedTransactions.length);
+        // FORCE replace with ONLY uploaded data
+        console.log('🚀 FORCE setting ONLY uploaded transactions:', sortedTransactions.length);
         replaceAllTransactions(sortedTransactions);
         
         setImportResult(`Successfully imported ${importedTransactions.length} transactions. All previous data has been completely replaced.`);

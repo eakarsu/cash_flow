@@ -186,11 +186,13 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
         }
         
         // Final validation - ensure we don't have an unreasonable number of transactions
-        if (uniqueTransactions.length > lines.length * 2) {
-          console.error('❌ Too many transactions generated! Expected max:', lines.length - 1, 'Got:', uniqueTransactions.length);
-          throw new Error(`CSV parsing error: Generated ${uniqueTransactions.length} transactions from ${lines.length - 1} data rows. This suggests a parsing issue.`);
+        const expectedMax = lines.length - 1; // Subtract header row
+        if (uniqueTransactions.length > expectedMax) {
+          console.error('❌ Too many transactions generated! Expected max:', expectedMax, 'Got:', uniqueTransactions.length);
+          throw new Error(`CSV parsing error: Generated ${uniqueTransactions.length} transactions from ${expectedMax} data rows. This suggests a parsing issue.`);
         }
         
+        console.log('✅ Final validation passed. Returning', uniqueTransactions.length, 'transactions');
         resolve(uniqueTransactions);
       } catch (error) {
         console.error('❌ CSV parsing error:', error);
