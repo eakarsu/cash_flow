@@ -43,19 +43,15 @@ const ImportTransactionsPage: React.FC = () => {
         
         console.log('✅ Parsed transactions:', importedTransactions.length);
         
-        // Additional deduplication check
-        const uniqueTransactions = importedTransactions.filter((transaction, index, self) => 
-          index === self.findIndex(t => 
-            t.date === transaction.date && 
-            t.description === transaction.description && 
-            t.amount === transaction.amount
-          )
-        );
+        console.log('✅ Parsed transactions from CSV:', importedTransactions.length);
         
-        console.log('✅ Final unique transactions:', uniqueTransactions.length);
+        // Validate transaction count makes sense
+        if (importedTransactions.length === 0) {
+          throw new Error('No valid transactions found in the CSV file');
+        }
         
         // Sort transactions by date (newest first) and completely replace all existing transactions
-        const sortedTransactions = uniqueTransactions.sort((a, b) =>
+        const sortedTransactions = importedTransactions.sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         
@@ -63,7 +59,7 @@ const ImportTransactionsPage: React.FC = () => {
         console.log('🚀 Replacing ALL data with uploaded file:', sortedTransactions.length);
         replaceAllTransactions(sortedTransactions);
         
-        setImportResult(`Successfully imported ${uniqueTransactions.length} transactions. All previous data has been completely replaced.`);
+        setImportResult(`Successfully imported ${importedTransactions.length} transactions. All previous data has been completely replaced.`);
         
         // Auto-navigate back to transactions page after successful import
         setTimeout(() => {
@@ -114,22 +110,13 @@ const ImportTransactionsPage: React.FC = () => {
               ref={fileInputRef}
               type="file"
               accept=".csv"
-              onChange={(e) => {
-                console.log('🔥🔥🔥 INPUT ONCHANGE TRIGGERED!', e);
-                console.log('🔥 Input files:', e.target.files);
-                console.log('🔥 About to call handleFileChange...');
-                handleFileChange(e);
-                console.log('🔥 handleFileChange call completed');
-              }}
-              style={{ display: 'none' }}
+              onChange={handleFileChange}
+              className="hidden"
             />
             
             <button
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 console.log('🔥 Button clicked!');
-                console.log('🔥 File input ref:', fileInputRef.current);
-                console.log('🔥 File input exists:', !!fileInputRef.current);
                 if (fileInputRef.current) {
                   console.log('🔥 Triggering file input click');
                   fileInputRef.current.click();
