@@ -151,14 +151,34 @@ Return ONLY the JSON response, no additional text.`;
 
   async getPredictions(transactions: any[], currentBalance?: number): Promise<CashFlowPrediction> {
     try {
+      console.log('🤖 AI Cash Flow Service: Starting prediction analysis');
+      console.log('📊 Received transaction count:', transactions.length);
+      
+      // Debug: Log transaction sources
+      if (transactions.length > 0) {
+        const sampleIds = transactions.slice(0, 10).map(t => t.id);
+        console.log('🔍 Sample transaction IDs:', sampleIds);
+        
+        const importedCount = transactions.filter(t => t.id.startsWith('imported-')).length;
+        const sampleCount = transactions.filter(t => t.id.startsWith('sample-')).length;
+        const otherCount = transactions.length - importedCount - sampleCount;
+        
+        console.log('📊 Transaction breakdown:');
+        console.log('  - Imported:', importedCount);
+        console.log('  - Sample:', sampleCount);
+        console.log('  - Other:', otherCount);
+        
+        if (sampleCount > 0) {
+          console.warn('⚠️ WARNING: Sample transactions detected! This should not happen after import.');
+        }
+      }
+      
       // Calculate current balance from transactions if not provided or if it seems incorrect
       const calculatedBalance = this.calculateCurrentBalance(transactions);
       const actualCurrentBalance = currentBalance && currentBalance !== 0 ? currentBalance : calculatedBalance;
       
       const prompt = this.createPrompt(transactions, actualCurrentBalance);
       
-      console.log('🤖 AI Cash Flow Service: Making API call to OpenRouter');
-      console.log('📊 Transaction count:', transactions.length);
       console.log('💰 Provided balance:', currentBalance);
       console.log('💰 Calculated balance:', calculatedBalance);
       console.log('💰 Using balance:', actualCurrentBalance);
