@@ -10,6 +10,7 @@ interface TransactionContextType {
   deleteTransaction: (id: string) => void;
   clearAllTransactions: () => void;
   replaceAllTransactions: (newTransactions: Transaction[]) => void;
+  resetAppState: () => void;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -34,6 +35,16 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     console.log('🔍 TransactionContext: Current transaction count:', transactions.length);
     if (transactions.length > 0) {
       console.log('🔍 First few transaction IDs:', transactions.slice(0, 5).map(t => t.id));
+      
+      // Check for any sample data that shouldn't be there
+      const sampleTransactions = transactions.filter(t => t.id.startsWith('sample-'));
+      if (sampleTransactions.length > 0) {
+        console.warn('⚠️ Found sample transactions in context! Removing them...');
+        const cleanTransactions = transactions.filter(t => !t.id.startsWith('sample-'));
+        setTransactions(cleanTransactions);
+        localStorage.setItem('transactions', JSON.stringify(cleanTransactions));
+      }
+      
       console.log('🔍 Transaction date range:', {
         earliest: Math.min(...transactions.map(t => new Date(t.date).getTime())),
         latest: Math.max(...transactions.map(t => new Date(t.date).getTime()))
@@ -65,19 +76,31 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     setTransactions([]);
   };
 
+  const resetAppState = () => {
+    console.log('🔄 Resetting entire app state');
+    localStorage.clear();
+    setTransactions([]);
+    console.log('✅ App state reset complete');
+  };
+
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
     console.log('🔄 Replacing all transactions with', newTransactions.length, 'new transactions');
     console.log('🔍 Current transaction count before replace:', transactions.length);
+    
+    // Filter out any sample transactions from new data (just in case)
+    const cleanTransactions = newTransactions.filter(t => !t.id.startsWith('sample-'));
+    console.log('🧹 Filtered transactions (removed sample data):', cleanTransactions.length);
+    
     console.log('🗑️ Clearing localStorage completely');
     
     // Clear all localStorage
     localStorage.clear();
     
     // Set the new transactions
-    setTransactions(newTransactions);
+    setTransactions(cleanTransactions);
     
     // Force update localStorage immediately
-    localStorage.setItem('transactions', JSON.stringify(newTransactions));
+    localStorage.setItem('transactions', JSON.stringify(cleanTransactions));
     
     // Verify the replacement
     const stored = localStorage.getItem('transactions');
@@ -98,6 +121,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     deleteTransaction,
     clearAllTransactions,
     replaceAllTransactions,
+    resetAppState,
   };
 
   return (

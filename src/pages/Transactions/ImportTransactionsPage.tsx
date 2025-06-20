@@ -6,7 +6,7 @@ import { parseCSV } from '../../utils/csvParser.ts';
 
 const ImportTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { replaceAllTransactions } = useTransactions();
+  const { replaceAllTransactions, resetAppState } = useTransactions();
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +33,10 @@ const ImportTransactionsPage: React.FC = () => {
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         
-        // Use the dedicated method to replace all transactions
+        // First completely reset the app state to ensure no sample data
+        resetAppState();
+        
+        // Then set the new transactions
         replaceAllTransactions(sortedTransactions);
         
         // Verify the replacement worked
