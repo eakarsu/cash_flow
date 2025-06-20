@@ -31,22 +31,6 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   // Start with completely empty array - NO automatic loading from localStorage
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   
-  // Load from localStorage only once after mount, if needed
-  React.useEffect(() => {
-    try {
-      const stored = localStorage.getItem('transactions');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          console.log('🔄 Loading existing transactions from localStorage:', parsed.length);
-          setTransactions(parsed);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading transactions from localStorage:', error);
-    }
-  }, []);
-  
   // Debug logging to track transaction count changes
   React.useEffect(() => {
     console.log('🔍 TransactionContext: Current transaction count:', transactions.length);
@@ -110,18 +94,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 FORCE REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
+    console.log('🔄 COMPLETELY REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
     
-    // Force clear everything first
+    // Clear localStorage completely
     localStorage.clear();
-    setTransactions([]);
     
-    // Then set ONLY the new uploaded transactions
-    setTimeout(() => {
-      setTransactions(newTransactions);
-      localStorage.setItem('transactions', JSON.stringify(newTransactions));
-      console.log('✅ FORCED replacement complete. Final count should be:', newTransactions.length);
-    }, 0);
+    // Set ONLY the new transactions
+    setTransactions(newTransactions);
+    
+    // Save ONLY the new transactions to localStorage
+    localStorage.setItem('transactions', JSON.stringify(newTransactions));
+    
+    console.log('✅ Complete replacement done. Final count:', newTransactions.length);
   };
 
   const value = {
