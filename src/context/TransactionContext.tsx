@@ -28,23 +28,24 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Load from localStorage on initialization to show uploaded transactions
-  const [transactions, setTransactions] = React.useState<Transaction[]>(() => {
+  // Start with completely empty array - NO automatic loading from localStorage
+  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  
+  // Load from localStorage only once after mount, if needed
+  React.useEffect(() => {
     try {
       const stored = localStorage.getItem('transactions');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          console.log('🔄 Loading transactions from localStorage on init:', parsed.length);
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          console.log('🔄 Loading existing transactions from localStorage:', parsed.length);
+          setTransactions(parsed);
         }
       }
     } catch (error) {
       console.error('Error loading transactions from localStorage:', error);
     }
-    console.log('🔄 No transactions in localStorage, starting with empty array');
-    return [];
-  });
+  }, []);
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -109,18 +110,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 COMPLETELY REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
+    console.log('🔄 FORCE REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
     
-    // Clear localStorage completely
+    // Force clear everything first
     localStorage.clear();
+    setTransactions([]);
     
-    // Set ONLY the new transactions
-    setTransactions(newTransactions);
-    
-    // Save ONLY the new transactions to localStorage
-    localStorage.setItem('transactions', JSON.stringify(newTransactions));
-    
-    console.log('✅ Complete replacement done. Final count:', newTransactions.length);
+    // Then set ONLY the new uploaded transactions
+    setTimeout(() => {
+      setTransactions(newTransactions);
+      localStorage.setItem('transactions', JSON.stringify(newTransactions));
+      console.log('✅ FORCED replacement complete. Final count should be:', newTransactions.length);
+    }, 0);
   };
 
   const value = {
