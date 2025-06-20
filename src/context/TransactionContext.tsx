@@ -28,8 +28,23 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Start with completely empty array - NO automatic loading from localStorage
-  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  // Load transactions from localStorage on initialization
+  const [transactions, setTransactions] = React.useState<Transaction[]>(() => {
+    try {
+      const stored = localStorage.getItem('transactions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          console.log('🔄 Loading transactions from localStorage on init:', parsed.length);
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading transactions from localStorage:', error);
+    }
+    console.log('🔄 No transactions in localStorage, starting with empty array');
+    return [];
+  });
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
