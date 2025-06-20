@@ -6,7 +6,7 @@ import { parseCSV } from '../../utils/csvParser.ts';
 
 const ImportTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setTransactions } = useTransactions();
+  const { replaceAllTransactions } = useTransactions();
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,12 +28,22 @@ const ImportTransactionsPage: React.FC = () => {
         
         console.log('✅ Parsed transactions:', importedTransactions.length);
         
-        // Sort transactions by date (newest first) and replace all existing transactions
+        // Sort transactions by date (newest first) and completely replace all existing transactions
         const sortedTransactions = importedTransactions.sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         
-        setTransactions(sortedTransactions);
+        // Use the dedicated method to replace all transactions
+        replaceAllTransactions(sortedTransactions);
+        
+        // Verify the replacement worked
+        setTimeout(() => {
+          const stored = localStorage.getItem('transactions');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            console.log('✅ Verification: localStorage now contains', parsed.length, 'transactions');
+          }
+        }, 100);
         setImportResult(`Successfully imported ${importedTransactions.length} transactions. All previous data has been replaced.`);
         
         // Auto-navigate back to transactions page after successful import
