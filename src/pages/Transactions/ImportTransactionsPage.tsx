@@ -18,14 +18,17 @@ const ImportTransactionsPage: React.FC = () => {
   }, []);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('🔥 handleFileChange called!', event);
+    console.log('🔥🔥🔥 handleFileChange ACTUALLY CALLED!', event);
     console.log('🔥 Event target:', event.target);
-    console.log('🔥 Files:', event.target.files);
+    console.log('🔥 Files array:', event.target.files);
     console.log('🔥 Files length:', event.target.files?.length);
+    console.log('🔥 File input value:', event.target.value);
     
     const file = event.target.files?.[0];
+    console.log('🔥 Selected file object:', file);
+    
     if (file) {
-      console.log('🔥 File selected:', file.name);
+      console.log('🔥🔥🔥 FILE FOUND! Name:', file.name, 'Size:', file.size, 'Type:', file.type);
       setIsImporting(true);
       setImportResult(null);
       
@@ -112,9 +115,11 @@ const ImportTransactionsPage: React.FC = () => {
               type="file"
               accept=".csv"
               onChange={(e) => {
-                console.log('🔥 Input onChange triggered!', e);
+                console.log('🔥🔥🔥 INPUT ONCHANGE TRIGGERED!', e);
                 console.log('🔥 Input files:', e.target.files);
+                console.log('🔥 About to call handleFileChange...');
                 handleFileChange(e);
+                console.log('🔥 handleFileChange call completed');
               }}
               style={{ display: 'none' }}
             />
