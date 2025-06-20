@@ -28,7 +28,13 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
+  // Force clear any existing data on app start and start with empty array
+  React.useEffect(() => {
+    console.log('🔄 TransactionProvider initializing - clearing any existing data');
+    localStorage.removeItem('transactions');
+  }, []);
+
+  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -36,13 +42,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     if (transactions.length > 0) {
       console.log('🔍 First few transaction IDs:', transactions.slice(0, 5).map(t => t.id));
       
-      // Check for any sample data that shouldn't be there
-      const sampleTransactions = transactions.filter(t => t.id.startsWith('sample-'));
-      if (sampleTransactions.length > 0) {
-        console.warn('⚠️ Found sample transactions in context! Removing them...');
-        const cleanTransactions = transactions.filter(t => !t.id.startsWith('sample-'));
-        setTransactions(cleanTransactions);
-        localStorage.setItem('transactions', JSON.stringify(cleanTransactions));
+      // Check for any non-imported transactions
+      const importedCount = transactions.filter(t => t.id.startsWith('imported-')).length;
+      const otherCount = transactions.length - importedCount;
+      
+      console.log('📊 Transaction breakdown:');
+      console.log('  - Imported:', importedCount);
+      console.log('  - Other (should be 0):', otherCount);
+      
+      if (otherCount > 0) {
+        console.warn('⚠️ Found non-imported transactions! This should not happen.');
+        const nonImported = transactions.filter(t => !t.id.startsWith('imported-'));
+        console.warn('⚠️ Non-imported transaction IDs:', nonImported.map(t => t.id));
       }
       
       console.log('🔍 Transaction date range:', {
@@ -55,24 +66,28 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   const addTransaction = (transactionData: Omit<Transaction, 'id'>) => {
     const newTransaction: Transaction = {
       ...transactionData,
-      id: `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
-    setTransactions(prev => [newTransaction, ...prev]);
+    const updatedTransactions = [newTransaction, ...transactions];
+    setTransactions(updatedTransactions);
+    localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
   };
 
   const updateTransaction = (id: string, transactionData: Omit<Transaction, 'id'>) => {
-    setTransactions(prev =>
-      prev.map(t => t.id === id ? { ...transactionData, id } : t)
-    );
+    const updatedTransactions = transactions.map(t => t.id === id ? { ...transactionData, id } : t);
+    setTransactions(updatedTransactions);
+    localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
   };
 
   const deleteTransaction = (id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
+    const updatedTransactions = transactions.filter(t => t.id !== id);
+    setTransactions(updatedTransactions);
+    localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
   };
 
   const clearAllTransactions = () => {
     console.log('🗑️ Clearing all transactions');
-    localStorage.removeItem('transactions');
+    localStorage.clear();
     setTransactions([]);
   };
 
@@ -87,30 +102,24 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     console.log('🔄 Replacing all transactions with', newTransactions.length, 'new transactions');
     console.log('🔍 Current transaction count before replace:', transactions.length);
     
-    // Filter out any sample transactions from new data (just in case)
-    const cleanTransactions = newTransactions.filter(t => !t.id.startsWith('sample-'));
-    console.log('🧹 Filtered transactions (removed sample data):', cleanTransactions.length);
+    // Only allow imported transactions
+    const importedTransactions = newTransactions.filter(t => t.id.startsWith('imported-'));
+    console.log('🧹 Filtered to only imported transactions:', importedTransactions.length);
+    
+    if (importedTransactions.length !== newTransactions.length) {
+      console.warn('⚠️ Filtered out', newTransactions.length - importedTransactions.length, 'non-imported transactions');
+    }
     
     console.log('🗑️ Clearing localStorage completely');
-    
-    // Clear all localStorage
     localStorage.clear();
     
-    // Set the new transactions
-    setTransactions(cleanTransactions);
+    // Set only the imported transactions
+    setTransactions(importedTransactions);
     
-    // Force update localStorage immediately
-    localStorage.setItem('transactions', JSON.stringify(cleanTransactions));
+    // Save to localStorage
+    localStorage.setItem('transactions', JSON.stringify(importedTransactions));
     
-    // Verify the replacement
-    const stored = localStorage.getItem('transactions');
-    const storedCount = stored ? JSON.parse(stored).length : 0;
-    console.log('✅ New transactions stored in localStorage. Count:', storedCount);
-    
-    // Force a re-render to ensure the context updates
-    setTimeout(() => {
-      console.log('🔍 Post-replace verification - Context transaction count:', transactions.length);
-    }, 100);
+    console.log('✅ New transactions set. Count:', importedTransactions.length);
   };
 
   const value = {
