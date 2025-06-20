@@ -28,24 +28,8 @@ interface TransactionProviderProps {
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({ children }) => {
-  // Start with empty array - only load when explicitly requested
+  // Start with empty array - NO automatic loading from localStorage
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
-  
-  // Load from localStorage only once on mount
-  React.useEffect(() => {
-    try {
-      const stored = localStorage.getItem('transactions');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          console.log('🔄 Loading existing transactions from localStorage:', parsed.length);
-          setTransactions(parsed);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading transactions from localStorage:', error);
-    }
-  }, []);
   
   // Debug logging to track transaction count changes
   React.useEffect(() => {
@@ -110,19 +94,14 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
   };
 
   const replaceAllTransactions = (newTransactions: Transaction[]) => {
-    console.log('🔄 FORCE REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
+    console.log('🔄 COMPLETELY REPLACING ALL transactions. Current:', transactions.length, 'New:', newTransactions.length);
     
-    // FORCE clear everything first
+    // Synchronously clear everything and set new transactions
     localStorage.clear();
-    setTransactions([]);
+    setTransactions(newTransactions);
+    localStorage.setItem('transactions', JSON.stringify(newTransactions));
     
-    // Wait a tick then set new transactions
-    setTimeout(() => {
-      console.log('🔄 Setting new transactions:', newTransactions.length);
-      setTransactions(newTransactions);
-      localStorage.setItem('transactions', JSON.stringify(newTransactions));
-      console.log('✅ Replacement complete. Final count should be:', newTransactions.length);
-    }, 0);
+    console.log('✅ Replacement complete. Final count:', newTransactions.length);
   };
 
   const value = {
