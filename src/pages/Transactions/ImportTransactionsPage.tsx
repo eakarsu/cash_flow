@@ -60,9 +60,9 @@ const ImportTransactionsPage: React.FC = () => {
         
         setImportResult(`Successfully imported ${importedTransactions.length} transactions. All previous data has been completely replaced.`);
         
-        // Auto-navigate back to transactions page after successful import
+        // Auto-navigate back to dashboard after successful import
         setTimeout(() => {
-          navigate('/transactions');
+          navigate('/');
         }, 2000);
         
       } catch (error) {
