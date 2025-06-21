@@ -316,23 +316,26 @@ Return ONLY the JSON response, no additional text.`;
   private calculateCurrentBalance(transactions: any[]): number {
     if (!transactions || transactions.length === 0) return 0;
     
-    // Sort transactions by date to get chronological order
+    // Sort transactions by date to get chronological order (newest first)
     const sortedTransactions = [...transactions].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+      new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     
-    // If transactions have balance field, use the most recent one
+    // If transactions have balance field, use the most recent one (first in sorted array)
     const transactionsWithBalance = sortedTransactions.filter(t => t.balance && t.balance !== 0);
     if (transactionsWithBalance.length > 0) {
-      const mostRecentWithBalance = transactionsWithBalance[transactionsWithBalance.length - 1];
+      const mostRecentWithBalance = transactionsWithBalance[0]; // First item is most recent
       console.log('📊 Using balance from most recent transaction:', mostRecentWithBalance.balance);
       return mostRecentWithBalance.balance;
     }
     
-    // Otherwise, calculate balance by summing all transactions
-    // Assuming we start from 0 and add/subtract based on transaction type
+    // Otherwise, calculate balance by summing all transactions from oldest to newest
+    const chronologicalTransactions = [...transactions].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
     let balance = 0;
-    for (const transaction of sortedTransactions) {
+    for (const transaction of chronologicalTransactions) {
       if (transaction.type === 'inflow') {
         balance += Math.abs(transaction.amount);
       } else if (transaction.type === 'outflow') {
@@ -345,17 +348,35 @@ Return ONLY the JSON response, no additional text.`;
   }
 
   private generateFallbackPrediction(transactions: any[], currentBalance: number): CashFlowPrediction {
-    // Generate basic predictions based on historical averages
-    const recentTransactions = transactions.slice(-30); // Last 30 transactions
+    // Sort transactions by date (newest first) and get recent data
+    const sortedTransactions = [...transactions].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    // Get last 90 days of transactions for better accuracy
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
+    const recentTransactions = sortedTransactions.filter(t => 
+      new Date(t.date).getTime() >= ninetyDaysAgo.getTime()
+    );
+    
+    console.log('📊 Using', recentTransactions.length, 'recent transactions for fallback prediction');
+    
+    // Calculate weekly averages from recent data
     const inflowTransactions = recentTransactions.filter(t => t.type === 'inflow');
     const outflowTransactions = recentTransactions.filter(t => t.type === 'outflow');
     
-    const avgInflows = inflowTransactions.length > 0 
-      ? inflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0) / inflowTransactions.length
-      : 0;
-    const avgOutflows = outflowTransactions.length > 0
-      ? outflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0) / outflowTransactions.length
-      : 0;
+    const totalInflows = inflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const totalOutflows = outflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    
+    // Calculate weekly averages (90 days = ~13 weeks)
+    const weeksOfData = Math.max(1, recentTransactions.length > 0 ? 13 : 1);
+    const weeklyInflows = totalInflows / weeksOfData;
+    const weeklyOutflows = totalOutflows / weeksOfData;
+    const weeklyNetFlow = weeklyInflows - weeklyOutflows;
+    
+    console.log('📊 Weekly averages - Inflows:', weeklyInflows, 'Outflows:', weeklyOutflows, 'Net:', weeklyNetFlow);
 
     const weeklyForecasts = [];
     let balance = currentBalance;
@@ -364,34 +385,108 @@ Return ONLY the JSON response, no additional text.`;
       const date = new Date();
       date.setDate(date.getDate() + (i * 7));
       
-      balance += (avgInflows - avgOutflows);
+      balance += weeklyNetFlow;
       
       weeklyForecasts.push({
         week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        projectedBalance: balance,
-        inflows: avgInflows,
-        outflows: avgOutflows,
-        optimistic: balance * 1.15,
-        realistic: balance,
-        pessimistic: balance * 0.85
+        projectedBalance: Math.round(balance),
+        inflows: Math.round(weeklyInflows),
+        outflows: Math.round(weeklyOutflows),
+        optimistic: Math.round(balance * 1.15),
+        realistic: Math.round(balance),
+        pessimistic: Math.round(balance * 0.85)
       });
     }
+
+    // Calculate runway more accurately
+    const monthlyBurnRate = weeklyOutflows * 4.33; // Average weeks per month
+    const currentRunway = monthlyBurnRate > 0 ? currentBalance / monthlyBurnRate : 999;
+    const projectedRunway = monthlyBurnRate > 0 ? balance / monthlyBurnRate : 999;
+
+    // Generate category insights from recent data
+    const categoryInsights = this.generateCategoryInsights(recentTransactions);
 
     return {
       weeklyForecasts,
       runwayAnalysis: {
-        currentRunway: avgOutflows > 0 ? currentBalance / avgOutflows : 12,
-        projectedRunway: avgOutflows > 0 ? balance / avgOutflows : 12,
-        burnRate: avgOutflows,
-        recommendations: ['Monitor cash flow closely', 'Consider cost optimization']
+        currentRunway: Math.round(currentRunway * 10) / 10,
+        projectedRunway: Math.round(projectedRunway * 10) / 10,
+        burnRate: Math.round(monthlyBurnRate),
+        recommendations: this.generateRecommendations(weeklyNetFlow, currentRunway)
       },
-      categoryInsights: [],
+      categoryInsights,
       summary: {
-        overallTrend: balance > currentBalance ? 'positive' : 'negative',
-        keyInsights: ['Using historical averages for prediction'],
-        actionItems: ['Set up AI API key for better predictions']
+        overallTrend: weeklyNetFlow > 0 ? 'positive' : weeklyNetFlow < 0 ? 'negative' : 'stable',
+        keyInsights: [
+          `Weekly net flow: ${weeklyNetFlow >= 0 ? '+' : ''}$${Math.round(weeklyNetFlow).toLocaleString()}`,
+          `Current runway: ${Math.round(currentRunway * 10) / 10} months`,
+          `Based on ${recentTransactions.length} recent transactions`
+        ],
+        actionItems: this.generateActionItems(weeklyNetFlow, currentRunway)
       }
     };
+  }
+
+  private generateCategoryInsights(transactions: any[]): Array<{
+    category: string;
+    trend: 'increasing' | 'decreasing' | 'stable';
+    projectedAmount: number;
+    riskLevel: 'low' | 'medium' | 'high';
+  }> {
+    const categoryTotals: Record<string, number> = {};
+    
+    transactions.forEach(t => {
+      if (t.type === 'outflow') {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + Math.abs(t.amount);
+      }
+    });
+
+    return Object.entries(categoryTotals)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5) // Top 5 categories
+      .map(([category, total]) => ({
+        category,
+        trend: 'stable' as const,
+        projectedAmount: Math.round(total),
+        riskLevel: total > 10000 ? 'high' : total > 5000 ? 'medium' : 'low'
+      }));
+  }
+
+  private generateRecommendations(weeklyNetFlow: number, runway: number): string[] {
+    const recommendations = [];
+    
+    if (weeklyNetFlow < 0) {
+      recommendations.push('Focus on increasing revenue or reducing expenses');
+    }
+    
+    if (runway < 6) {
+      recommendations.push('Critical: Runway below 6 months - immediate action needed');
+    } else if (runway < 12) {
+      recommendations.push('Monitor cash flow closely - runway below 12 months');
+    }
+    
+    if (recommendations.length === 0) {
+      recommendations.push('Maintain current financial discipline');
+    }
+    
+    return recommendations;
+  }
+
+  private generateActionItems(weeklyNetFlow: number, runway: number): string[] {
+    const actions = [];
+    
+    if (weeklyNetFlow < 0) {
+      actions.push('Review and optimize major expense categories');
+      actions.push('Explore revenue growth opportunities');
+    }
+    
+    if (runway < 6) {
+      actions.push('Secure additional funding or credit line');
+    }
+    
+    actions.push('Set up AI API key for more detailed predictions');
+    
+    return actions;
   }
 }
 
