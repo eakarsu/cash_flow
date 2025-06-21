@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import AIColumnMappingService, { ColumnMapping } from '../services/aiColumnMappingService';
 
 const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return new Date().toISOString().split('T')[0];
@@ -46,10 +46,10 @@ const parseAmount = (amountStr: string): number => {
 };
 
 export const parseCSV = (file: File): Promise<Transaction[]> => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const reader = new FileReader();
     
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const csv = event.target?.result as string;
         const lines = csv.split('\n').filter(line => line.trim());
@@ -62,13 +62,31 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
         console.log('📄 Header line:', lines[0]);
         console.log('📄 First data line:', lines[1]);
         
-        const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/"/g, ''));
-        console.log('📄 Parsed headers:', headers);
-        console.log('📄 Header count:', headers.length);
+        const originalHeaders = parseCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
+        console.log('📄 Original headers:', originalHeaders);
+        console.log('📄 Header count:', originalHeaders.length);
         console.log('📄 Individual headers:');
-        headers.forEach((header, index) => {
+        originalHeaders.forEach((header, index) => {
           console.log(`📄   [${index}]: "${header}"`);
         });
+        
+        // Use AI to map columns
+        console.log('🤖 Starting AI column mapping...');
+        // Try to get API key from the AI cash flow service if available
+        let apiKey = '';
+        try {
+          const aiCashFlowService = (window as any).aiCashFlowService;
+          if (aiCashFlowService && aiCashFlowService.getApiKey) {
+            apiKey = aiCashFlowService.getApiKey();
+          }
+        } catch (error) {
+          console.log('🤖 Could not get API key from cash flow service, using environment variable');
+        }
+        
+        const aiMappingService = new AIColumnMappingService(apiKey);
+        const columnMapping = await aiMappingService.mapColumns(originalHeaders);
+        
+        console.log('✅ AI Column mapping completed:', columnMapping);
         
         const transactions: Transaction[] = [];
         
@@ -263,8 +281,10 @@ const parseCSVLine = (line: string): string[] => {
   return result;
 };
 
+// This function is now deprecated in favor of AI-powered column mapping
+// Keeping it for reference but it's no longer used in the main parsing flow
 const findColumnIndex = (headers: string[], possibleNames: string[]): number => {
-  console.log('🔍 Looking for columns:', possibleNames, 'in headers:', headers);
+  console.log('🔍 [DEPRECATED] Looking for columns:', possibleNames, 'in headers:', headers);
   
   for (const name of possibleNames) {
     const index = headers.findIndex(h => {

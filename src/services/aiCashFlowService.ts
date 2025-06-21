@@ -48,6 +48,10 @@ class AICashFlowService {
     }
   }
 
+  getApiKey(): string {
+    return this.apiKey;
+  }
+
   isConfigured(): boolean {
     return !!this.apiKey && this.apiKey.length > 0;
   }
