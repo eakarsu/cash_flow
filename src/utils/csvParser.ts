@@ -21,21 +21,31 @@ const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return new Date().toISOString().split('T')[0];
 
   const cleaned = dateStr.replace(/"/g, '').trim();
+  
+  // Try direct parsing first
   const date = new Date(cleaned);
   if (!isNaN(date.getTime())) {
     return date.toISOString().split('T')[0];
   }
 
-  const mmddyyyy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (mmddyyyy) {
-    const [, month, day, year] = mmddyyyy;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }
-
-  const ddmmyyyy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (ddmmyyyy) {
-    const [, day, month, year] = ddmmyyyy;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  // Detect format and parse accordingly
+  const format = detectDateFormat(cleaned);
+  const parts = cleaned.split('/');
+  
+  if (parts.length === 3) {
+    const [first, second, third] = parts;
+    
+    if (format === 'MM/DD/YYYY') {
+      const month = first.padStart(2, '0');
+      const day = second.padStart(2, '0');
+      const year = third;
+      return `${year}-${month}-${day}`;
+    } else if (format === 'DD/MM/YYYY') {
+      const day = first.padStart(2, '0');
+      const month = second.padStart(2, '0');
+      const year = third;
+      return `${year}-${month}-${day}`;
+    }
   }
 
   return new Date().toISOString().split('T')[0];
@@ -46,9 +56,16 @@ const parseAmount = (amountStr: string): number => {
 
   const cleaned = amountStr.replace(/["$,]/g, '').trim();
   
+  // Handle accounting format with parentheses (negative)
   if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
     const amount = parseFloat(cleaned.slice(1, -1));
     return isNaN(amount) ? 0 : -Math.abs(amount);
+  }
+
+  // Handle explicit negative sign
+  if (cleaned.startsWith('-')) {
+    const amount = parseFloat(cleaned);
+    return isNaN(amount) ? 0 : amount;
   }
 
   const amount = parseFloat(cleaned);
@@ -109,19 +126,31 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
 
           let amount = 0;
           let transactionType: 'inflow' | 'outflow' = 'outflow';
+          let rawAmount = 0;
 
           if (amountIndex >= 0 && values[amountIndex]) {
-            amount = parseAmount(values[amountIndex]);
-            transactionType = amount >= 0 ? 'inflow' : 'outflow';
+            rawAmount = parseAmount(values[amountIndex]);
+            amount = Math.abs(rawAmount);
+            transactionType = rawAmount >= 0 ? 'inflow' : 'outflow';
           } else if (debitIndex >= 0 && creditIndex >= 0) {
             const debit = parseAmount(values[debitIndex] || '0');
             const credit = parseAmount(values[creditIndex] || '0');
 
-            if (debit > 0) {
-              amount = debit;
+            // Handle cases where both columns might have values
+            if (Math.abs(debit) > 0 && Math.abs(credit) > 0) {
+              // Use the larger absolute value
+              if (Math.abs(debit) > Math.abs(credit)) {
+                amount = Math.abs(debit);
+                transactionType = 'outflow';
+              } else {
+                amount = Math.abs(credit);
+                transactionType = 'inflow';
+              }
+            } else if (Math.abs(debit) > 0) {
+              amount = Math.abs(debit);
               transactionType = 'outflow';
-            } else if (credit > 0) {
-              amount = credit;
+            } else if (Math.abs(credit) > 0) {
+              amount = Math.abs(credit);
               transactionType = 'inflow';
             }
           } else {
@@ -129,6 +158,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             for (let j = 0; j < values.length; j++) {
               const testAmount = parseAmount(values[j]);
               if (!isNaN(testAmount) && testAmount !== 0) {
+                rawAmount = testAmount;
                 amount = Math.abs(testAmount);
                 transactionType = testAmount >= 0 ? 'inflow' : 'outflow';
                 console.log(`📄 Guessed amount from column ${j}:`, testAmount);
@@ -169,11 +199,20 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             id: `imported-${file.name.replace(/[^a-zA-Z0-9]/g, '')}-row-${i}`,
             date: date,
             description: description,
-            amount: Math.abs(amount),
+            amount: amount, // Already absolute value from above logic
             type: transactionType,
             category: category,
             balance: balance
           };
+
+          // Validate transaction data
+          if (amount <= 0) {
+            console.warn(`⚠️ Transaction ${i} has zero or negative amount:`, transaction);
+          }
+          
+          if (!date || date === new Date().toISOString().split('T')[0]) {
+            console.warn(`⚠️ Transaction ${i} has invalid or missing date:`, transaction);
+          }
 
           //console.log(`✅ Created transaction ${i}:`, transaction);
           transactions.push(transaction);
@@ -181,13 +220,14 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
 
         console.log('✅ Total transactions parsed:', transactions.length);
 
+        // More strict deduplication - only remove exact duplicates
         const uniqueTransactions = transactions.filter((transaction, index, self) => {
           return index === self.findIndex(t =>
             t.date === transaction.date &&
             t.description === transaction.description &&
             t.amount === transaction.amount &&
             t.type === transaction.type &&
-            t.category === transaction.category
+            Math.abs(t.balance - transaction.balance) < 0.01 // Allow small floating point differences
           );
         });
 
@@ -195,7 +235,27 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
 
         if (uniqueTransactions.length !== transactions.length) {
           console.warn('⚠️ Removed', transactions.length - uniqueTransactions.length, 'duplicate transactions');
+          
+          // Log some examples of removed duplicates for debugging
+          const removed = transactions.filter(t => !uniqueTransactions.includes(t));
+          console.log('📄 Sample removed duplicates:', removed.slice(0, 3));
         }
+
+        // Validate transaction flow consistency
+        const totalInflows = uniqueTransactions
+          .filter(t => t.type === 'inflow')
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        const totalOutflows = uniqueTransactions
+          .filter(t => t.type === 'outflow')
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        console.log('💰 Transaction validation:');
+        console.log('💰 Total inflows:', totalInflows.toLocaleString());
+        console.log('💰 Total outflows:', totalOutflows.toLocaleString());
+        console.log('💰 Net flow:', (totalInflows - totalOutflows).toLocaleString());
+        console.log('💰 Inflow transactions:', uniqueTransactions.filter(t => t.type === 'inflow').length);
+        console.log('💰 Outflow transactions:', uniqueTransactions.filter(t => t.type === 'outflow').length);
 
         const expectedMax = lines.length - 1;
         if (uniqueTransactions.length > expectedMax) {
