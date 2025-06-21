@@ -199,7 +199,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             id: `imported-${file.name.replace(/[^a-zA-Z0-9]/g, '')}-row-${i}`,
             date: date,
             description: description,
-            amount: amount, // Already absolute value from above logic
+            amount: Math.abs(amount), // Store as absolute value for display
             type: transactionType,
             category: category,
             balance: balance
@@ -254,10 +254,16 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
 
         console.log('💰 Transaction validation:');
         console.log('💰 Sum of Inflow:', totalInflows.toLocaleString());
-        console.log('💰 Sum of Outflow:', (-totalOutflows).toLocaleString()); // Show as negative
-        console.log('💰 Remaining Balance:', netFlow.toLocaleString());
+        console.log('💰 Sum of Outflow:', totalOutflows.toLocaleString());
+        console.log('💰 Net Flow (Inflows - Outflows):', netFlow.toLocaleString());
         console.log('💰 Inflow transactions:', uniqueTransactions.filter(t => t.type === 'inflow').length);
         console.log('💰 Outflow transactions:', uniqueTransactions.filter(t => t.type === 'outflow').length);
+        
+        // Expected values based on your requirements:
+        // Sum of Inflow: 3,297,894
+        // Sum of Outflow: 811,099 (stored as positive, displayed as negative)
+        // Remaining Balance: 2,486,795
+        console.log('💰 Expected: Inflows=3,297,894, Outflows=811,099, Balance=2,486,795');
 
         const expectedMax = lines.length - 1;
         if (uniqueTransactions.length > expectedMax) {
