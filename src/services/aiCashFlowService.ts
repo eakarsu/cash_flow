@@ -42,6 +42,10 @@ class AICashFlowService {
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || process.env.REACT_APP_OPENROUTER_API_KEY || '';
+    
+    if (!this.apiKey) {
+      console.warn('⚠️ No OpenRouter API key provided. AI features will not work.');
+    }
   }
 
   private createPrompt(transactions: any[], currentBalance: number): string {
@@ -154,6 +158,14 @@ Return ONLY the JSON response, no additional text.`;
       console.log('🤖 AI Cash Flow Service: Starting prediction analysis');
       console.log('📊 Received transaction count:', transactions.length);
       
+      // Check if API key is configured
+      if (!this.isConfigured()) {
+        console.warn('⚠️ No API key configured. Using fallback prediction.');
+        const calculatedBalance = this.calculateCurrentBalance(transactions);
+        const actualCurrentBalance = currentBalance && currentBalance !== 0 ? currentBalance : calculatedBalance;
+        return this.generateFallbackPrediction(transactions, actualCurrentBalance);
+      }
+      
       // Debug: Log transaction sources
       if (transactions.length > 0) {
         const sampleIds = transactions.slice(0, 10).map(t => t.id);
@@ -183,6 +195,7 @@ Return ONLY the JSON response, no additional text.`;
       console.log('💰 Calculated balance:', calculatedBalance);
       console.log('💰 Using balance:', actualCurrentBalance);
       console.log('🔑 API Key configured:', !!this.apiKey);
+      console.log('🔑 API Key length:', this.apiKey.length);
       console.log('📝 Prompt length:', prompt.length);
       
       const response = await fetch(this.baseUrl, {
