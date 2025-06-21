@@ -18,6 +18,7 @@ const ImportTransactionsPage: React.FC = () => {
   }, []);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🚨🚨🚨 IMPORT TRANSACTIONS PAGE handleFileChange CALLED!!! 🚨🚨🚨');
     console.log('🔥🔥🔥 handleFileChange ACTUALLY CALLED!', event);
     console.log('🔥 Event target:', event.target);
     console.log('🔥 Files array:', event.target.files);
