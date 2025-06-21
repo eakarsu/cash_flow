@@ -48,6 +48,15 @@ class AICashFlowService {
     }
   }
 
+  isConfigured(): boolean {
+    return !!this.apiKey && this.apiKey.length > 0;
+  }
+
+  setApiKey(apiKey: string): void {
+    this.apiKey = apiKey;
+    console.log('🔑 API key updated:', !!apiKey);
+  }
+
   private createPrompt(transactions: any[], currentBalance: number): string {
     const transactionSummary = this.summarizeTransactions(transactions);
     
