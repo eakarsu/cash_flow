@@ -108,16 +108,22 @@ const ImportTransactionsPage: React.FC = () => {
               ref={fileInputRef}
               type="file"
               accept=".csv"
-              onChange={handleFileChange}
-              className="hidden"
+              onChange={(e) => {
+                console.log('🔥🔥🔥 FILE INPUT ONCHANGE TRIGGERED!', e);
+                console.log('🔥 Files:', e.target.files);
+                handleFileChange(e);
+              }}
+              style={{ display: 'none' }}
             />
             
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 console.log('🔥 Button clicked!');
                 console.log('🔥 File input ref:', fileInputRef.current);
                 if (fileInputRef.current) {
                   console.log('🔥 Triggering file input click');
+                  fileInputRef.current.value = ''; // Reset input
                   fileInputRef.current.click();
                 } else {
                   console.error('🔥 File input ref is null!');
