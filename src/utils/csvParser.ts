@@ -62,8 +62,13 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
         console.log('📄 Header line:', lines[0]);
         console.log('📄 First data line:', lines[1]);
         
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/"/g, ''));
         console.log('📄 Parsed headers:', headers);
+        console.log('📄 Header count:', headers.length);
+        console.log('📄 Individual headers:');
+        headers.forEach((header, index) => {
+          console.log(`📄   [${index}]: "${header}"`);
+        });
         
         const transactions: Transaction[] = [];
         
@@ -77,16 +82,44 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           
           console.log(`📄 Row ${i} values:`, values);
           
-          // Try to find common column patterns
-          const dateIndex = findColumnIndex(headers, ['date', 'transaction date', 'trans date', 'posting date']);
-          const descIndex = findColumnIndex(headers, ['description', 'desc', 'memo', 'details', 'merchant name', 'payee']);
-          const amountIndex = findColumnIndex(headers, ['amount', 'transaction amount', 'net amount']);
-          const debitIndex = findColumnIndex(headers, ['debit', 'debit amount', 'withdrawal']);
-          const creditIndex = findColumnIndex(headers, ['credit', 'credit amount', 'deposit']);
-          const categoryIndex = findColumnIndex(headers, ['category', 'type', 'transaction type']);
-          const balanceIndex = findColumnIndex(headers, ['balance', 'running balance', 'account balance']);
+          // Try to find common column patterns with more variations
+          const dateIndex = findColumnIndex(headers, [
+            'date', 'transaction date', 'trans date', 'posting date', 'post date', 
+            'effective date', 'value date', 'settlement date'
+          ]);
+          const descIndex = findColumnIndex(headers, [
+            'description', 'desc', 'memo', 'details', 'merchant name', 'payee', 
+            'reference', 'transaction description', 'narrative', 'particulars'
+          ]);
+          const amountIndex = findColumnIndex(headers, [
+            'amount', 'transaction amount', 'net amount', 'value', 'sum', 
+            'transaction value', 'net value'
+          ]);
+          const debitIndex = findColumnIndex(headers, [
+            'debit', 'debit amount', 'withdrawal', 'withdrawals', 'outgoing', 
+            'debit value', 'dr', 'out'
+          ]);
+          const creditIndex = findColumnIndex(headers, [
+            'credit', 'credit amount', 'deposit', 'deposits', 'incoming', 
+            'credit value', 'cr', 'in'
+          ]);
+          const categoryIndex = findColumnIndex(headers, [
+            'category', 'type', 'transaction type', 'classification', 'class', 
+            'expense type', 'income type'
+          ]);
+          const balanceIndex = findColumnIndex(headers, [
+            'balance', 'running balance', 'account balance', 'current balance', 
+            'available balance', 'closing balance'
+          ]);
           
-          console.log(`📄 Column indices - Date: ${dateIndex}, Desc: ${descIndex}, Amount: ${amountIndex}, Debit: ${debitIndex}, Credit: ${creditIndex}, Category: ${categoryIndex}, Balance: ${balanceIndex}`);
+          console.log(`📄 Column indices for row ${i}:`);
+          console.log(`📄   Date: ${dateIndex} (${dateIndex >= 0 ? headers[dateIndex] : 'not found'})`);
+          console.log(`📄   Description: ${descIndex} (${descIndex >= 0 ? headers[descIndex] : 'not found'})`);
+          console.log(`📄   Amount: ${amountIndex} (${amountIndex >= 0 ? headers[amountIndex] : 'not found'})`);
+          console.log(`📄   Debit: ${debitIndex} (${debitIndex >= 0 ? headers[debitIndex] : 'not found'})`);
+          console.log(`📄   Credit: ${creditIndex} (${creditIndex >= 0 ? headers[creditIndex] : 'not found'})`);
+          console.log(`📄   Category: ${categoryIndex} (${categoryIndex >= 0 ? headers[categoryIndex] : 'not found'})`);
+          console.log(`📄   Balance: ${balanceIndex} (${balanceIndex >= 0 ? headers[balanceIndex] : 'not found'})`);
           
           let amount = 0;
           let transactionType: 'inflow' | 'outflow' = 'outflow';
@@ -235,10 +268,35 @@ const findColumnIndex = (headers: string[], possibleNames: string[]): number => 
   
   for (const name of possibleNames) {
     const index = headers.findIndex(h => {
-      const headerLower = h.toLowerCase();
-      const nameLower = name.toLowerCase();
-      return headerLower.includes(nameLower) || headerLower === nameLower;
+      const headerLower = h.toLowerCase().trim();
+      const nameLower = name.toLowerCase().trim();
+      
+      // Exact match
+      if (headerLower === nameLower) {
+        console.log('✅ Exact match found:', name, 'at index', index);
+        return true;
+      }
+      
+      // Contains match
+      if (headerLower.includes(nameLower)) {
+        console.log('✅ Contains match found:', name, 'in', headerLower, 'at index', index);
+        return true;
+      }
+      
+      // Partial word match (for things like "trans date" matching "date")
+      const headerWords = headerLower.split(/\s+/);
+      const nameWords = nameLower.split(/\s+/);
+      
+      for (const nameWord of nameWords) {
+        if (headerWords.some(headerWord => headerWord.includes(nameWord) || nameWord.includes(headerWord))) {
+          console.log('✅ Word match found:', name, 'in', headerLower, 'at index', index);
+          return true;
+        }
+      }
+      
+      return false;
     });
+    
     if (index >= 0) {
       console.log('✅ Found', name, 'at index', index);
       return index;
@@ -246,6 +304,7 @@ const findColumnIndex = (headers: string[], possibleNames: string[]): number => 
   }
   
   console.log('❌ No matching column found for:', possibleNames);
+  console.log('❌ Available headers:', headers);
   return -1;
 };
 
