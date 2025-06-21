@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from '../components/Layout/Layout.tsx';
 import HomePage from '../pages/HomePage.tsx';
@@ -35,12 +35,11 @@ import TutorialsPage from '../pages/Support/TutorialsPage.tsx';
 import SupportContactPage from '../pages/Support/SupportContactPage.tsx';
 
 const AppRouter: React.FC = () => {
-  const { transactions, setTransactions } = useTransactions();
-  const [isImporting, setIsImporting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { transactions } = useTransactions();
 
   const handleImport = () => {
-    fileInputRef.current?.click();
+    // Navigate to import page instead of handling file upload here
+    window.location.href = '/transactions/import';
   };
 
   const handleExport = () => {
@@ -69,63 +68,9 @@ const AppRouter: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setIsImporting(true);
-      try {
-        // Simple CSV parsing
-        const text = await file.text();
-        const lines = text.split('\n');
-        const headers = lines[0].split(',');
-        
-        const importedTransactions = lines.slice(1)
-          .filter(line => line.trim())
-          .map((line, index) => {
-            const values = line.split(',');
-            const amount = parseFloat(values[2]) || 0;
-            return {
-              id: `imported-${Date.now()}-${index}`,
-              date: values[0] || new Date().toISOString().split('T')[0],
-              description: values[1] || 'Imported transaction',
-              amount: amount,
-              type: amount >= 0 ? 'inflow' : 'outflow',
-              category: values[3] || 'Other',
-              balance: parseFloat(values[4]) || 0
-            };
-          });
-
-        setTransactions(prev => {
-          const existingIds = new Set(prev.map(t => t.id));
-          const newTransactions = importedTransactions.filter(t => !existingIds.has(t.id));
-          return [...prev, ...newTransactions].sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-        });
-        alert(`Successfully imported ${importedTransactions.length} transactions`);
-      } catch (error) {
-        console.error('Error importing CSV:', error);
-        alert('Error importing CSV file. Please check the format and try again.');
-      } finally {
-        setIsImporting(false);
-      }
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   return (
     <Router>
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-      
       <Layout onImport={handleImport} onExport={handleExport}>
         <Routes>
             {/* Main Application Pages */}
