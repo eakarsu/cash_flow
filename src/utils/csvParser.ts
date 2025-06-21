@@ -1,4 +1,5 @@
 import { Transaction } from '../types';
+import AIColumnMappingService, { ColumnMapping } from '../services/aiColumnMappingService';
 
 const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return new Date().toISOString().split('T')[0];
@@ -70,10 +71,23 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           console.log(`📄   [${index}]: "${header}"`);
         });
         
-        // Use fallback heuristic mapping for now
-        console.log('🔄 Using fallback heuristic mapping for headers:', originalHeaders);
-        const columnMapping = fallbackMapping(originalHeaders);
-        console.log('✅ Fallback mapping completed:', columnMapping);
+        // Use AI to map columns
+        console.log('🤖 Starting AI column mapping...');
+        // Try to get API key from the AI cash flow service if available
+        let apiKey = '';
+        try {
+          const aiCashFlowService = (window as any).aiCashFlowService;
+          if (aiCashFlowService && aiCashFlowService.getApiKey) {
+            apiKey = aiCashFlowService.getApiKey();
+          }
+        } catch (error) {
+          console.log('🤖 Could not get API key from cash flow service, using environment variable');
+        }
+        
+        const aiMappingService = new AIColumnMappingService(apiKey);
+        const columnMapping = await aiMappingService.mapColumns(originalHeaders);
+        
+        console.log('✅ AI Column mapping completed:', columnMapping);
         
         const transactions: Transaction[] = [];
         
@@ -96,7 +110,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           const categoryIndex = columnMapping.category ? originalHeaders.indexOf(columnMapping.category) : -1;
           const balanceIndex = columnMapping.balance ? originalHeaders.indexOf(columnMapping.balance) : -1;
           
-          console.log(`📄 Fallback-mapped column indices for row ${i}:`);
+          console.log(`📄 AI-mapped column indices for row ${i}:`);
           console.log(`📄   Date: ${dateIndex} (${columnMapping.date || 'not mapped'})`);
           console.log(`📄   Description: ${descIndex} (${columnMapping.description || 'not mapped'})`);
           console.log(`📄   Amount: ${amountIndex} (${columnMapping.amount || 'not mapped'})`);
@@ -124,7 +138,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             }
           } else {
             // Try to guess from the data structure
-            console.log('⚠️ Could not determine amount column from fallback mapping, trying to guess from data');
+            console.log('⚠️ Could not determine amount column from AI mapping, trying to guess from data');
             for (let j = 0; j < values.length; j++) {
               const testAmount = parseAmount(values[j]);
               if (!isNaN(testAmount) && testAmount !== 0) {
@@ -248,97 +262,6 @@ const parseCSVLine = (line: string): string[] => {
 };
 
 
-interface ColumnMapping {
-  date?: string;
-  description?: string;
-  amount?: string;
-  debit?: string;
-  credit?: string;
-  category?: string;
-  balance?: string;
-}
-
-const fallbackMapping = (headers: string[]): ColumnMapping => {
-  console.log('🔄 Using fallback heuristic mapping for headers:', headers);
-  
-  const mapping: ColumnMapping = {};
-  
-  // Convert headers to lowercase for easier matching
-  const lowerHeaders = headers.map(h => h.toLowerCase().trim());
-  
-  // Date field mapping
-  const datePatterns = ['date', 'transaction date', 'trans date', 'posting date', 'post date', 'effective date', 'value date'];
-  for (const pattern of datePatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern));
-    if (index >= 0) {
-      mapping.date = headers[index];
-      break;
-    }
-  }
-  
-  // Description field mapping
-  const descPatterns = ['description', 'desc', 'memo', 'details', 'merchant', 'payee', 'reference', 'narrative'];
-  for (const pattern of descPatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern));
-    if (index >= 0) {
-      mapping.description = headers[index];
-      break;
-    }
-  }
-  
-  // Amount field mapping (single column)
-  const amountPatterns = ['amount', 'transaction amount', 'net amount', 'value'];
-  for (const pattern of amountPatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern) && !h.includes('debit') && !h.includes('credit'));
-    if (index >= 0) {
-      mapping.amount = headers[index];
-      break;
-    }
-  }
-  
-  // Debit field mapping
-  const debitPatterns = ['debit', 'withdrawal', 'outgoing', 'dr'];
-  for (const pattern of debitPatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern));
-    if (index >= 0) {
-      mapping.debit = headers[index];
-      break;
-    }
-  }
-  
-  // Credit field mapping
-  const creditPatterns = ['credit', 'deposit', 'incoming', 'cr'];
-  for (const pattern of creditPatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern));
-    if (index >= 0) {
-      mapping.credit = headers[index];
-      break;
-    }
-  }
-  
-  // Category field mapping
-  const categoryPatterns = ['category', 'type', 'classification'];
-  for (const pattern of categoryPatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern));
-    if (index >= 0) {
-      mapping.category = headers[index];
-      break;
-    }
-  }
-  
-  // Balance field mapping
-  const balancePatterns = ['balance', 'running balance', 'account balance', 'current balance'];
-  for (const pattern of balancePatterns) {
-    const index = lowerHeaders.findIndex(h => h.includes(pattern));
-    if (index >= 0) {
-      mapping.balance = headers[index];
-      break;
-    }
-  }
-  
-  console.log('✅ Fallback mapping result:', mapping);
-  return mapping;
-};
 
 const categorizeTransaction = (description: string): string => {
   const descriptionLower = (description || '').toLowerCase();
