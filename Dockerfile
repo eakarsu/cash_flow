@@ -14,7 +14,6 @@ RUN npm ci
 COPY . .
 
 # Expose port
-EXPOSE 3000
 
 # Start the development server
 CMD ["npm", "start"]
