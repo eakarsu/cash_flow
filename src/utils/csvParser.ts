@@ -19,60 +19,145 @@ async function getAICashFlowService() {
 
 const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return new Date().toISOString().split('T')[0];
-
   const cleaned = dateStr.replace(/"/g, '').trim();
-  
-  // Try direct parsing first
   const date = new Date(cleaned);
   if (!isNaN(date.getTime())) {
     return date.toISOString().split('T')[0];
   }
-
-  // Detect format and parse accordingly
-  const format = detectDateFormat(cleaned);
   const parts = cleaned.split('/');
-  
   if (parts.length === 3) {
-    const [first, second, third] = parts;
-    
-    if (format === 'MM/DD/YYYY') {
-      const month = first.padStart(2, '0');
-      const day = second.padStart(2, '0');
-      const year = third;
-      return `${year}-${month}-${day}`;
-    } else if (format === 'DD/MM/YYYY') {
-      const day = first.padStart(2, '0');
-      const month = second.padStart(2, '0');
-      const year = third;
-      return `${year}-${month}-${day}`;
+    const [month, day, year] = parts;
+    const fullYear = parseInt(year) < 100 ? `20${year}` : year;
+    const formattedDate = new Date(`${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+    if (!isNaN(formattedDate.getTime())) {
+      return formattedDate.toISOString().split('T')[0];
     }
   }
-
+  console.warn(`⚠️ Could not parse date: "${dateStr}". Using today's date.`);
   return new Date().toISOString().split('T')[0];
 };
 
 const parseAmount = (amountStr: string): number => {
   if (!amountStr) return 0;
-
   const cleaned = amountStr.replace(/["$,]/g, '').trim();
   
-  // Handle accounting format with parentheses (negative)
+  // DEBUG LOG
+  //console.log(`[DEBUG] parseAmount input: '${amountStr}', cleaned: '${cleaned}'`);
+
   if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
     const amount = parseFloat(cleaned.slice(1, -1));
     return isNaN(amount) ? 0 : -Math.abs(amount);
   }
-
-  // Handle explicit negative sign
-  if (cleaned.startsWith('-')) {
-    const amount = parseFloat(cleaned);
-    return isNaN(amount) ? 0 : amount;
-  }
-
   const amount = parseFloat(cleaned);
   return isNaN(amount) ? 0 : amount;
 };
 
 export const parseCSV = (file: File): Promise<Transaction[]> => {
+  return new Promise(async (resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      try {
+        const csv = event.target?.result as string;
+        const lines = csv.split('\n').filter(line => line.trim());
+
+        if (lines.length < 2) {
+          throw new Error('CSV file must contain at least a header row and one data row');
+        }
+
+        const originalHeaders = parseCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
+        
+        // Let's use the fallback mapping for now to ensure consistency, as AI mapping can vary.
+        // This makes debugging predictable.
+        const columnMapping = new (await import('../services/aiColumnMappingService.ts')).default().fallbackMapping(originalHeaders);
+        console.log('✅ Using Fallback Column mapping for predictable debugging:', columnMapping);
+        
+        const transactions: Transaction[] = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = parseCSVLine(lines[i]);
+          if (values.length < originalHeaders.length) {
+            continue; // Skip malformed rows
+          }
+
+          const dateIndex = columnMapping.date ? originalHeaders.indexOf(columnMapping.date) : -1;
+          const descIndex = columnMapping.description ? originalHeaders.indexOf(columnMapping.description) : -1;
+          const amountIndex = columnMapping.amount ? originalHeaders.indexOf(columnMapping.amount) : -1;
+          const debitIndex = columnMapping.debit ? originalHeaders.indexOf(columnMapping.debit) : -1;
+          const creditIndex = columnMapping.credit ? originalHeaders.indexOf(columnMapping.credit) : -1;
+          const categoryIndex = columnMapping.category ? originalHeaders.indexOf(columnMapping.category) : -1;
+          const balanceIndex = columnMapping.balance ? originalHeaders.indexOf(columnMapping.balance) : -1;
+
+          let rawAmount = 0;
+          let transactionType: 'inflow' | 'outflow' | null = null;
+          
+          // --- THIS IS THE CORRECTED LOGIC ---
+          const amountStr = values[amountIndex] || '';
+          if (amountStr) {
+            rawAmount = parseAmount(amountStr);
+            if (rawAmount >= 0) {
+              transactionType = 'inflow';
+            } else {
+              transactionType = 'outflow';
+            }
+          }
+
+          // DEBUG LOG
+          //console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Parsed Amount = ${rawAmount}, Determined Type = ${transactionType}`);
+
+          if (transactionType) {
+            const description = values[descIndex] || 'Imported Transaction';
+            const category = values[categoryIndex] || categorizeTransaction(description);
+            const date = normalizeDate(values[dateIndex] || '');
+            const balance = parseAmount(values[balanceIndex] || '0');
+
+            const transaction: Transaction = {
+              id: `imported-${file.name.replace(/[^a-zA-Z0-9]/g, '')}-row-${i}`,
+              date: date,
+              description: description,
+              amount: Math.abs(rawAmount), // Store amount as a positive number
+              type: transactionType,
+              category: category,
+              balance: balance
+            };
+            transactions.push(transaction);
+          }
+        }
+        
+        console.log('✅ Total transactions parsed:', transactions.length);
+        resolve(transactions);
+
+      } catch (error) {
+        console.error('❌ CSV parsing error:', error);
+        reject(error);
+      }
+    };
+
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsText(file);
+  });
+};
+
+const parseCSVLine = (line: string): string[] => {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+};
+
+export const parseCSV2 = (file: File): Promise<Transaction[]> => {
   return new Promise(async (resolve, reject) => {
     const reader = new FileReader();
 
@@ -288,7 +373,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
   });
 };
 
-const parseCSVLine = (line: string): string[] => {
+const parseCSVLine2 = (line: string): string[] => {
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
