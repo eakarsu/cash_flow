@@ -1,47 +1,56 @@
+// src/utils/csvParser.ts
+
 import { Transaction } from '../types';
-import AIColumnMappingService, { ColumnMapping } from '../services/aiColumnMappingService';
+import { ColumnMapping } from '../types/columnMapping.ts';
+
+async function getAICashFlowService() {
+  try {
+    const existingService = (window as any).aiCashFlowService;
+    if (existingService && existingService.getCSVImportInsights) {
+      return existingService;
+    }
+  } catch (error) {
+    console.log('🤖 Could not get existing AI service:', error);
+  }
+  
+  const { default: AICashFlowService } = await import('../services/aiCashFlowService.ts');
+  return new AICashFlowService();
+}
 
 const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return new Date().toISOString().split('T')[0];
-  
-  // Remove quotes and trim
+
   const cleaned = dateStr.replace(/"/g, '').trim();
-  
-  // Try to parse various date formats
   const date = new Date(cleaned);
   if (!isNaN(date.getTime())) {
     return date.toISOString().split('T')[0];
   }
-  
-  // Try MM/DD/YYYY format
+
   const mmddyyyy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (mmddyyyy) {
     const [, month, day, year] = mmddyyyy;
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
-  
-  // Try DD/MM/YYYY format
+
   const ddmmyyyy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (ddmmyyyy) {
     const [, day, month, year] = ddmmyyyy;
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
-  
+
   return new Date().toISOString().split('T')[0];
 };
 
 const parseAmount = (amountStr: string): number => {
   if (!amountStr) return 0;
-  
-  // Remove quotes, dollar signs, commas, and trim
+
   const cleaned = amountStr.replace(/["$,]/g, '').trim();
   
-  // Handle parentheses as negative (accounting format)
   if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
     const amount = parseFloat(cleaned.slice(1, -1));
     return isNaN(amount) ? 0 : -Math.abs(amount);
   }
-  
+
   const amount = parseFloat(cleaned);
   return isNaN(amount) ? 0 : amount;
 };
@@ -49,59 +58,47 @@ const parseAmount = (amountStr: string): number => {
 export const parseCSV = (file: File): Promise<Transaction[]> => {
   return new Promise(async (resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = async (event) => {
       try {
         const csv = event.target?.result as string;
         const lines = csv.split('\n').filter(line => line.trim());
-        
+
         if (lines.length < 2) {
           throw new Error('CSV file must contain at least a header row and one data row');
         }
-        
+
         console.log('📄 CSV file has', lines.length, 'lines');
         console.log('📄 Header line:', lines[0]);
         console.log('📄 First data line:', lines[1]);
-        
+
         const originalHeaders = parseCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
         console.log('📄 Original headers:', originalHeaders);
-        console.log('📄 Header count:', originalHeaders.length);
-        console.log('📄 Individual headers:');
-        originalHeaders.forEach((header, index) => {
-          console.log(`📄   [${index}]: "${header}"`);
-        });
-        
-        // Use AI to map columns
-        console.log('🤖 Starting AI column mapping...');
-        // Try to get API key from the AI cash flow service if available
-        let apiKey = '';
-        try {
-          const aiCashFlowService = (window as any).aiCashFlowService;
-          if (aiCashFlowService && aiCashFlowService.getApiKey) {
-            apiKey = aiCashFlowService.getApiKey();
-          }
-        } catch (error) {
-          console.log('🤖 Could not get API key from cash flow service, using environment variable');
-        }
-        
-        const aiMappingService = new AIColumnMappingService(apiKey);
-        const columnMapping = await aiMappingService.mapColumns(originalHeaders);
-        
-        console.log('✅ AI Column mapping completed:', columnMapping);
-        
+
+        console.log('🤖 Starting AI insights for CSV import...');
+
+        const aiCashFlowService = await getAICashFlowService();
+        const firstDataLineValues = parseCSVLine(lines[1]);
+
+        const { columnMapping, suggestedCategoryForFirstRow } = await aiCashFlowService.getCSVImportInsights(
+          originalHeaders,
+          firstDataLineValues
+        );
+
+        console.log('✅ AI CSV import insights completed:', { columnMapping, suggestedCategoryForFirstRow });
+
         const transactions: Transaction[] = [];
-        
+
         for (let i = 1; i < lines.length; i++) {
           const values = parseCSVLine(lines[i]);
-          
+
           if (values.length < 3) {
             console.log('⚠️ Skipping incomplete row', i, ':', values);
             continue;
           }
-          
-          console.log(`📄 Row ${i} values:`, values);
-          
-          // Use fallback mapping to get column indices
+
+          //console.log(`📄 Row ${i} values:`, values);
+
           const dateIndex = columnMapping.date ? originalHeaders.indexOf(columnMapping.date) : -1;
           const descIndex = columnMapping.description ? originalHeaders.indexOf(columnMapping.description) : -1;
           const amountIndex = columnMapping.amount ? originalHeaders.indexOf(columnMapping.amount) : -1;
@@ -109,26 +106,17 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           const creditIndex = columnMapping.credit ? originalHeaders.indexOf(columnMapping.credit) : -1;
           const categoryIndex = columnMapping.category ? originalHeaders.indexOf(columnMapping.category) : -1;
           const balanceIndex = columnMapping.balance ? originalHeaders.indexOf(columnMapping.balance) : -1;
-          
-          console.log(`📄 AI-mapped column indices for row ${i}:`);
-          console.log(`📄   Date: ${dateIndex} (${columnMapping.date || 'not mapped'})`);
-          console.log(`📄   Description: ${descIndex} (${columnMapping.description || 'not mapped'})`);
-          console.log(`📄   Amount: ${amountIndex} (${columnMapping.amount || 'not mapped'})`);
-          console.log(`📄   Debit: ${debitIndex} (${columnMapping.debit || 'not mapped'})`);
-          console.log(`📄   Credit: ${creditIndex} (${columnMapping.credit || 'not mapped'})`);
-          console.log(`📄   Category: ${categoryIndex} (${columnMapping.category || 'not mapped'})`);
-          console.log(`📄   Balance: ${balanceIndex} (${columnMapping.balance || 'not mapped'})`);
-          
+
           let amount = 0;
           let transactionType: 'inflow' | 'outflow' = 'outflow';
-          
+
           if (amountIndex >= 0 && values[amountIndex]) {
             amount = parseAmount(values[amountIndex]);
             transactionType = amount >= 0 ? 'inflow' : 'outflow';
           } else if (debitIndex >= 0 && creditIndex >= 0) {
             const debit = parseAmount(values[debitIndex] || '0');
             const credit = parseAmount(values[creditIndex] || '0');
-            
+
             if (debit > 0) {
               amount = debit;
               transactionType = 'outflow';
@@ -137,7 +125,6 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
               transactionType = 'inflow';
             }
           } else {
-            // Try to guess from the data structure
             console.log('⚠️ Could not determine amount column from AI mapping, trying to guess from data');
             for (let j = 0; j < values.length; j++) {
               const testAmount = parseAmount(values[j]);
@@ -149,13 +136,11 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
               }
             }
           }
-          
-          // Get description
+
           let description = 'Imported transaction';
           if (descIndex >= 0 && values[descIndex]) {
             description = values[descIndex].replace(/"/g, '').trim();
           } else {
-            // Try to find a text field that looks like a description
             for (let j = 0; j < values.length; j++) {
               const value = values[j]?.replace(/"/g, '').trim();
               if (value && value.length > 3 && isNaN(parseFloat(value)) && !value.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -164,25 +149,22 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
               }
             }
           }
-          
-          // Get category
+
           let category = categorizeTransaction(description);
           if (categoryIndex >= 0 && values[categoryIndex]) {
             category = values[categoryIndex].replace(/"/g, '').trim();
           }
-          
-          // Get date
+
           let date = new Date().toISOString().split('T')[0];
           if (dateIndex >= 0 && values[dateIndex]) {
             date = normalizeDate(values[dateIndex]);
           }
-          
-          // Get balance
+
           let balance = 0;
           if (balanceIndex >= 0 && values[balanceIndex]) {
             balance = parseAmount(values[balanceIndex]);
           }
-          
+
           const transaction: Transaction = {
             id: `imported-${file.name.replace(/[^a-zA-Z0-9]/g, '')}-row-${i}`,
             date: date,
@@ -192,49 +174,48 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             category: category,
             balance: balance
           };
-          
-          console.log(`✅ Created transaction ${i}:`, transaction);
+
+          //console.log(`✅ Created transaction ${i}:`, transaction);
           transactions.push(transaction);
         }
-        
+
         console.log('✅ Total transactions parsed:', transactions.length);
-        
-        // Remove duplicates based on multiple criteria
+
         const uniqueTransactions = transactions.filter((transaction, index, self) => {
-          return index === self.findIndex(t => 
-            t.date === transaction.date && 
-            t.description === transaction.description && 
+          return index === self.findIndex(t =>
+            t.date === transaction.date &&
+            t.description === transaction.description &&
             t.amount === transaction.amount &&
             t.type === transaction.type &&
             t.category === transaction.category
           );
         });
-        
+
         console.log('✅ Unique transactions after deduplication:', uniqueTransactions.length);
-        
+
         if (uniqueTransactions.length !== transactions.length) {
           console.warn('⚠️ Removed', transactions.length - uniqueTransactions.length, 'duplicate transactions');
         }
-        
-        // Final validation - ensure we don't have an unreasonable number of transactions
-        const expectedMax = lines.length - 1; // Subtract header row
+
+        const expectedMax = lines.length - 1;
         if (uniqueTransactions.length > expectedMax) {
           console.error('❌ Too many transactions generated! Expected max:', expectedMax, 'Got:', uniqueTransactions.length);
           throw new Error(`CSV parsing error: Generated ${uniqueTransactions.length} transactions from ${expectedMax} data rows. This suggests a parsing issue.`);
         }
-        
+
         console.log('✅ Final validation passed. Returning', uniqueTransactions.length, 'transactions');
         resolve(uniqueTransactions);
+
       } catch (error) {
         console.error('❌ CSV parsing error:', error);
         reject(error);
       }
     };
-    
+
     reader.onerror = () => {
       reject(new Error('Failed to read file'));
     };
-    
+
     reader.readAsText(file);
   });
 };
@@ -243,10 +224,9 @@ const parseCSVLine = (line: string): string[] => {
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
-  
+
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
-    
     if (char === '"') {
       inQuotes = !inQuotes;
     } else if (char === ',' && !inQuotes) {
@@ -256,17 +236,14 @@ const parseCSVLine = (line: string): string[] => {
       current += char;
     }
   }
-  
+
   result.push(current.trim());
   return result;
 };
 
-
-
 const categorizeTransaction = (description: string): string => {
   const descriptionLower = (description || '').toLowerCase();
 
-  // Revenue categories - check for payment processors and sales
   if (descriptionLower.includes('stripe') || descriptionLower.includes('square') ||
       descriptionLower.includes('payment') || descriptionLower.includes('revenue') ||
       descriptionLower.includes('income') || descriptionLower.includes('sale') ||
@@ -274,7 +251,6 @@ const categorizeTransaction = (description: string): string => {
     return 'Revenue';
   }
 
-  // Operating expenses
   if (descriptionLower.includes('rent')) {
     return 'Rent';
   }
@@ -313,7 +289,6 @@ const categorizeTransaction = (description: string): string => {
     return 'Banking Fees';
   }
 
-  // Food and inventory
   if (descriptionLower.includes('sysco') || descriptionLower.includes('food') ||
       descriptionLower.includes('inventory') || descriptionLower.includes('pepsico') ||
       descriptionLower.includes('beverage')) {
