@@ -314,40 +314,85 @@ Return ONLY the JSON response, no additional text.`;
   }
 
   private calculateCurrentBalance(transactions: any[]): number {
-    if (!transactions || transactions.length === 0) return 0;
+    console.log('💰 CALCULATING CURRENT BALANCE - Starting with', transactions.length, 'transactions');
+    
+    if (!transactions || transactions.length === 0) {
+      console.log('💰 No transactions found, returning 0');
+      return 0;
+    }
     
     // Sort transactions by date to get chronological order (newest first)
     const sortedTransactions = [...transactions].sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     
+    console.log('💰 Sorted transactions by date (newest first):');
+    console.log('💰 Most recent 5 transactions:', sortedTransactions.slice(0, 5).map(t => ({
+      id: t.id,
+      date: t.date,
+      description: t.description,
+      amount: t.amount,
+      type: t.type,
+      balance: t.balance
+    })));
+    
     // If transactions have balance field, use the most recent one (first in sorted array)
     const transactionsWithBalance = sortedTransactions.filter(t => t.balance && t.balance !== 0);
+    console.log('💰 Transactions with balance field:', transactionsWithBalance.length);
+    
     if (transactionsWithBalance.length > 0) {
       const mostRecentWithBalance = transactionsWithBalance[0]; // First item is most recent
-      console.log('📊 Using balance from most recent transaction:', mostRecentWithBalance.balance);
+      console.log('💰 Using balance from most recent transaction:');
+      console.log('💰 Transaction:', {
+        id: mostRecentWithBalance.id,
+        date: mostRecentWithBalance.date,
+        description: mostRecentWithBalance.description,
+        balance: mostRecentWithBalance.balance
+      });
       return mostRecentWithBalance.balance;
     }
     
     // Otherwise, calculate balance by summing all transactions from oldest to newest
+    console.log('💰 No balance field found, calculating from transaction flow...');
     const chronologicalTransactions = [...transactions].sort((a, b) => 
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     
+    console.log('💰 Oldest 5 transactions:', chronologicalTransactions.slice(0, 5).map(t => ({
+      date: t.date,
+      description: t.description,
+      amount: t.amount,
+      type: t.type
+    })));
+    
     let balance = 0;
+    let inflowTotal = 0;
+    let outflowTotal = 0;
+    
     for (const transaction of chronologicalTransactions) {
       if (transaction.type === 'inflow') {
-        balance += Math.abs(transaction.amount);
+        const amount = Math.abs(transaction.amount);
+        balance += amount;
+        inflowTotal += amount;
       } else if (transaction.type === 'outflow') {
-        balance -= Math.abs(transaction.amount);
+        const amount = Math.abs(transaction.amount);
+        balance -= amount;
+        outflowTotal += amount;
       }
     }
     
-    console.log('📊 Calculated balance from transaction flow:', balance);
+    console.log('💰 BALANCE CALCULATION SUMMARY:');
+    console.log('💰 Total inflows:', inflowTotal.toLocaleString());
+    console.log('💰 Total outflows:', outflowTotal.toLocaleString());
+    console.log('💰 Net balance (inflows - outflows):', balance.toLocaleString());
+    
     return balance;
   }
 
   private generateFallbackPrediction(transactions: any[], currentBalance: number): CashFlowPrediction {
+    console.log('📊 GENERATING FALLBACK PREDICTION');
+    console.log('📊 Input - Transactions:', transactions.length, 'Current Balance:', currentBalance.toLocaleString());
+    
     // Sort transactions by date (newest first) and get recent data
     const sortedTransactions = [...transactions].sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -361,14 +406,32 @@ Return ONLY the JSON response, no additional text.`;
       new Date(t.date).getTime() >= ninetyDaysAgo.getTime()
     );
     
-    console.log('📊 Using', recentTransactions.length, 'recent transactions for fallback prediction');
+    console.log('📊 Date range analysis:');
+    console.log('📊 90 days ago:', ninetyDaysAgo.toISOString().split('T')[0]);
+    console.log('📊 Total transactions:', transactions.length);
+    console.log('📊 Recent transactions (last 90 days):', recentTransactions.length);
+    
+    if (recentTransactions.length > 0) {
+      console.log('📊 Recent transaction date range:');
+      console.log('📊 Oldest recent:', recentTransactions[recentTransactions.length - 1].date);
+      console.log('📊 Newest recent:', recentTransactions[0].date);
+    }
     
     // Calculate weekly averages from recent data
     const inflowTransactions = recentTransactions.filter(t => t.type === 'inflow');
     const outflowTransactions = recentTransactions.filter(t => t.type === 'outflow');
     
+    console.log('📊 Transaction type breakdown:');
+    console.log('📊 Inflow transactions:', inflowTransactions.length);
+    console.log('📊 Outflow transactions:', outflowTransactions.length);
+    
     const totalInflows = inflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
     const totalOutflows = outflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    
+    console.log('📊 CASH FLOW TOTALS (last 90 days):');
+    console.log('📊 Total inflows:', totalInflows.toLocaleString());
+    console.log('📊 Total outflows:', totalOutflows.toLocaleString());
+    console.log('📊 Net flow:', (totalInflows - totalOutflows).toLocaleString());
     
     // Calculate weekly averages (90 days = ~13 weeks)
     const weeksOfData = Math.max(1, recentTransactions.length > 0 ? 13 : 1);
@@ -376,7 +439,10 @@ Return ONLY the JSON response, no additional text.`;
     const weeklyOutflows = totalOutflows / weeksOfData;
     const weeklyNetFlow = weeklyInflows - weeklyOutflows;
     
-    console.log('📊 Weekly averages - Inflows:', weeklyInflows, 'Outflows:', weeklyOutflows, 'Net:', weeklyNetFlow);
+    console.log('📊 WEEKLY AVERAGES (based on', weeksOfData, 'weeks):');
+    console.log('📊 Weekly inflows:', weeklyInflows.toLocaleString());
+    console.log('📊 Weekly outflows:', weeklyOutflows.toLocaleString());
+    console.log('📊 Weekly net flow:', weeklyNetFlow.toLocaleString());
 
     const weeklyForecasts = [];
     let balance = currentBalance;
