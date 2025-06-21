@@ -130,7 +130,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
 
           if (amountIndex >= 0 && values[amountIndex]) {
             rawAmount = parseAmount(values[amountIndex]);
-            amount = Math.abs(rawAmount);
+            amount = rawAmount; // Keep the original sign for calculations
             transactionType = rawAmount >= 0 ? 'inflow' : 'outflow';
           } else if (debitIndex >= 0 && creditIndex >= 0) {
             const debit = parseAmount(values[debitIndex] || '0');
@@ -140,17 +140,17 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             if (Math.abs(debit) > 0 && Math.abs(credit) > 0) {
               // Use the larger absolute value
               if (Math.abs(debit) > Math.abs(credit)) {
-                amount = Math.abs(debit);
+                amount = -Math.abs(debit); // Debit is negative
                 transactionType = 'outflow';
               } else {
-                amount = Math.abs(credit);
+                amount = Math.abs(credit); // Credit is positive
                 transactionType = 'inflow';
               }
             } else if (Math.abs(debit) > 0) {
-              amount = Math.abs(debit);
+              amount = -Math.abs(debit); // Debit is negative
               transactionType = 'outflow';
             } else if (Math.abs(credit) > 0) {
-              amount = Math.abs(credit);
+              amount = Math.abs(credit); // Credit is positive
               transactionType = 'inflow';
             }
           } else {
@@ -159,7 +159,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
               const testAmount = parseAmount(values[j]);
               if (!isNaN(testAmount) && testAmount !== 0) {
                 rawAmount = testAmount;
-                amount = Math.abs(testAmount);
+                amount = testAmount; // Keep original sign
                 transactionType = testAmount >= 0 ? 'inflow' : 'outflow';
                 console.log(`📄 Guessed amount from column ${j}:`, testAmount);
                 break;
@@ -206,8 +206,8 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           };
 
           // Validate transaction data
-          if (amount <= 0) {
-            console.warn(`⚠️ Transaction ${i} has zero or negative amount:`, transaction);
+          if (Math.abs(amount) <= 0) {
+            console.warn(`⚠️ Transaction ${i} has zero amount:`, transaction);
           }
           
           if (!date || date === new Date().toISOString().split('T')[0]) {
@@ -250,10 +250,12 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           .filter(t => t.type === 'outflow')
           .reduce((sum, t) => sum + t.amount, 0);
 
+        const netFlow = totalInflows - totalOutflows;
+
         console.log('💰 Transaction validation:');
-        console.log('💰 Total inflows:', totalInflows.toLocaleString());
-        console.log('💰 Total outflows:', totalOutflows.toLocaleString());
-        console.log('💰 Net flow:', (totalInflows - totalOutflows).toLocaleString());
+        console.log('💰 Sum of Inflow:', totalInflows.toLocaleString());
+        console.log('💰 Sum of Outflow:', (-totalOutflows).toLocaleString()); // Show as negative
+        console.log('💰 Remaining Balance:', netFlow.toLocaleString());
         console.log('💰 Inflow transactions:', uniqueTransactions.filter(t => t.type === 'inflow').length);
         console.log('💰 Outflow transactions:', uniqueTransactions.filter(t => t.type === 'outflow').length);
 
