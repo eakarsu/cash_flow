@@ -1,3 +1,4 @@
+import { Transaction } from '../types';
 import AIColumnMappingService, { ColumnMapping } from '../services/aiColumnMappingService';
 
 const normalizeDate = (dateStr: string): string => {
@@ -100,44 +101,23 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           
           console.log(`📄 Row ${i} values:`, values);
           
-          // Try to find common column patterns with more variations
-          const dateIndex = findColumnIndex(headers, [
-            'date', 'transaction date', 'trans date', 'posting date', 'post date', 
-            'effective date', 'value date', 'settlement date'
-          ]);
-          const descIndex = findColumnIndex(headers, [
-            'description', 'desc', 'memo', 'details', 'merchant name', 'payee', 
-            'reference', 'transaction description', 'narrative', 'particulars'
-          ]);
-          const amountIndex = findColumnIndex(headers, [
-            'amount', 'transaction amount', 'net amount', 'value', 'sum', 
-            'transaction value', 'net value'
-          ]);
-          const debitIndex = findColumnIndex(headers, [
-            'debit', 'debit amount', 'withdrawal', 'withdrawals', 'outgoing', 
-            'debit value', 'dr', 'out'
-          ]);
-          const creditIndex = findColumnIndex(headers, [
-            'credit', 'credit amount', 'deposit', 'deposits', 'incoming', 
-            'credit value', 'cr', 'in'
-          ]);
-          const categoryIndex = findColumnIndex(headers, [
-            'category', 'type', 'transaction type', 'classification', 'class', 
-            'expense type', 'income type'
-          ]);
-          const balanceIndex = findColumnIndex(headers, [
-            'balance', 'running balance', 'account balance', 'current balance', 
-            'available balance', 'closing balance'
-          ]);
+          // Use AI mapping to get column indices
+          const dateIndex = columnMapping.date ? originalHeaders.indexOf(columnMapping.date) : -1;
+          const descIndex = columnMapping.description ? originalHeaders.indexOf(columnMapping.description) : -1;
+          const amountIndex = columnMapping.amount ? originalHeaders.indexOf(columnMapping.amount) : -1;
+          const debitIndex = columnMapping.debit ? originalHeaders.indexOf(columnMapping.debit) : -1;
+          const creditIndex = columnMapping.credit ? originalHeaders.indexOf(columnMapping.credit) : -1;
+          const categoryIndex = columnMapping.category ? originalHeaders.indexOf(columnMapping.category) : -1;
+          const balanceIndex = columnMapping.balance ? originalHeaders.indexOf(columnMapping.balance) : -1;
           
-          console.log(`📄 Column indices for row ${i}:`);
-          console.log(`📄   Date: ${dateIndex} (${dateIndex >= 0 ? headers[dateIndex] : 'not found'})`);
-          console.log(`📄   Description: ${descIndex} (${descIndex >= 0 ? headers[descIndex] : 'not found'})`);
-          console.log(`📄   Amount: ${amountIndex} (${amountIndex >= 0 ? headers[amountIndex] : 'not found'})`);
-          console.log(`📄   Debit: ${debitIndex} (${debitIndex >= 0 ? headers[debitIndex] : 'not found'})`);
-          console.log(`📄   Credit: ${creditIndex} (${creditIndex >= 0 ? headers[creditIndex] : 'not found'})`);
-          console.log(`📄   Category: ${categoryIndex} (${categoryIndex >= 0 ? headers[categoryIndex] : 'not found'})`);
-          console.log(`📄   Balance: ${balanceIndex} (${balanceIndex >= 0 ? headers[balanceIndex] : 'not found'})`);
+          console.log(`📄 AI-mapped column indices for row ${i}:`);
+          console.log(`📄   Date: ${dateIndex} (${columnMapping.date || 'not mapped'})`);
+          console.log(`📄   Description: ${descIndex} (${columnMapping.description || 'not mapped'})`);
+          console.log(`📄   Amount: ${amountIndex} (${columnMapping.amount || 'not mapped'})`);
+          console.log(`📄   Debit: ${debitIndex} (${columnMapping.debit || 'not mapped'})`);
+          console.log(`📄   Credit: ${creditIndex} (${columnMapping.credit || 'not mapped'})`);
+          console.log(`📄   Category: ${categoryIndex} (${columnMapping.category || 'not mapped'})`);
+          console.log(`📄   Balance: ${balanceIndex} (${columnMapping.balance || 'not mapped'})`);
           
           let amount = 0;
           let transactionType: 'inflow' | 'outflow' = 'outflow';
@@ -158,7 +138,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
             }
           } else {
             // Try to guess from the data structure
-            console.log('⚠️ Could not determine amount column, trying to guess from data');
+            console.log('⚠️ Could not determine amount column from AI mapping, trying to guess from data');
             for (let j = 0; j < values.length; j++) {
               const testAmount = parseAmount(values[j]);
               if (!isNaN(testAmount) && testAmount !== 0) {
@@ -281,52 +261,6 @@ const parseCSVLine = (line: string): string[] => {
   return result;
 };
 
-// This function is now deprecated in favor of AI-powered column mapping
-// Keeping it for reference but it's no longer used in the main parsing flow
-const findColumnIndex = (headers: string[], possibleNames: string[]): number => {
-  console.log('🔍 [DEPRECATED] Looking for columns:', possibleNames, 'in headers:', headers);
-  
-  for (const name of possibleNames) {
-    const index = headers.findIndex(h => {
-      const headerLower = h.toLowerCase().trim();
-      const nameLower = name.toLowerCase().trim();
-      
-      // Exact match
-      if (headerLower === nameLower) {
-        console.log('✅ Exact match found:', name, 'at index', index);
-        return true;
-      }
-      
-      // Contains match
-      if (headerLower.includes(nameLower)) {
-        console.log('✅ Contains match found:', name, 'in', headerLower, 'at index', index);
-        return true;
-      }
-      
-      // Partial word match (for things like "trans date" matching "date")
-      const headerWords = headerLower.split(/\s+/);
-      const nameWords = nameLower.split(/\s+/);
-      
-      for (const nameWord of nameWords) {
-        if (headerWords.some(headerWord => headerWord.includes(nameWord) || nameWord.includes(headerWord))) {
-          console.log('✅ Word match found:', name, 'in', headerLower, 'at index', index);
-          return true;
-        }
-      }
-      
-      return false;
-    });
-    
-    if (index >= 0) {
-      console.log('✅ Found', name, 'at index', index);
-      return index;
-    }
-  }
-  
-  console.log('❌ No matching column found for:', possibleNames);
-  console.log('❌ Available headers:', headers);
-  return -1;
-};
 
 const categorizeTransaction = (description: string): string => {
   const descriptionLower = (description || '').toLowerCase();
