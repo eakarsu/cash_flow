@@ -25,16 +25,13 @@ export const calculateCashFlowSummary = (
   );
   const burnRate = Math.abs(recentTransactions.reduce((sum, t) => sum + t.amount, 0)) / 6;
 
-  // Get current balance from the most recent transaction's balance field if available
-  // Otherwise fall back to cumulative calculation
+  // Calculate current balance manually by sorting transactions chronologically and summing amounts
   let currentBalance = 0;
   if (transactions.length > 0) {
     const sortedTransactions = [...transactions].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
+      new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    // Check if transaction has balance property (from CSV import)
-    currentBalance = (sortedTransactions[0] as any).balance || 
-                    transactions.reduce((sum, t) => sum + t.amount, 0);
+    currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
   }
   
   const runway = burnRate > 0 && currentBalance > 0 ? currentBalance / burnRate : 0;
@@ -98,14 +95,13 @@ export const generate13WeekForecast = (transactions: Transaction[]): WeeklyCashF
     .filter(t => t.amount < 0)
     .reduce((sum, t) => sum + t.amount, 0)) / 12;
 
-  // Get current balance from the most recent transaction's balance field if available
+  // Calculate current balance manually by sorting transactions chronologically and summing amounts
   let currentBalance = 0;
   if (transactions.length > 0) {
     const sortedTransactions = [...transactions].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
+      new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    currentBalance = (sortedTransactions[0] as any).balance || 
-                    transactions.reduce((sum, t) => sum + t.amount, 0);
+    currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
   }
 
   // Generate 13-week forecast
