@@ -59,7 +59,7 @@ const HomePage: React.FC = () => {
                 <DollarSign className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Current Balance</p>
+                <p className="text-sm font-medium text-gray-600">Latest Transaction Balance</p>
                 <p className="text-2xl font-bold text-gray-900">
                   ${totalBalance.toLocaleString()}
                 </p>

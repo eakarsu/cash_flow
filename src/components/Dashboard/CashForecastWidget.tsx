@@ -216,7 +216,7 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
               <Calendar className="h-5 w-5 text-gray-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Current Balance</p>
+              <p className="text-sm font-medium text-gray-600">Latest Transaction Balance</p>
               <p className="text-xl font-bold text-gray-900">
                 {formatCurrency(currentBalance)}
               </p>

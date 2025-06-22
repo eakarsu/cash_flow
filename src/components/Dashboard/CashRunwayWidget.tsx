@@ -264,7 +264,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Current Balance</p>
+                <p className="text-sm font-medium text-gray-600">Latest Transaction Balance</p>
                 <p className="text-xl font-bold text-gray-900">
                   {formatCurrency(currentBalance)}
                 </p>
