@@ -1,101 +1,101 @@
 transaction period,memo,merchant categ,amount,remaining
-2024-05-01,Monthly Rent,Rent,-2790.3,17209.7
-2024-05-02,Equipment Repair,Maintenance,-745.31,16464.39
-2024-05-02,Local Farmers Market,Food Supplies,-616.67,15847.720000000001
-2024-05-02,Business License Fee,Miscellaneous,-147.17,15700.55
-2024-05-02,Sysco,Food Supplies,-669.4,15031.150000000001
-2024-05-03,Marketing Expense,Miscellaneous,-185.67,14845.48
-2024-05-03,Local Farmers Market,Food Supplies,-332.21,14513.27
-2024-05-03,Sysco,Food Supplies,-817.8,13695.470000000001
-2024-05-04,Restaurant Depot,Food Supplies,-211.26,13484.21
-2024-05-04,Restaurant Depot,Food Supplies,-783.21,12701.0
-2024-05-04,Employee Payroll,Payroll,-2374.71,10326.29
-2024-05-04,In-store Cash Sale,Sales,432.52,10758.810000000001
-2024-05-04,Monthly Rent,Rent,-2190.82,8567.990000000002
-2024-05-05,Gas Bill,Utilities,-197.55,8370.440000000002
-2024-05-06,Online Order - UberEats,Sales,449.25,8819.690000000002
-2024-05-06,Square POS Payment,Sales,487.27,9306.960000000003
-2024-05-07,Employee Payroll,Payroll,-1754.17,7552.790000000003
-2024-05-07,Employee Payroll,Payroll,-868.74,6684.050000000003
-2024-05-07,Online Order - UberEats,Sales,61.44,6745.490000000003
-2024-05-07,Local Farmers Market,Food Supplies,-916.61,5828.880000000003
-2024-05-07,Square POS Payment,Sales,278.86,6107.740000000003
-2024-05-08,Equipment Repair,Maintenance,-523.09,5584.650000000003
-2024-05-08,Square POS Payment,Sales,152.96,5737.610000000002
-2024-05-08,Local Farmers Market,Food Supplies,-755.83,4981.7800000000025
-2024-05-08,Cleaning Service,Maintenance,-665.68,4316.100000000002
-2024-05-09,Online Order - UberEats,Sales,255.44,4571.540000000003
-2024-05-09,Restaurant Depot,Food Supplies,-914.05,3657.4900000000034
-2024-05-10,Online Order - UberEats,Sales,104.94,3762.430000000004
-2024-05-10,Gas Bill,Utilities,-133.02,3629.4100000000035
-2024-05-11,US Foods,Food Supplies,-200.42,3428.9900000000052
-2024-05-11,Water Utility,Utilities,-102.09,3326.900000000005
-2024-05-11,Square POS Payment,Sales,268.17,3595.0700000000033
-2024-05-12,Online Order - UberEats,Sales,201.93,3797.0000000000036
-2024-05-12,Cleaning Service,Maintenance,-253.13,3543.8700000000026
-2024-05-12,Square POS Payment,Sales,79.2,3623.0700000000033
-2024-05-12,Restaurant Depot,Food Supplies,-401.43,3221.640000000003
-2024-05-12,Square POS Payment,Sales,116.64,3338.2800000000025
-2024-05-14,Business License Fee,Miscellaneous,-202.39,3135.890000000003
-2024-05-14,Online Order - UberEats,Sales,64.87,3200.760000000002
-2024-05-15,Electric Bill,Utilities,-171.87,3028.890000000003
-2024-05-15,Restaurant Depot,Food Supplies,-558.23,2470.6600000000035
-2024-05-15,In-store Cash Sale,Sales,352.46,2823.1200000000026
-2024-05-15,Employee Payroll,Payroll,-1211.67,1611.4500000000044
-2024-05-15,Employee Payroll,Payroll,-1874.92,-263.4699999999939
-2024-05-16,In-store Cash Sale,Sales,417.39,153.92000000000553
-2024-05-17,Employee Payroll,Payroll,-1345.33,-1191.4099999999962
-2024-05-17,Sysco,Food Supplies,-886.69,-2078.099999999995
-2024-05-18,Water Utility,Utilities,-313.34,-2391.439999999995
-2024-05-18,Manager Salary,Payroll,-1896.79,-4288.229999999996
-2024-05-18,Sysco,Food Supplies,-518.06,-4806.289999999997
-2024-05-18,Square POS Payment,Sales,354.06,-4452.229999999996
-2024-05-19,Online Order - UberEats,Sales,466.11,-3986.1199999999953
-2024-05-19,Equipment Repair,Maintenance,-259.99,-4246.109999999997
-2024-05-19,Restaurant Depot,Food Supplies,-644.16,-4890.269999999997
-2024-05-20,Online Order - UberEats,Sales,498.31,-4391.9599999999955
-2024-05-20,Business License Fee,Miscellaneous,-275.1,-4667.059999999994
-2024-05-20,Square POS Payment,Sales,175.49,-4491.569999999992
-2024-05-21,In-store Cash Sale,Sales,435.35,-4056.219999999994
-2024-05-21,Monthly Rent,Rent,-3775.54,-7831.759999999995
-2024-05-21,Equipment Repair,Maintenance,-213.14,-8044.899999999994
-2024-05-21,Cleaning Service,Maintenance,-506.48,-8551.379999999994
-2024-05-21,Electric Bill,Utilities,-299.05,-8850.429999999993
-2024-05-21,Restaurant Depot,Food Supplies,-444.29,-9294.719999999994
-2024-05-22,In-store Cash Sale,Sales,343.38,-8951.339999999993
-2024-05-22,Sysco,Food Supplies,-214.46,-9165.799999999992
-2024-05-22,In-store Cash Sale,Sales,374.42,-8791.379999999994
-2024-05-22,Water Utility,Utilities,-210.31,-9001.689999999995
-2024-05-23,US Foods,Food Supplies,-671.9,-9673.589999999997
-2024-05-23,Business License Fee,Miscellaneous,-273.01,-9946.599999999995
-2024-05-24,Online Order - UberEats,Sales,207.54,-9739.059999999994
-2024-05-24,In-store Cash Sale,Sales,271.63,-9467.429999999993
-2024-05-24,Sysco,Food Supplies,-599.35,-10066.779999999992
-2024-05-25,Square POS Payment,Sales,69.62,-9997.159999999993
-2024-05-25,Marketing Expense,Miscellaneous,-288.48,-10285.639999999992
-2024-05-25,Equipment Repair,Maintenance,-623.4,-10909.039999999994
-2024-05-26,Business License Fee,Miscellaneous,-157.05,-11066.089999999993
-2024-05-26,Business License Fee,Miscellaneous,-295.08,-11361.169999999995
-2024-05-26,Sysco,Food Supplies,-508.08,-11869.249999999996
-2024-05-26,Cleaning Service,Maintenance,-439.7,-12308.949999999997
-2024-05-26,Gas Bill,Utilities,-380.85,-12689.799999999996
-2024-05-27,Online Order - UberEats,Sales,93.73,-12596.069999999996
-2024-05-27,Online Order - UberEats,Sales,211.39,-12384.679999999997
-2024-05-28,US Foods,Food Supplies,-901.9,-13286.579999999994
-2024-05-28,Square POS Payment,Sales,111.48,-13175.099999999991
-2024-05-28,In-store Cash Sale,Sales,182.12,-12992.979999999989
-2024-05-28,Employee Payroll,Payroll,-1235.55,-14228.529999999992
-2024-05-28,Online Order - UberEats,Sales,52.33,-14176.19999999999
-2024-05-28,Square POS Payment,Sales,81.92,-14094.279999999992
-2024-05-29,Gas Bill,Utilities,-367.0,-14461.279999999992
-2024-05-29,Gas Bill,Utilities,-128.19,-14589.469999999994
-2024-05-29,Online Order - UberEats,Sales,197.67,-14391.799999999996
-2024-05-29,US Foods,Food Supplies,-429.23,-14821.029999999999
-2024-05-29,Online Order - UberEats,Sales,162.61,-14658.419999999998
-2024-05-30,Local Farmers Market,Food Supplies,-488.15,-15146.57
-2024-05-30,Sysco,Food Supplies,-862.3,-16008.870000000003
-2024-05-30,Restaurant Depot,Food Supplies,-698.31,-16707.18
-2024-05-30,Sysco,Food Supplies,-355.5,-17062.68
-2024-05-30,Monthly Rent,Rent,-3399.02,-20461.699999999997
-2024-05-31,Restaurant Depot,Food Supplies,-980.68,-21442.379999999997
-2024-05-31,Online Order - UberEats,Sales,68.48,-21373.899999999994
+2024-05-01,Monthly Rent,Rent,-2790.3,-2790.3
+2024-05-02,Equipment Repair,Maintenance,-745.31,-3535.61
+2024-05-02,Local Farmers Market,Food Supplies,-616.67,-4152.28
+2024-05-02,Business License Fee,Miscellaneous,-147.17,-4299.45
+2024-05-02,Sysco,Food Supplies,-669.4,-4968.85
+2024-05-03,Marketing Expense,Miscellaneous,-185.67,-5154.52
+2024-05-03,Local Farmers Market,Food Supplies,-332.21,-5486.73
+2024-05-03,Sysco,Food Supplies,-817.8,-6304.53
+2024-05-04,Restaurant Depot,Food Supplies,-211.26,-6515.79
+2024-05-04,Restaurant Depot,Food Supplies,-783.21,-7299.0
+2024-05-04,Employee Payroll,Payroll,-2374.71,-9673.71
+2024-05-04,In-store Cash Sale,Sales,432.52,-9241.19
+2024-05-04,Monthly Rent,Rent,-2190.82,-11432.01
+2024-05-05,Gas Bill,Utilities,-197.55,-11629.56
+2024-05-06,Online Order - UberEats,Sales,449.25,-11180.31
+2024-05-06,Square POS Payment,Sales,487.27,-10693.04
+2024-05-07,Employee Payroll,Payroll,-1754.17,-12447.21
+2024-05-07,Employee Payroll,Payroll,-868.74,-13315.95
+2024-05-07,Online Order - UberEats,Sales,61.44,-13254.51
+2024-05-07,Local Farmers Market,Food Supplies,-916.61,-14171.12
+2024-05-07,Square POS Payment,Sales,278.86,-13892.26
+2024-05-08,Equipment Repair,Maintenance,-523.09,-14415.35
+2024-05-08,Square POS Payment,Sales,152.96,-14262.39
+2024-05-08,Local Farmers Market,Food Supplies,-755.83,-15018.22
+2024-05-08,Cleaning Service,Maintenance,-665.68,-15683.9
+2024-05-09,Online Order - UberEats,Sales,255.44,-15428.46
+2024-05-09,Restaurant Depot,Food Supplies,-914.05,-16342.51
+2024-05-10,Online Order - UberEats,Sales,104.94,-16237.57
+2024-05-10,Gas Bill,Utilities,-133.02,-16370.59
+2024-05-11,US Foods,Food Supplies,-200.42,-16571.01
+2024-05-11,Water Utility,Utilities,-102.09,-16673.1
+2024-05-11,Square POS Payment,Sales,268.17,-16404.93
+2024-05-12,Online Order - UberEats,Sales,201.93,-16203.0
+2024-05-12,Cleaning Service,Maintenance,-253.13,-16456.13
+2024-05-12,Square POS Payment,Sales,79.2,-16376.93
+2024-05-12,Restaurant Depot,Food Supplies,-401.43,-16778.36
+2024-05-12,Square POS Payment,Sales,116.64,-16661.72
+2024-05-14,Business License Fee,Miscellaneous,-202.39,-16864.11
+2024-05-14,Online Order - UberEats,Sales,64.87,-16799.24
+2024-05-15,Electric Bill,Utilities,-171.87,-16971.11
+2024-05-15,Restaurant Depot,Food Supplies,-558.23,-17529.34
+2024-05-15,In-store Cash Sale,Sales,352.46,-17176.88
+2024-05-15,Employee Payroll,Payroll,-1211.67,-18388.55
+2024-05-15,Employee Payroll,Payroll,-1874.92,-20263.47
+2024-05-16,In-store Cash Sale,Sales,417.39,-19846.08
+2024-05-17,Employee Payroll,Payroll,-1345.33,-21191.41
+2024-05-17,Sysco,Food Supplies,-886.69,-22078.1
+2024-05-18,Water Utility,Utilities,-313.34,-22391.44
+2024-05-18,Manager Salary,Payroll,-1896.79,-24288.23
+2024-05-18,Sysco,Food Supplies,-518.06,-24806.29
+2024-05-18,Square POS Payment,Sales,354.06,-24452.23
+2024-05-19,Online Order - UberEats,Sales,466.11,-23986.12
+2024-05-19,Equipment Repair,Maintenance,-259.99,-24246.11
+2024-05-19,Restaurant Depot,Food Supplies,-644.16,-24890.27
+2024-05-20,Online Order - UberEats,Sales,498.31,-24391.96
+2024-05-20,Business License Fee,Miscellaneous,-275.1,-24667.06
+2024-05-20,Square POS Payment,Sales,175.49,-24491.57
+2024-05-21,In-store Cash Sale,Sales,435.35,-24056.22
+2024-05-21,Monthly Rent,Rent,-3775.54,-27831.76
+2024-05-21,Equipment Repair,Maintenance,-213.14,-28044.9
+2024-05-21,Cleaning Service,Maintenance,-506.48,-28551.38
+2024-05-21,Electric Bill,Utilities,-299.05,-28850.43
+2024-05-21,Restaurant Depot,Food Supplies,-444.29,-29294.72
+2024-05-22,In-store Cash Sale,Sales,343.38,-28951.34
+2024-05-22,Sysco,Food Supplies,-214.46,-29165.8
+2024-05-22,In-store Cash Sale,Sales,374.42,-28791.38
+2024-05-22,Water Utility,Utilities,-210.31,-29001.69
+2024-05-23,US Foods,Food Supplies,-671.9,-29673.59
+2024-05-23,Business License Fee,Miscellaneous,-273.01,-29946.6
+2024-05-24,Online Order - UberEats,Sales,207.54,-29739.06
+2024-05-24,In-store Cash Sale,Sales,271.63,-29467.43
+2024-05-24,Sysco,Food Supplies,-599.35,-30066.78
+2024-05-25,Square POS Payment,Sales,69.62,-29997.16
+2024-05-25,Marketing Expense,Miscellaneous,-288.48,-30285.64
+2024-05-25,Equipment Repair,Maintenance,-623.4,-30909.04
+2024-05-26,Business License Fee,Miscellaneous,-157.05,-31066.09
+2024-05-26,Business License Fee,Miscellaneous,-295.08,-31361.17
+2024-05-26,Sysco,Food Supplies,-508.08,-31869.25
+2024-05-26,Cleaning Service,Maintenance,-439.7,-32308.95
+2024-05-26,Gas Bill,Utilities,-380.85,-32689.8
+2024-05-27,Online Order - UberEats,Sales,93.73,-32596.07
+2024-05-27,Online Order - UberEats,Sales,211.39,-32384.68
+2024-05-28,US Foods,Food Supplies,-901.9,-33286.58
+2024-05-28,Square POS Payment,Sales,111.48,-33175.1
+2024-05-28,In-store Cash Sale,Sales,182.12,-32992.98
+2024-05-28,Employee Payroll,Payroll,-1235.55,-34228.53
+2024-05-28,Online Order - UberEats,Sales,52.33,-34176.2
+2024-05-28,Square POS Payment,Sales,81.92,-34094.28
+2024-05-29,Gas Bill,Utilities,-367.0,-34461.28
+2024-05-29,Gas Bill,Utilities,-128.19,-34589.47
+2024-05-29,Online Order - UberEats,Sales,197.67,-34391.8
+2024-05-29,US Foods,Food Supplies,-429.23,-34821.03
+2024-05-29,Online Order - UberEats,Sales,162.61,-34658.42
+2024-05-30,Local Farmers Market,Food Supplies,-488.15,-35146.57
+2024-05-30,Sysco,Food Supplies,-862.3,-36008.87
+2024-05-30,Restaurant Depot,Food Supplies,-698.31,-36707.18
+2024-05-30,Sysco,Food Supplies,-355.5,-37062.68
+2024-05-30,Monthly Rent,Rent,-3399.02,-40461.7
+2024-05-31,Restaurant Depot,Food Supplies,-980.68,-41442.38
+2024-05-31,Online Order - UberEats,Sales,68.48,-41373.9
