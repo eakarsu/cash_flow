@@ -33,7 +33,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
     }
   });
 
-  const inflowTransactions = filteredTransactions.filter(t => t.amount > 0);
+  const inflowTransactions = filteredTransactions.filter(t => t.type === "inflow");
   const totalInflows = inflowTransactions.reduce((sum, t) => sum + t.amount, 0);
   
   const categoryBreakdown = inflowTransactions.reduce((acc, transaction) => {

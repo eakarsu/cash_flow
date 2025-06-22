@@ -42,7 +42,7 @@ const parseAmount = (amountStr: string): number => {
   const cleaned = amountStr.replace(/["$,]/g, '').trim();
   
   // DEBUG LOG
-  //console.log(`[DEBUG] parseAmount input: '${amountStr}', cleaned: '${cleaned}'`);
+  console.log(`[DEBUG] parseAmount input: '${amountStr}', cleaned: '${cleaned}'`);
 
   if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
     const amount = parseFloat(cleaned.slice(1, -1));
@@ -103,7 +103,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           }
 
           // DEBUG LOG
-          //console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Parsed Amount = ${rawAmount}, Determined Type = ${transactionType}`);
+          console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Parsed Amount = ${rawAmount}, Determined Type = ${transactionType}`);
 
           if (transactionType) {
             const description = values[descIndex] || 'Imported Transaction';

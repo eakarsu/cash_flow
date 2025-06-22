@@ -45,7 +45,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     }
   });
 
-  const outflowTransactions = filteredTransactions.filter(t => t.amount < 0);
+  const outflowTransactions = filteredTransactions.filter(t => t.type === "outflow");
   const totalOutflows = outflowTransactions.reduce((sum, t) => sum + t.amount, 0);
   
   const categoryBreakdown = outflowTransactions.reduce((acc, transaction) => {
