@@ -91,23 +91,29 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           let rawAmount = 0;
           let transactionType: 'inflow' | 'outflow' | null = null;
           
-          // --- THIS IS THE CORRECTED LOGIC ---
           const amountStr = values[amountIndex] || '';
+          const description = values[descIndex] || 'Imported Transaction';
+          const category = values[categoryIndex] || categorizeTransaction(description);
+          
           if (amountStr) {
-            rawAmount = parseAmount(amountStr);
-            if (rawAmount >= 0) {
-              transactionType = 'inflow';
-            } else {
+            rawAmount = Math.abs(parseAmount(amountStr)); // Always get positive amount first
+            
+            // Determine if this should be a debit (negative) or credit (positive) based on transaction type
+            const isExpense = isExpenseTransaction(description, category);
+            
+            if (isExpense) {
               transactionType = 'outflow';
+              rawAmount = -rawAmount; // Make it negative for expenses
+            } else {
+              transactionType = 'inflow';
+              // Keep it positive for income/sales
             }
           }
 
           // DEBUG LOG
-          console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Parsed Amount = ${rawAmount}, Determined Type = ${transactionType}`);
+          console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Description = '${description}', Category = '${category}', Is Expense = ${isExpenseTransaction(description, category)}, Final Amount = ${rawAmount}, Type = ${transactionType}`);
 
           if (transactionType) {
-            const description = values[descIndex] || 'Imported Transaction';
-            const category = values[categoryIndex] || categorizeTransaction(description);
             const date = normalizeDate(values[dateIndex] || '');
             const balance = parseAmount(values[balanceIndex] || '0');
 
@@ -115,7 +121,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
               id: `imported-${file.name.replace(/[^a-zA-Z0-9]/g, '')}-row-${i}`,
               date: date,
               description: description,
-              amount: Math.abs(rawAmount), // Store amount as a positive number
+              amount: rawAmount, // Store with correct sign
               type: transactionType,
               category: category,
               balance: balance
@@ -225,17 +231,17 @@ export const parseCSV2 = (file: File): Promise<Transaction[]> => {
             if (Math.abs(debit) > 0 && Math.abs(credit) > 0) {
               // Use the larger absolute value
               if (Math.abs(debit) > Math.abs(credit)) {
-                amount = -Math.abs(debit); // Debit is negative
+                rawAmount = Math.abs(debit);
                 transactionType = 'outflow';
               } else {
-                amount = Math.abs(credit); // Credit is positive
+                rawAmount = Math.abs(credit);
                 transactionType = 'inflow';
               }
             } else if (Math.abs(debit) > 0) {
-              amount = -Math.abs(debit); // Debit is negative
+              rawAmount = Math.abs(debit);
               transactionType = 'outflow';
             } else if (Math.abs(credit) > 0) {
-              amount = Math.abs(credit); // Credit is positive
+              rawAmount = Math.abs(credit);
               transactionType = 'inflow';
             }
           } else {
@@ -243,13 +249,22 @@ export const parseCSV2 = (file: File): Promise<Transaction[]> => {
             for (let j = 0; j < values.length; j++) {
               const testAmount = parseAmount(values[j]);
               if (!isNaN(testAmount) && testAmount !== 0) {
-                rawAmount = testAmount;
-                amount = testAmount; // Keep original sign
-                transactionType = testAmount >= 0 ? 'inflow' : 'outflow';
-                console.log(`📄 Guessed amount from column ${j}:`, testAmount);
+                rawAmount = Math.abs(testAmount);
+                // Determine transaction type based on description/category
+                const description = values[descIndex] || 'Imported transaction';
+                const category = values[categoryIndex] || categorizeTransaction(description);
+                transactionType = isExpenseTransaction(description, category) ? 'outflow' : 'inflow';
+                console.log(`📄 Guessed amount from column ${j}:`, testAmount, 'Type:', transactionType);
                 break;
               }
             }
+          }
+
+          // Apply correct sign based on transaction type
+          if (transactionType === 'outflow') {
+            amount = -rawAmount; // Make expenses negative
+          } else {
+            amount = rawAmount; // Keep income positive
           }
 
           let description = 'Imported transaction';
@@ -284,7 +299,7 @@ export const parseCSV2 = (file: File): Promise<Transaction[]> => {
             id: `imported-${file.name.replace(/[^a-zA-Z0-9]/g, '')}-row-${i}`,
             date: date,
             description: description,
-            amount: Math.abs(amount), // Store as absolute value for display
+            amount: amount, // Store with correct sign (negative for expenses, positive for income)
             type: transactionType,
             category: category,
             balance: balance
@@ -394,14 +409,29 @@ const parseCSVLine2 = (line: string): string[] => {
   return result;
 };
 
+const isExpenseTransaction = (description: string, category: string): boolean => {
+  const descriptionLower = (description || '').toLowerCase();
+  const categoryLower = (category || '').toLowerCase();
+
+  // Sales/Revenue transactions (should be positive/credits)
+  if (descriptionLower.includes('sale') || descriptionLower.includes('pos') ||
+      descriptionLower.includes('ubereats') || descriptionLower.includes('square') ||
+      descriptionLower.includes('revenue') || descriptionLower.includes('income') ||
+      categoryLower.includes('sales') || categoryLower.includes('revenue')) {
+    return false; // Not an expense
+  }
+
+  // All other transactions are expenses (should be negative/debits)
+  return true;
+};
+
 const categorizeTransaction = (description: string): string => {
   const descriptionLower = (description || '').toLowerCase();
 
-  if (descriptionLower.includes('stripe') || descriptionLower.includes('square') ||
-      descriptionLower.includes('payment') || descriptionLower.includes('revenue') ||
-      descriptionLower.includes('income') || descriptionLower.includes('sale') ||
-      descriptionLower.includes('pos sale') || descriptionLower.includes('customer payment')) {
-    return 'Revenue';
+  if (descriptionLower.includes('sale') || descriptionLower.includes('pos') ||
+      descriptionLower.includes('ubereats') || descriptionLower.includes('square payment') ||
+      descriptionLower.includes('revenue') || descriptionLower.includes('income')) {
+    return 'Sales';
   }
 
   if (descriptionLower.includes('rent')) {
@@ -409,8 +439,7 @@ const categorizeTransaction = (description: string): string => {
   }
 
   if (descriptionLower.includes('utilities') || descriptionLower.includes('electric') ||
-      descriptionLower.includes('gas') || descriptionLower.includes('water') ||
-      descriptionLower.includes('utilities co')) {
+      descriptionLower.includes('gas') || descriptionLower.includes('water')) {
     return 'Utilities';
   }
 
@@ -423,29 +452,19 @@ const categorizeTransaction = (description: string): string => {
     return 'Marketing';
   }
 
-  if (descriptionLower.includes('office') || descriptionLower.includes('supplies') ||
-      descriptionLower.includes('amazon') || descriptionLower.includes('equipment')) {
-    return 'Office Supplies';
-  }
-
-  if (descriptionLower.includes('software') || descriptionLower.includes('subscription')) {
-    return 'Software';
-  }
-
-  if (descriptionLower.includes('travel') || descriptionLower.includes('fuel') ||
-      descriptionLower.includes('gas station')) {
-    return 'Travel';
-  }
-
-  if (descriptionLower.includes('bank') || descriptionLower.includes('fee') ||
-      descriptionLower.includes('chase bank') || descriptionLower.includes('banking fee')) {
-    return 'Banking Fees';
+  if (descriptionLower.includes('equipment') || descriptionLower.includes('repair') ||
+      descriptionLower.includes('maintenance') || descriptionLower.includes('cleaning')) {
+    return 'Maintenance';
   }
 
   if (descriptionLower.includes('sysco') || descriptionLower.includes('food') ||
-      descriptionLower.includes('inventory') || descriptionLower.includes('pepsico') ||
-      descriptionLower.includes('beverage')) {
-    return 'Inventory';
+      descriptionLower.includes('farmers market') || descriptionLower.includes('restaurant depot') ||
+      descriptionLower.includes('us foods')) {
+    return 'Food Supplies';
+  }
+
+  if (descriptionLower.includes('license') || descriptionLower.includes('fee')) {
+    return 'Miscellaneous';
   }
 
   return 'Other';
