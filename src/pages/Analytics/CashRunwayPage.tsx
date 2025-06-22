@@ -9,9 +9,19 @@ const CashRunwayPage: React.FC = () => {
   // Calculate current balance manually by sorting transactions chronologically and summing amounts
   const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
+  // Calculate monthly outflows for current month using amount column
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
   const monthlyOutflows = transactions
-    .filter(t => t.amount < 0)
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0) / Math.max(1, new Set(transactions.map(t => t.date.substring(0, 7))).size);
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return t.amount < 0 && 
+             transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    })
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
   
   const runwayMonths = monthlyOutflows > 0 ? currentBalance / monthlyOutflows : Infinity;
   const runwayWeeks = runwayMonths * 4.33;

@@ -14,11 +14,27 @@ const HomePage: React.FC = () => {
   // Calculate total balance manually by sorting transactions chronologically and summing amounts
   const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const totalBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
+  // Calculate monthly inflow and outflow for current month using amount column
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
   const monthlyInflow = transactions
-    .filter(t => t.amount > 0 && new Date(t.date).getMonth() === new Date().getMonth())
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return t.amount > 0 && 
+             transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    })
     .reduce((sum, t) => sum + t.amount, 0);
+    
   const monthlyOutflow = transactions
-    .filter(t => t.amount < 0 && new Date(t.date).getMonth() === new Date().getMonth())
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return t.amount < 0 && 
+             transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    })
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
   return (
@@ -103,8 +119,8 @@ const HomePage: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Net Cash Flow</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ${(monthlyInflow - monthlyOutflow).toLocaleString()}
+                <p className={`text-2xl font-bold ${(monthlyInflow - monthlyOutflow) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {(monthlyInflow - monthlyOutflow) >= 0 ? '+' : ''}${(monthlyInflow - monthlyOutflow).toLocaleString()}
                 </p>
               </div>
             </div>

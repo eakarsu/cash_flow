@@ -12,7 +12,7 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
 const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
 
-  // Filter transactions based on selected period
+  // Filter transactions based on selected period using amount column
   const filteredTransactions = transactions.filter(t => {
     const transactionDate = new Date(t.date);
     const now = new Date();
@@ -33,7 +33,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
     }
   });
 
-  const inflowTransactions = filteredTransactions.filter(t => t.type === "inflow");
+  const inflowTransactions = filteredTransactions.filter(t => t.amount > 0);
   const totalInflows = inflowTransactions.reduce((sum, t) => sum + t.amount, 0);
   
   const categoryBreakdown = inflowTransactions.reduce((acc, transaction) => {

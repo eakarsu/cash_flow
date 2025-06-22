@@ -9,13 +9,30 @@ const CashForecastPage: React.FC = () => {
   // Calculate current balance manually by sorting transactions chronologically and summing amounts
   const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
-  const avgMonthlyInflow = transactions
-    .filter(t => t.amount > 0)
-    .reduce((sum, t) => sum + t.amount, 0) / Math.max(1, new Set(transactions.map(t => t.date.substring(0, 7))).size);
-  const avgMonthlyOutflow = transactions
-    .filter(t => t.amount < 0)
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0) / Math.max(1, new Set(transactions.map(t => t.date.substring(0, 7))).size);
+  // Calculate monthly inflow and outflow for current month using amount column
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
   
+  const avgMonthlyInflow = transactions
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return t.amount > 0 && 
+             transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
+    
+  const avgMonthlyOutflow = transactions
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return t.amount < 0 && 
+             transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    })
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  
+  // Calculate net cash flow: Monthly Inflow - Monthly Outflow
   const netCashFlow = avgMonthlyInflow - avgMonthlyOutflow;
   const projectedBalance13Weeks = currentBalance + (netCashFlow * 3); // 13 weeks ≈ 3 months
 
