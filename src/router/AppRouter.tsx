@@ -34,6 +34,11 @@ import DocumentationPage from '../pages/Support/DocumentationPage.tsx';
 import TutorialsPage from '../pages/Support/TutorialsPage.tsx';
 import SupportContactPage from '../pages/Support/SupportContactPage.tsx';
 
+// Settings pages
+import SettingsPage from '../pages/Settings/SettingsPage.tsx';
+import BillingPage from '../pages/Settings/BillingPage.tsx';
+import ProfilePage from '../pages/Settings/ProfilePage.tsx';
+
 const AppRouter: React.FC = () => {
   const { transactions } = useTransactions();
 
@@ -94,10 +99,10 @@ const AppRouter: React.FC = () => {
             <Route path="/reports/custom" element={<PlaceholderPage title="Custom Reports" description="Create custom financial reports" />} />
             <Route path="/reports/export" element={<PlaceholderPage title="Export Data" description="Export your financial data in various formats" />} />
             
-            {/* Account Pages - Using PlaceholderPage for now */}
-            <Route path="/account/profile" element={<PlaceholderPage title="User Profile" description="Manage your account profile and personal information" />} />
-            <Route path="/account/settings" element={<PlaceholderPage title="Account Settings" description="Configure your account preferences and settings" />} />
-            <Route path="/account/billing" element={<PlaceholderPage title="Billing & Subscription" description="Manage your subscription and billing information" />} />
+            {/* Account Pages */}
+            <Route path="/account/profile" element={<ProfilePage />} />
+            <Route path="/account/settings" element={<SettingsPage />} />
+            <Route path="/account/billing" element={<BillingPage />} />
             
             {/* Company Pages */}
             <Route path="/about" element={<AboutPage />} />
