@@ -9,9 +9,9 @@ interface CashRunwayWidgetProps {
 }
 
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
-  // Get current balance
-  const currentBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  // Calculate current balance manually by sorting transactions chronologically and summing amounts
+  const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
   
   // Use shared AI context
   const { 
@@ -107,16 +107,20 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   const runwayColor = getRunwayColor(runway);
   const RunwayIcon = getRunwayIcon(runway);
 
-  // Calculate runway trend over time
+  // Calculate runway trend over time using manual balance calculations
   const runwayTrend = monthlyTrends.map((month, index) => {
-    // Calculate balance at each historical point by working backwards from current balance
-    // Sum all net flows from this month to present
-    const netFlowFromThisMonth = monthlyTrends
-      .slice(index)
-      .reduce((sum, m) => sum + m.netFlow, 0);
+    // Calculate historical balance at this point in time
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() - (5 - index));
+    targetDate.setDate(1); // First day of the month
     
-    // Balance at this historical point = current balance - all flows since then
-    const historicalBalance = Math.max(0, currentBalance - netFlowFromThisMonth);
+    // Get all transactions up to this historical point
+    const historicalTransactions = sortedTransactions.filter(t => 
+      new Date(t.date) <= targetDate
+    );
+    
+    // Calculate balance at this historical point
+    const historicalBalance = Math.max(0, historicalTransactions.reduce((balance, t) => balance + t.amount, 0));
 
     // Calculate average burn rate for the 6 months leading up to this point
     const burnRateMonths = monthlyTrends.slice(Math.max(0, index - 5), index + 1);

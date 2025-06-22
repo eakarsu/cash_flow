@@ -11,8 +11,9 @@ const HomePage: React.FC = () => {
   const { transactions } = useTransactions();
 
   const recentTransactions = transactions.slice(0, 5);
-  const totalBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance : 0;
+  // Calculate total balance manually by sorting transactions chronologically and summing amounts
+  const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const totalBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
   const monthlyInflow = transactions
     .filter(t => t.amount > 0 && new Date(t.date).getMonth() === new Date().getMonth())
     .reduce((sum, t) => sum + t.amount, 0);
@@ -182,7 +183,8 @@ const HomePage: React.FC = () => {
                           {transaction.amount >= 0 ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Balance: ${transaction.balance.toLocaleString()}
+                          Balance: ${sortedTransactions.slice(0, sortedTransactions.findIndex(t => t.id === transaction.id) + 1)
+                            .reduce((balance, t) => balance + t.amount, 0).toLocaleString()}
                         </p>
                       </div>
                     </div>

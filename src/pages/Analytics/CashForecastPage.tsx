@@ -6,7 +6,9 @@ import CashForecastWidget from '../../components/Dashboard/CashForecastWidget.ts
 const CashForecastPage: React.FC = () => {
   const { transactions } = useTransactions();
   
-  const currentBalance = transactions.length > 0 ? transactions[0].balance : 0;
+  // Calculate current balance manually by sorting transactions chronologically and summing amounts
+  const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
   const avgMonthlyInflow = transactions
     .filter(t => t.amount > 0)
     .reduce((sum, t) => sum + t.amount, 0) / Math.max(1, new Set(transactions.map(t => t.date.substring(0, 7))).size);

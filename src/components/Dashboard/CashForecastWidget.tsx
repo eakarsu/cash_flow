@@ -11,9 +11,9 @@ interface CashForecastWidgetProps {
 const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
   const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
   
-  // Get current balance
-  const currentBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
+  // Calculate current balance manually by sorting transactions chronologically and summing amounts
+  const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
   
   // Use shared AI context
   const { 
