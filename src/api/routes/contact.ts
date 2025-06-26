@@ -260,20 +260,20 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
       const confirmationResult = await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: email,
-        subject: 'Thank you for contacting ElitePos',
+        subject: 'Thank you for contacting Cash Flow Manager',
         text: `Hi ${name},
 
-Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
+Thank you for contacting Cash Flow Manager. We have received your message and will get back to you within 24 hours.
 
 Your message:
 Subject: ${subject}
 Message: ${message}
 
 Best regards,
-The ElitePos Team
+The Cash Flow Manager Team
 
 ---
-ElitePos
+Cash Flow Manager
 Phone: 1-804-360-1129
 Email: ${recipient}
 Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
