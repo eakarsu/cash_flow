@@ -61,6 +61,15 @@ const ContactPage: React.FC = () => {
     }
   ];
 
+  const offices = [
+    {
+      city: "Henrico",
+      address: "2807 Hampton Woods Dr",
+      phone: "804-360-1129",
+      type: "Headquarters"
+    }
+  ];
+
 
   if (isSubmitted) {
     return (
@@ -211,6 +220,21 @@ const ContactPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Office Locations */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Our Offices</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {offices.map((office, index) => (
+              <div key={index} className="bg-white rounded-lg shadow p-6 text-center">
+                <Building className="mx-auto h-8 w-8 text-primary-600 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{office.city}</h3>
+                <p className="text-sm text-primary-600 mb-3">{office.type}</p>
+                <p className="text-gray-600 mb-2">{office.address}</p>
+                <p className="text-gray-600">{office.phone}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Quick Stats */}
         <div className="bg-primary-600 rounded-lg p-8 text-white">
