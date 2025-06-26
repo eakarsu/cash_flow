@@ -179,7 +179,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {transactions.length === 0 ? (
           <div className="text-center py-12">
