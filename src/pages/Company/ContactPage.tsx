@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, Building, Users, Globe } from 'lucide-react';
-import SEOHead from '../../components/SEO/SEOHead.tsx';
-import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../components/SEO/StructuredData.tsx';
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -109,21 +107,9 @@ const ContactPage: React.FC = () => {
   ];
 
 
-  // SEO structured data
-  const localBusinessSchema = generateLocalBusinessSchema();
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://cashflowapp.app' },
-    { name: 'Contact', url: 'https://cashflowapp.app/contact' }
-  ]);
-
   if (isSubmitted) {
     return (
       <>
-        <SEOHead
-          title="Message Sent Successfully - Contact Cash Flow Manager"
-          description="Your message has been sent successfully. Our team will respond within 24 hours."
-          noIndex={true}
-        />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="max-w-md mx-auto bg-white rounded-lg shadow p-8 text-center">
             <Send className="mx-auto h-12 w-12 text-green-500 mb-4" />
@@ -145,17 +131,6 @@ const ContactPage: React.FC = () => {
 
   return (
     <>
-      <SEOHead
-        title="Contact Cash Flow Manager - Get Support & Sales Information"
-        description="Contact Cash Flow Manager for support, sales inquiries, or partnership opportunities. Located in Henrico, VA. Call 804-360-1129 or email us."
-        keywords="contact cash flow manager, customer support, sales inquiry, financial software support, Henrico VA"
-        structuredData={localBusinessSchema}
-      />
-      
-      <script type="application/ld+json">
-        {JSON.stringify(breadcrumbSchema)}
-      </script>
-      
       <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb Navigation */}

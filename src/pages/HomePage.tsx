@@ -6,8 +6,6 @@ import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget.tsx';
 import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget.tsx';
 import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget.tsx';
 import CashForecastWidget from '../components/Dashboard/CashForecastWidget.tsx';
-import SEOHead from '../components/SEO/SEOHead.tsx';
-import { generateLocalBusinessSchema, generateFAQSchema } from '../components/SEO/StructuredData.tsx';
 
 const HomePage: React.FC = () => {
   const { transactions } = useTransactions();
@@ -39,9 +37,6 @@ const HomePage: React.FC = () => {
     })
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-  // SEO structured data
-  const localBusinessSchema = generateLocalBusinessSchema();
-  
   const faqData = [
     {
       question: "What is cash flow management software?",
@@ -60,17 +55,9 @@ const HomePage: React.FC = () => {
       answer: "Yes, Cash Flow Manager supports CSV imports from most banks and accounting software, making it easy to get started with your existing financial data."
     }
   ];
-  
-  const faqSchema = generateFAQSchema(faqData);
 
   return (
     <>
-      <SEOHead
-        title="Cash Flow Manager - Professional Financial Management Dashboard"
-        description="Streamline your business finances with our comprehensive cash flow management platform. Track transactions, forecast cash flow, and generate detailed financial reports with AI-powered insights."
-        keywords="cash flow management, financial dashboard, business accounting, transaction tracking, financial forecasting, business finance software"
-        structuredData={localBusinessSchema}
-      />
       {/* Hero Section */}
       <header className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -328,10 +315,6 @@ const HomePage: React.FC = () => {
               ))}
             </div>
           </div>
-          
-          <script type="application/ld+json">
-            {JSON.stringify(faqSchema)}
-          </script>
         </section>
 
         {/* Quick Actions */}
