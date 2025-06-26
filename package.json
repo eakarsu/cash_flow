@@ -35,6 +35,7 @@
     "eject": "react-scripts eject",
     "server": "node server.js",
     "dev": "concurrently \"npm run server\" \"npm start\"",
+    "dev:production": "concurrently \"npm run server\" \"npm run build && serve -s build\"",
     "server:dev": "nodemon server.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "seo-audit": "lighthouse https://cashflowapp.app --output=html --output-path=./seo-audit.html"
