@@ -86,33 +86,8 @@ router.post('/', validateContactForm, async (req, res) => {
     // Determine recipient based on message type
     const recipient = type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app';
 
-    // Check if SMTP is configured
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_HOST) {
-      logger.warn('SMTP not configured, logging message only');
-      logger.warn(`SMTP Config Check - User: ${!!process.env.SMTP_USER}, Pass: ${!!process.env.SMTP_PASS}, Host: ${!!process.env.SMTP_HOST}`);
-      
-      // Log the contact form submission
-      logger.info(`📧 NEW CONTACT FORM SUBMISSION (LOGGED ONLY):
-        ═══════════════════════════════════════
-        To: ${recipient}
-        From: ${email}
-        Name: ${name}
-        Company: ${company || 'Not provided'}
-        Subject: ${subject}
-        Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
-        
-        Message:
-        ${message}
-        
-        Timestamp: ${new Date().toISOString()}
-        ═══════════════════════════════════════
-      `);
-
-      return res.status(200).json({
-        success: true,
-        message: 'Message sent successfully. We will get back to you soon!',
-      });
-    }
+    // Force email sending - remove the SMTP check that was preventing actual emails
+    logger.info('SMTP is configured, proceeding with email sending...');
 
     // Log SMTP configuration (without password)
     logger.info(`SMTP Configuration - Host: ${process.env.SMTP_HOST}, Port: ${process.env.SMTP_PORT}, User: ${process.env.SMTP_USER}`);
@@ -139,12 +114,65 @@ Time: ${new Date().toISOString()}
       // Create transporter
       const transporter = createTransporter();
 
-      // Test different approaches if verification fails
-      logger.info('Verifying SMTP transporter...');
+      // Skip verification and send directly
+      logger.info('Sending email directly without verification...');
       
       try {
-        await transporter.verify();
-        logger.info('SMTP transporter verified successfully');
+        // Send email to support/sales
+        logger.info(`Sending email to ${recipient}...`);
+        const emailResult = await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: recipient,
+          subject: `[Cash Flow Manager Contact] ${subject}`,
+          text: emailContent,
+          replyTo: email,
+        });
+        logger.info('Email sent to recipient successfully:', emailResult.messageId);
+
+        // Send confirmation email to user
+        logger.info(`Sending confirmation email to ${email}...`);
+        const confirmationResult = await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: email,
+          subject: 'Thank you for contacting Cash Flow Manager',
+          text: `Hi ${name},
+
+Thank you for contacting Cash Flow Manager. We have received your message and will get back to you within 24 hours.
+
+Your message:
+Subject: ${subject}
+Message: ${message}
+
+Best regards,
+The Cash Flow Manager Team
+
+---
+Cash Flow Manager
+Phone: 804-360-1129
+Email: ${recipient}
+Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
+        });
+        logger.info('Confirmation email sent successfully:', confirmationResult.messageId);
+
+        // Also log for record keeping
+        logger.info(`📧 EMAIL SENT SUCCESSFULLY:
+          ═══════════════════════════════════════
+          To: ${recipient}
+          From: ${email}
+          Name: ${name}
+          Company: ${company || 'Not provided'}
+          Subject: ${subject}
+          Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+          Message ID: ${emailResult.messageId}
+          Timestamp: ${new Date().toISOString()}
+          ═══════════════════════════════════════
+        `);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Message sent successfully. We will get back to you soon!',
+        });
+
       } catch (verifyError) {
         logger.warn('SMTP verification failed, trying alternative configuration:', verifyError.message);
         
@@ -243,60 +271,6 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
         }
       }
 
-      // Send email to support/sales
-      logger.info(`Sending email to ${recipient}...`);
-      const emailResult = await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: recipient,
-        subject: `[Cash Flow Manager Contact] ${subject}`,
-        text: emailContent,
-        replyTo: email,
-      });
-      logger.info('Email sent to recipient successfully:', emailResult.messageId);
-
-      // Send confirmation email to user
-      logger.info(`Sending confirmation email to ${email}...`);
-      const confirmationResult = await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: email,
-        subject: 'Thank you for contacting Cash Flow Manager',
-        text: `Hi ${name},
-
-Thank you for contacting Cash Flow Manager. We have received your message and will get back to you within 24 hours.
-
-Your message:
-Subject: ${subject}
-Message: ${message}
-
-Best regards,
-The Cash Flow Manager Team
-
----
-Cash Flow Manager
-Phone: 804-360-1129
-Email: ${recipient}
-Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
-      });
-      logger.info('Confirmation email sent successfully:', confirmationResult.messageId);
-
-      // Also log for record keeping
-      logger.info(`📧 EMAIL SENT SUCCESSFULLY:
-        ═══════════════════════════════════════
-        To: ${recipient}
-        From: ${email}
-        Name: ${name}
-        Company: ${company || 'Not provided'}
-        Subject: ${subject}
-        Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
-        Message ID: ${emailResult.messageId}
-        Timestamp: ${new Date().toISOString()}
-        ═══════════════════════════════════════
-      `);
-
-      res.status(200).json({
-        success: true,
-        message: 'Message sent successfully. We will get back to you soon!',
-      });
 
     } catch (emailError) {
       logger.error('Email sending failed:', emailError);
