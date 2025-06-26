@@ -27,6 +27,28 @@ const ContactPage: React.FC = () => {
     setError(null);
 
     try {
+      // Check if we're in development mode or if API is available
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      if (isDevelopment) {
+        // Mock successful submission for development
+        console.log('Contact form submitted (development mode):', formData);
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setIsSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          subject: '',
+          message: '',
+          type: 'support'
+        });
+        return;
+      }
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -34,6 +56,12 @@ const ContactPage: React.FC = () => {
         },
         body: JSON.stringify(formData),
       });
+
+      // Check if response is HTML (404 page) instead of JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('API endpoint not available. Please contact support directly.');
+      }
 
       const result = await response.json();
 
@@ -51,8 +79,14 @@ const ContactPage: React.FC = () => {
         setError(result.message || 'Failed to send message. Please try again.');
       }
     } catch (err) {
-      setError('Network error. Please check your connection and try again.');
       console.error('Contact form error:', err);
+      
+      // Provide fallback instructions
+      setError(
+        'Unable to send message through the form. Please contact us directly at: ' +
+        (formData.type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app') +
+        ' or call 804-360-1129'
+      );
     } finally {
       setIsLoading(false);
     }
