@@ -350,6 +350,7 @@ const ContactPage: React.FC = () => {
           </div>
         </div>
       </main>
+      </div>
     </>
   );
 };
