@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import routes
-const contactRouter = require('./src/api/routes/contact.js');
+const contactRouter = require('./src/api/routes/contact');
 
 // API routes
 app.use('/api/contact', contactRouter);
