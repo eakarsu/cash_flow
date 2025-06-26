@@ -29,25 +29,17 @@ const ContactPage: React.FC = () => {
     try {
       console.log('Contact form submitted:', formData);
 
-      // Use Formspree or similar service for form handling
-      const response = await fetch('https://formspree.io/f/xpwzgkqr', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          company: formData.company,
-          subject: formData.subject,
-          message: formData.message,
-          type: formData.type,
-          _replyto: formData.email,
-          _subject: `[Cash Flow Manager Contact] ${formData.subject}`,
-        }),
+        body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (result.success) {
         setIsSubmitted(true);
         setFormData({
           name: '',
@@ -58,7 +50,7 @@ const ContactPage: React.FC = () => {
           type: 'support'
         });
       } else {
-        setError('Failed to send message. Please try again.');
+        setError(result.message || 'Failed to send message. Please try again.');
       }
     } catch (err) {
       console.error('Contact form error:', err);
