@@ -83,8 +83,8 @@ router.post('/', validateContactForm, async (req, res) => {
     // Log the incoming request for debugging
     logger.info(`Contact form submission attempt: ${email} (${type}): ${subject}`);
 
-    // Determine recipient based on message type - using your actual email since support/sales addresses may not exist
-    const recipient = 'eakarsu@gmail.com'; // Send all messages to your email for now
+    // Determine recipient based on message type
+    const recipient = type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app';
     const messageType = type === 'sales' ? 'Sales Inquiry' : 'Technical Support';
 
     // Force email sending - remove the SMTP check that was preventing actual emails
