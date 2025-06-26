@@ -27,27 +27,7 @@ const ContactPage: React.FC = () => {
     setError(null);
 
     try {
-      // Check if we're in development mode or if API is available
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      
-      if (isDevelopment) {
-        // Mock successful submission for development
-        console.log('Contact form submitted (development mode):', formData);
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setIsSubmitted(true);
-        setFormData({
-          name: '',
-          email: '',
-          company: '',
-          subject: '',
-          message: '',
-          type: 'support'
-        });
-        return;
-      }
+      console.log('Contact form submitted:', formData);
 
       const response = await fetch('/api/contact', {
         method: 'POST',
