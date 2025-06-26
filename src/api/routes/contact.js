@@ -53,7 +53,7 @@ const createTransporter = () => {
     encryptionType: isSSL ? 'SSL' : 'STARTTLS'
   })}`);
   
-  return nodemailer.createTransporter(config);
+  return nodemailer.createTransport(config);
 };
 
 // Validation middleware
@@ -183,7 +183,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
         
         logger.info(`Trying alternative configuration: Port ${altPort} with ${altSecure ? 'SSL' : 'STARTTLS'}`);
         
-        const altTransporter = nodemailer.createTransporter({
+        const altTransporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: altPort,
           secure: altSecure,
