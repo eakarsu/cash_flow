@@ -29,9 +29,8 @@ const ContactPage: React.FC = () => {
       icon: MapPin,
       title: "Office Address",
       details: [
-        "123 Business Avenue",
-        "Suite 100",
-        "New York, NY 10001",
+        "2807 Hampton Woods Dr",
+        "Henrico, VA 23233",
         "United States"
       ]
     },
@@ -39,18 +38,16 @@ const ContactPage: React.FC = () => {
       icon: Phone,
       title: "Phone Numbers",
       details: [
-        "Sales: +1 (555) 123-4567",
-        "Support: +1 (555) 123-4568",
-        "Main: +1 (555) 123-4569"
+        "804-360-1129"
       ]
     },
     {
       icon: Mail,
       title: "Email Addresses",
       details: [
-        "hello@cashflowmanager.com",
-        "support@cashflowmanager.com",
-        "sales@cashflowmanager.com"
+        "billing@cashflowapp.app",
+        "support@cashflowapp.app",
+        "sales@cashflowapp.app"
       ]
     },
     {
@@ -64,26 +61,6 @@ const ContactPage: React.FC = () => {
     }
   ];
 
-  const offices = [
-    {
-      city: "New York",
-      address: "123 Business Avenue, Suite 100",
-      phone: "+1 (555) 123-4567",
-      type: "Headquarters"
-    },
-    {
-      city: "San Francisco",
-      address: "456 Tech Street, Floor 12",
-      phone: "+1 (555) 987-6543",
-      type: "West Coast Office"
-    },
-    {
-      city: "London",
-      address: "789 Financial District, Level 8",
-      phone: "+44 20 7123 4567",
-      type: "European Office"
-    }
-  ];
 
   if (isSubmitted) {
     return (
@@ -234,21 +211,6 @@ const ContactPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Office Locations */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Our Offices</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {offices.map((office, index) => (
-              <div key={index} className="bg-white rounded-lg shadow p-6 text-center">
-                <Building className="mx-auto h-8 w-8 text-primary-600 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{office.city}</h3>
-                <p className="text-sm text-primary-600 mb-3">{office.type}</p>
-                <p className="text-gray-600 mb-2">{office.address}</p>
-                <p className="text-gray-600">{office.phone}</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Quick Stats */}
         <div className="bg-primary-600 rounded-lg p-8 text-white">
