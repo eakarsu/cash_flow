@@ -83,8 +83,9 @@ router.post('/', validateContactForm, async (req, res) => {
     // Log the incoming request for debugging
     logger.info(`Contact form submission attempt: ${email} (${type}): ${subject}`);
 
-    // Determine recipient based on message type
-    const recipient = type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app';
+    // Determine recipient based on message type - using your actual email since support/sales addresses may not exist
+    const recipient = 'eakarsu@gmail.com'; // Send all messages to your email for now
+    const messageType = type === 'sales' ? 'Sales Inquiry' : 'Technical Support';
 
     // Force email sending - remove the SMTP check that was preventing actual emails
     logger.info('SMTP is configured, proceeding with email sending...');
@@ -123,7 +124,7 @@ Time: ${new Date().toISOString()}
         const emailResult = await transporter.sendMail({
           from: process.env.SMTP_FROM || process.env.SMTP_USER,
           to: recipient,
-          subject: `[Cash Flow Manager Contact] ${subject}`,
+          subject: `[Cash Flow Manager ${messageType}] ${subject}`,
           text: emailContent,
           replyTo: email,
         });
@@ -217,7 +218,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
           const emailResult = await altTransporter.sendMail({
             from: process.env.SMTP_FROM || process.env.SMTP_USER,
             to: recipient,
-            subject: `[Cash Flow Manager Contact] ${subject}`,
+            subject: `[Cash Flow Manager ${messageType}] ${subject}`,
             text: emailContent,
             replyTo: email,
           });
