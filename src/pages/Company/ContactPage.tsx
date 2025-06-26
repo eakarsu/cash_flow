@@ -7,9 +7,12 @@ const ContactPage: React.FC = () => {
     email: '',
     company: '',
     subject: '',
-    message: ''
+    message: '',
+    type: 'support'
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -18,10 +21,41 @@ const ContactPage: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Contact form submitted:', formData);
-    setIsSubmitted(true);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setIsSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          subject: '',
+          message: '',
+          type: 'support'
+        });
+      } else {
+        setError(result.message || 'Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      setError('Network error. Please check your connection and try again.');
+      console.error('Contact form error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const contactInfo = [
@@ -107,7 +141,26 @@ const ContactPage: React.FC = () => {
           {/* Contact Form */}
           <div className="bg-white rounded-lg shadow p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message Type *
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="support">Technical Support</option>
+                  <option value="sales">Sales Inquiry</option>
+                </select>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -187,10 +240,11 @@ const ContactPage: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="h-5 w-5 mr-2" />
-                Send Message
+                {isLoading ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>
