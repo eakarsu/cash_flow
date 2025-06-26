@@ -85,7 +85,7 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
     logger.info(`Contact form submission attempt: ${email} (${type}): ${subject}`);
 
     // Determine recipient based on message type
-    const recipient = type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat';
+    const recipient = type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app';
 
     // Check if SMTP is configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_HOST) {
@@ -132,7 +132,7 @@ Message:
 ${message}
 
 ---
-Sent from ElitePos Contact Form
+Sent from Cash Flow Manager Contact Form
 Time: ${new Date().toISOString()}
     `;
 
@@ -190,7 +190,7 @@ Time: ${new Date().toISOString()}
           const emailResult = await altTransporter.sendMail({
             from: process.env.SMTP_FROM || process.env.SMTP_USER,
             to: recipient,
-            subject: `[ElitePos Contact] ${subject}`,
+            subject: `[Cash Flow Manager Contact] ${subject}`,
             text: emailContent,
             replyTo: email,
           });
@@ -200,20 +200,20 @@ Time: ${new Date().toISOString()}
           const confirmationResult = await altTransporter.sendMail({
             from: process.env.SMTP_FROM || process.env.SMTP_USER,
             to: email,
-            subject: 'Thank you for contacting ElitePos',
+            subject: 'Thank you for contacting Cash Flow Manager',
             text: `Hi ${name},
 
-Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
+Thank you for contacting Cash Flow Manager. We have received your message and will get back to you within 24 hours.
 
 Your message:
 Subject: ${subject}
 Message: ${message}
 
 Best regards,
-The ElitePos Team
+The Cash Flow Manager Team
 
 ---
-ElitePos
+Cash Flow Manager
 Phone: 1-804-360-1129
 Email: ${recipient}
 Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
@@ -249,7 +249,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
       const emailResult = await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: recipient,
-        subject: `[ElitePos Contact] ${subject}`,
+        subject: `[Cash Flow Manager Contact] ${subject}`,
         text: emailContent,
         replyTo: email,
       });
