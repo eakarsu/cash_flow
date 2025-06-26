@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, Building, Users, Globe } from 'lucide-react';
-import SEOHead from '../../components/SEO/SEOHead';
-import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../components/SEO/StructuredData';
+import SEOHead from '../../components/SEO/SEOHead.tsx';
+import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../components/SEO/StructuredData.tsx';
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
