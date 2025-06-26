@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cashflowapp.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+# Allow important pages
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /features
+Allow: /pricing
+Allow: /help
+Allow: /blog/
+
+# Block sensitive areas
+Disallow: /user/
+Disallow: /dashboard/
+Disallow: /transactions/
+Disallow: /reports/
+Disallow: /analytics/

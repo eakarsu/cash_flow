@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, Building, Users, Globe } from 'lucide-react';
+import SEOHead from '../../components/SEO/SEOHead';
+import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../components/SEO/StructuredData';
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -107,37 +109,72 @@ const ContactPage: React.FC = () => {
   ];
 
 
+  // SEO structured data
+  const localBusinessSchema = generateLocalBusinessSchema();
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://cashflowapp.app' },
+    { name: 'Contact', url: 'https://cashflowapp.app/contact' }
+  ]);
+
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow p-8 text-center">
-          <Send className="mx-auto h-12 w-12 text-green-500 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Message Sent!</h2>
-          <p className="text-gray-600 mb-6">
-            Thank you for reaching out. We'll get back to you within 24 hours.
-          </p>
-          <button
-            onClick={() => setIsSubmitted(false)}
-            className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700"
-          >
-            Send Another Message
-          </button>
+      <>
+        <SEOHead
+          title="Message Sent Successfully - Contact Cash Flow Manager"
+          description="Your message has been sent successfully. Our team will respond within 24 hours."
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="max-w-md mx-auto bg-white rounded-lg shadow p-8 text-center">
+            <Send className="mx-auto h-12 w-12 text-green-500 mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Message Sent!</h1>
+            <p className="text-gray-600 mb-6">
+              Thank you for reaching out. We'll get back to you within 24 hours.
+            </p>
+            <button
+              onClick={() => setIsSubmitted(false)}
+              className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700"
+            >
+              Send Another Message
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <SEOHead
+        title="Contact Cash Flow Manager - Get Support & Sales Information"
+        description="Contact Cash Flow Manager for support, sales inquiries, or partnership opportunities. Located in Henrico, VA. Call 804-360-1129 or email us."
+        keywords="contact cash flow manager, customer support, sales inquiry, financial software support, Henrico VA"
+        structuredData={localBusinessSchema}
+      />
+      
+      <script type="application/ld+json">
+        {JSON.stringify(breadcrumbSchema)}
+      </script>
+      
+      <div className="min-h-screen bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="mb-8">
+          <ol className="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="/" className="hover:text-primary-600">Home</a></li>
+            <li>/</li>
+            <li className="text-gray-900">Contact</li>
+          </ol>
+        </nav>
+        
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Cash Flow Manager</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We'd love to hear from you. Get in touch with our team for sales inquiries, 
-            support questions, or partnership opportunities.
+            support questions, or partnership opportunities. Based in Henrico, Virginia.
           </p>
-        </div>
+        </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Contact Form */}
