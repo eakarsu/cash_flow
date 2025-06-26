@@ -29,41 +29,47 @@ const ContactPage: React.FC = () => {
     try {
       console.log('Contact form submitted:', formData);
 
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      // Since there's no backend API, create a mailto link as fallback
+      const recipient = formData.type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app';
+      const subject = encodeURIComponent(`[Cash Flow Manager Contact] ${formData.subject}`);
+      const body = encodeURIComponent(`
+Name: ${formData.name}
+Email: ${formData.email}
+Company: ${formData.company || 'Not provided'}
+Type: ${formData.type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+
+Message:
+${formData.message}
+
+---
+Sent from Cash Flow Manager Contact Form
+      `);
+
+      const mailtoLink = `mailto:${recipient}?subject=${subject}&body=${body}`;
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Open email client
+      window.location.href = mailtoLink;
+      
+      // Show success message
+      setIsSubmitted(true);
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        subject: '',
+        message: '',
+        type: 'support'
       });
 
-      // Check if response is HTML (404 page) instead of JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('API endpoint not available. Please contact support directly.');
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        setIsSubmitted(true);
-        setFormData({
-          name: '',
-          email: '',
-          company: '',
-          subject: '',
-          message: '',
-          type: 'support'
-        });
-      } else {
-        setError(result.message || 'Failed to send message. Please try again.');
-      }
     } catch (err) {
       console.error('Contact form error:', err);
       
       // Provide fallback instructions
       setError(
-        'Unable to send message through the form. Please contact us directly at: ' +
+        'Unable to open email client. Please contact us directly at: ' +
         (formData.type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app') +
         ' or call 804-360-1129'
       );
@@ -124,9 +130,9 @@ const ContactPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow p-8 text-center">
           <Send className="mx-auto h-12 w-12 text-green-500 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Message Sent!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Email Client Opened!</h2>
           <p className="text-gray-600 mb-6">
-            Thank you for reaching out. We'll get back to you within 24 hours.
+            Your email client should have opened with a pre-filled message. Please send the email to complete your contact request.
           </p>
           <button
             onClick={() => setIsSubmitted(false)}
