@@ -156,7 +156,7 @@ Time: ${new Date().toISOString()}
         
         logger.info(`Trying alternative configuration: Port ${altPort} with ${altSecure ? 'SSL' : 'STARTTLS'}`);
         
-        const altTransporter = nodemailer.createTransporter({
+        const altTransporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: altPort,
           secure: altSecure,
