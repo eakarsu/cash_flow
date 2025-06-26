@@ -16,4 +16,4 @@ COPY . .
 # Expose port
 
 # Start the development server
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
