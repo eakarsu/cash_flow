@@ -62,6 +62,20 @@ const ImportTransactionsPage: React.FC = () => {
         // Try to get AI transformation suggestions
         try {
           const aiService = new AIColumnMappingService();
+          
+          // Check if AI service is configured before attempting transformations
+          if (!aiService.isConfigured()) {
+            console.log("🤖 AI service not configured, skipping transformation suggestions");
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available (API key required).`);
+            
+            // Navigate to dashboard since no AI features available
+            setTimeout(() => {
+              console.log("🏠 Navigating to dashboard (AI not configured)");
+              navigate('/');
+            }, 2000);
+            return;
+          }
+          
           const headers = Object.keys(importedTransactions[0] || {});
           const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
           setSuggestedTransformations(suggestions.transformations);
