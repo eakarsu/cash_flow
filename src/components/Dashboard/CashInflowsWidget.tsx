@@ -60,7 +60,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
     percentage: totalInflows > 0 ? (cat.amount / totalInflows) * 100 : 0
   })).sort((a, b) => b.amount - a.amount);
 
-  // Generate monthly trends for the last 6 months
+  // Generate monthly trends for the last 6 months using all transactions (not filtered by period)
   const monthlyTrends: Array<{
     month: string;
     inflows: number;
@@ -69,7 +69,7 @@ const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) =
   for (let i = 5; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
-    const monthTransactions = filteredTransactions.filter(t => {
+    const monthTransactions = transactions.filter(t => {
       const tDate = new Date(t.date);
       return tDate.getMonth() === date.getMonth() && 
              tDate.getFullYear() === date.getFullYear();
