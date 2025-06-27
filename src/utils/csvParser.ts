@@ -42,7 +42,7 @@ const parseAmount = (amountStr: string): number => {
   const cleaned = amountStr.replace(/["$,]/g, '').trim();
   
   // DEBUG LOG
-  console.log(`[DEBUG] parseAmount input: '${amountStr}', cleaned: '${cleaned}'`);
+  // console.log(`[DEBUG] parseAmount input: '${amountStr}', cleaned: '${cleaned}'`);
 
   if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
     const amount = parseFloat(cleaned.slice(1, -1));
