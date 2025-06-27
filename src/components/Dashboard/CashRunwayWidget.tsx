@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Clock, AlertTriangle, CheckCircle, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
@@ -11,39 +11,77 @@ interface CashRunwayWidgetProps {
 const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
 
-  // Filter transactions based on selected period
-  const filteredTransactions = transactions.filter(t => {
-    if (selectedPeriod === 'all') return true;
-    
-    const transactionDate = new Date(t.date);
+  // Memoize expensive calculations
+  const { filteredTransactions, currentBalance, totalInflows, totalOutflows, netCashFlow, burnRate } = useMemo(() => {
+    // Pre-calculate date boundaries once
     const now = new Date();
-    
-    // Reset time to start of day for accurate comparison
-    transactionDate.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
     
-    switch (selectedPeriod) {
-      case 'month':
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
-      case 'quarter':
-        const currentQuarter = Math.floor(now.getMonth() / 3);
-        const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
-        const endOfQuarter = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
-        return transactionDate >= startOfQuarter && transactionDate <= endOfQuarter;
-      case 'year':
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const endOfYear = new Date(now.getFullYear(), 11, 31);
-        return transactionDate >= startOfYear && transactionDate <= endOfYear;
-      default:
-        return true;
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+    
+    if (selectedPeriod !== 'all') {
+      switch (selectedPeriod) {
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          break;
+        case 'quarter':
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+          endDate = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear(), 11, 31);
+          break;
+      }
     }
-  });
 
-  // Calculate current balance manually by sorting transactions chronologically and summing amounts
-  const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
+    // Filter transactions once
+    const filtered = selectedPeriod === 'all' ? transactions : transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      transactionDate.setHours(0, 0, 0, 0);
+      return transactionDate >= startDate! && transactionDate <= endDate!;
+    });
+
+    // Calculate current balance (sort once)
+    const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const balance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
+
+    // Calculate cash flow summary using filtered transactions
+    const inflows = filtered.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+    const outflows = filtered.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const netFlow = inflows - outflows;
+    
+    // Calculate burn rate
+    const rate = selectedPeriod === 'all' ? 
+      (() => {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        
+        const recentOutflows = transactions.filter(t => {
+          const tDate = new Date(t.date);
+          return t.amount < 0 && tDate >= sixMonthsAgo;
+        });
+        
+        const recentOutflowsTotal = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        return recentOutflowsTotal > 0 ? recentOutflowsTotal / 6 : outflows / Math.max(1, 12);
+      })() :
+      (() => {
+        const periodMonths = selectedPeriod === 'month' ? 1 : selectedPeriod === 'quarter' ? 3 : 12;
+        return outflows / periodMonths;
+      })();
+
+    return {
+      filteredTransactions: filtered,
+      currentBalance: balance,
+      totalInflows: inflows,
+      totalOutflows: outflows,
+      netCashFlow: netFlow,
+      burnRate: rate
+    };
+  }, [transactions, selectedPeriod]);
   
   // Use shared AI context
   const { 
@@ -56,31 +94,6 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
     setUseAI
   } = useAICashFlowContext();
   
-  // Calculate cash flow summary using filtered transactions
-  const totalInflows = filteredTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
-  const totalOutflows = filteredTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  const netCashFlow = totalInflows - totalOutflows;
-  
-  // Calculate burn rate using filtered transactions
-  const burnRate = selectedPeriod === 'all' ? 
-    (() => {
-      // For 'all' period, use 6-month lookback as before
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
-      const recentOutflows = transactions.filter(t => {
-        const tDate = new Date(t.date);
-        return t.amount < 0 && tDate >= sixMonthsAgo;
-      });
-      
-      const recentOutflowsTotal = recentOutflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-      return recentOutflowsTotal > 0 ? recentOutflowsTotal / 6 : totalOutflows / Math.max(1, 12);
-    })() :
-    (() => {
-      // For specific periods, calculate burn rate based on period length
-      const periodMonths = selectedPeriod === 'month' ? 1 : selectedPeriod === 'quarter' ? 3 : 12;
-      return totalOutflows / periodMonths;
-    })();
   // Use AI runway analysis if available, otherwise use calculated runway
   console.log('🛣️ Runway calculation:', {
     useAI,

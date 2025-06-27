@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp, DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
@@ -12,75 +12,87 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
 const CashInflowsWidget: React.FC<CashInflowsWidgetProps> = ({ transactions }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
 
-  // Filter transactions based on selected period using amount column
-  const filteredTransactions = transactions.filter(t => {
-    if (selectedPeriod === 'all') return true;
-    
-    const transactionDate = new Date(t.date);
+  // Memoize expensive calculations
+  const { filteredTransactions, inflowTransactions, totalInflows, categoryArray, monthlyTrends } = useMemo(() => {
+    // Pre-calculate date boundaries once
     const now = new Date();
-    
-    // Reset time to start of day for accurate comparison
-    transactionDate.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
     
-    switch (selectedPeriod) {
-      case 'month':
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
-      case 'quarter':
-        const currentQuarter = Math.floor(now.getMonth() / 3);
-        const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
-        const endOfQuarter = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
-        return transactionDate >= startOfQuarter && transactionDate <= endOfQuarter;
-      case 'year':
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const endOfYear = new Date(now.getFullYear(), 11, 31);
-        return transactionDate >= startOfYear && transactionDate <= endOfYear;
-      default:
-        return true;
-    }
-  });
-
-  const inflowTransactions = filteredTransactions.filter(t => t.amount > 0);
-  const totalInflows = inflowTransactions.reduce((sum, t) => sum + t.amount, 0);
-  
-  const categoryBreakdown = inflowTransactions.reduce((acc, transaction) => {
-    const category = transaction.category;
-    if (!acc[category]) {
-      acc[category] = { category, amount: 0, count: 0 };
-    }
-    acc[category].amount += transaction.amount;
-    acc[category].count += 1;
-    return acc;
-  }, {} as Record<string, { category: string; amount: number; count: number }>);
-
-  const categoryArray = Object.values(categoryBreakdown).map(cat => ({
-    ...cat,
-    percentage: totalInflows > 0 ? (cat.amount / totalInflows) * 100 : 0
-  })).sort((a, b) => b.amount - a.amount);
-
-  // Generate monthly trends for the last 6 months using all transactions (not filtered by period)
-  const monthlyTrends: Array<{
-    month: string;
-    inflows: number;
-    outflows: number;
-  }> = [];
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    const monthTransactions = transactions.filter(t => {
-      const tDate = new Date(t.date);
-      return tDate.getMonth() === date.getMonth() && 
-             tDate.getFullYear() === date.getFullYear();
-    });
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
     
-    monthlyTrends.push({
-      month: date.toLocaleDateString('en-US', { month: 'short' } as Intl.DateTimeFormatOptions),
-      inflows: monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
-      outflows: monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
+    if (selectedPeriod !== 'all') {
+      switch (selectedPeriod) {
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          break;
+        case 'quarter':
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+          endDate = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear(), 11, 31);
+          break;
+      }
+    }
+
+    // Filter transactions once
+    const filtered = selectedPeriod === 'all' ? transactions : transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      transactionDate.setHours(0, 0, 0, 0);
+      return transactionDate >= startDate! && transactionDate <= endDate!;
     });
-  }
+
+    const inflows = filtered.filter(t => t.amount > 0);
+    const totalInflow = inflows.reduce((sum, t) => sum + t.amount, 0);
+    
+    // Calculate category breakdown
+    const categoryBreakdown = inflows.reduce((acc, transaction) => {
+      const category = transaction.category;
+      if (!acc[category]) {
+        acc[category] = { category, amount: 0, count: 0 };
+      }
+      acc[category].amount += transaction.amount;
+      acc[category].count += 1;
+      return acc;
+    }, {} as Record<string, { category: string; amount: number; count: number }>);
+
+    const categories = Object.values(categoryBreakdown).map(cat => ({
+      ...cat,
+      percentage: totalInflow > 0 ? (cat.amount / totalInflow) * 100 : 0
+    })).sort((a, b) => b.amount - a.amount);
+
+    // Generate monthly trends (use all transactions for historical context)
+    const trends: Array<{ month: string; inflows: number; outflows: number; }> = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      
+      const monthTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate >= monthStart && tDate <= monthEnd;
+      });
+      
+      trends.push({
+        month: date.toLocaleDateString('en-US', { month: 'short' } as Intl.DateTimeFormatOptions),
+        inflows: monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
+        outflows: monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
+      });
+    }
+
+    return {
+      filteredTransactions: filtered,
+      inflowTransactions: inflows,
+      totalInflows: totalInflow,
+      categoryArray: categories,
+      monthlyTrends: trends
+    };
+  }, [transactions, selectedPeriod]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
