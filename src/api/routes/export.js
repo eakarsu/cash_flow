@@ -1,5 +1,14 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
+
+// Create exports directory if it doesn't exist
+const exportsDir = path.join(__dirname, '../../exports');
+if (!fs.existsSync(exportsDir)) {
+  fs.mkdirSync(exportsDir, { recursive: true });
+  console.log(`📁 Created exports directory: ${exportsDir}`);
+}
 
 // Export data to CSV
 router.post('/csv', (req, res) => {
@@ -35,13 +44,20 @@ router.post('/csv', (req, res) => {
 
     console.log(`📁 Server: CSV content length: ${csvContent.length} characters`);
 
-    // Set headers for file download
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', Buffer.byteLength(csvContent, 'utf8'));
+    // Save file to local file system
+    const filePath = path.join(exportsDir, filename);
+    fs.writeFileSync(filePath, csvContent, 'utf8');
+    
+    console.log(`✅ Server: CSV file saved to local filesystem: ${filePath}`);
 
-    console.log(`✅ Server: Sending CSV file: ${filename}`);
-    res.send(csvContent);
+    // Return success response with file path
+    res.json({ 
+      success: true, 
+      message: 'CSV file saved successfully',
+      filename: filename,
+      filePath: filePath,
+      rowCount: data.length
+    });
 
   } catch (error) {
     console.error('❌ Server: CSV export error:', error);
@@ -62,13 +78,20 @@ router.post('/json', (req, res) => {
 
     const jsonContent = JSON.stringify(data, null, 2);
 
-    // Set headers for file download
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', Buffer.byteLength(jsonContent, 'utf8'));
+    // Save file to local file system
+    const filePath = path.join(exportsDir, filename);
+    fs.writeFileSync(filePath, jsonContent, 'utf8');
+    
+    console.log(`✅ Server: JSON file saved to local filesystem: ${filePath}`);
 
-    console.log(`✅ Server: Sending JSON file: ${filename}`);
-    res.send(jsonContent);
+    // Return success response with file path
+    res.json({ 
+      success: true, 
+      message: 'JSON file saved successfully',
+      filename: filename,
+      filePath: filePath,
+      rowCount: data.length
+    });
 
   } catch (error) {
     console.error('❌ Server: JSON export error:', error);

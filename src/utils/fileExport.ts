@@ -28,20 +28,12 @@ export const exportToCSV = async (data: ExportData[], filename: string = 'transf
       throw new Error(errorData.error || 'Failed to export CSV');
     }
 
-    // Get the CSV content as blob
-    const blob = await response.blob();
+    // Get the response data (file saved on server)
+    const result = await response.json();
     
-    // Create download link
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    console.log(`✅ File saved on server: ${result.filePath}`);
+    console.log(`📊 Export summary: ${result.rowCount} rows saved as ${result.filename}`);
     
-    console.log(`✅ File exported via server: ${filename}`);
   } catch (error) {
     console.error('❌ Server export failed:', error);
     throw error;
@@ -73,20 +65,12 @@ export const exportToJSON = async (data: ExportData[], filename: string = 'trans
       throw new Error(errorData.error || 'Failed to export JSON');
     }
 
-    // Get the JSON content as blob
-    const blob = await response.blob();
+    // Get the response data (file saved on server)
+    const result = await response.json();
     
-    // Create download link
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    console.log(`✅ File saved on server: ${result.filePath}`);
+    console.log(`📊 Export summary: ${result.rowCount} rows saved as ${result.filename}`);
     
-    console.log(`✅ File exported via server: ${filename}`);
   } catch (error) {
     console.error('❌ Server export failed:', error);
     throw error;
