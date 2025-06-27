@@ -12,7 +12,7 @@ export const exportToCSV = async (data: ExportData[], filename: string = 'transf
   console.log(`📁 Starting server-side CSV export: ${filename} with ${data.length} rows`);
 
   try {
-    const response = await fetch('/api/export/csv', {
+    const response = await fetch('http://localhost:3001/api/export/csv', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export const exportToJSON = async (data: ExportData[], filename: string = 'trans
   console.log(`📁 Starting server-side JSON export: ${filename} with ${data.length} rows`);
 
   try {
-    const response = await fetch('/api/export/json', {
+    const response = await fetch('http://localhost:3001/api/export/json', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
