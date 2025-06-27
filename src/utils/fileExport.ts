@@ -5,11 +5,15 @@ export interface ExportData {
 
 export const exportToCSV = (data: ExportData[], filename: string = 'transformed_data.csv'): void => {
   if (!data || data.length === 0) {
+    console.error('❌ No data to export');
     throw new Error('No data to export');
   }
 
+  console.log(`📁 Starting CSV export: ${filename} with ${data.length} rows`);
+
   // Get all unique headers from the data
   const headers = Array.from(new Set(data.flatMap(row => Object.keys(row))));
+  console.log(`📁 CSV headers: ${headers.join(', ')}`);
   
   // Create CSV content
   const csvContent = [
@@ -28,6 +32,8 @@ export const exportToCSV = (data: ExportData[], filename: string = 'transformed_
     )
   ].join('\n');
 
+  console.log(`📁 CSV content length: ${csvContent.length} characters`);
+
   // Create and download file
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
@@ -38,16 +44,27 @@ export const exportToCSV = (data: ExportData[], filename: string = 'transformed_
     link.setAttribute('download', filename);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
+    
+    console.log(`📁 Triggering download for: ${filename}`);
     link.click();
+    
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
+    console.log(`✅ File exported successfully: ${filename}`);
+  } else {
+    console.error('❌ Browser does not support file downloads');
+    throw new Error('Browser does not support file downloads');
   }
 };
 
 export const exportToJSON = (data: ExportData[], filename: string = 'transformed_data.json'): void => {
   if (!data || data.length === 0) {
+    console.error('❌ No data to export');
     throw new Error('No data to export');
   }
+
+  console.log(`📁 Starting JSON export: ${filename} with ${data.length} rows`);
 
   const jsonContent = JSON.stringify(data, null, 2);
   const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
@@ -59,8 +76,16 @@ export const exportToJSON = (data: ExportData[], filename: string = 'transformed
     link.setAttribute('download', filename);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
+    
+    console.log(`📁 Triggering download for: ${filename}`);
     link.click();
+    
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
+    console.log(`✅ File exported successfully: ${filename}`);
+  } else {
+    console.error('❌ Browser does not support file downloads');
+    throw new Error('Browser does not support file downloads');
   }
 };
