@@ -59,48 +59,24 @@ const ImportTransactionsPage: React.FC = () => {
         // Store raw data for transformation
         setRawData(importedTransactions);
         
-        // Try to get AI transformation suggestions
+        // Try to get AI transformation suggestions and auto-save transformed data
         try {
           const aiService = new AIColumnMappingService();
-          
-          // Check if AI service is configured before attempting transformations
-          if (!aiService.isConfigured()) {
-            console.log("🤖 AI service not configured, skipping transformation suggestions");
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available (API key required).`);
-            
-            // Navigate to dashboard since no AI features available
-            setTimeout(() => {
-              console.log("🏠 Navigating to dashboard (AI not configured)");
-              navigate('/');
-            }, 2000);
-            return;
-          }
-          
           const headers = Object.keys(importedTransactions[0] || {});
           const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
           setSuggestedTransformations(suggestions.transformations);
           
-          if (suggestions.transformations.length > 0) {
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI has suggested ${suggestions.transformations.length} data transformations. You can apply them below or navigate to dashboard.`);
-            console.log("🤖 AI transformations available, staying on page for user to apply them");
-          } else {
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. No AI transformations suggested.`);
-            // Navigate to dashboard after successful import if no transformations
-            setTimeout(() => {
-              console.log("🏠 Navigating to dashboard (no transformations suggested)");
-              navigate('/');
-            }, 2000);
-          }
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI has suggested ${suggestions.transformations.length} data transformations.`);
         } catch (aiError) {
           console.warn('AI transformation suggestions failed:', aiError);
           setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available.`);
-          
-          // Navigate to dashboard even if AI failed
-          setTimeout(() => {
-            console.log("🏠 Navigating to dashboard (AI failed but import succeeded)");
-            navigate('/');
-          }, 2000);
         }
+        
+        // Navigate to dashboard after successful import
+        setTimeout(() => {
+          console.log("🏠 Navigating to dashboard after successful import");
+          navigate('/');
+        }, 2000);
         
       } catch (error) {
         console.error('❌ Error importing CSV:', error);
