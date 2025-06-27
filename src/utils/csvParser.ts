@@ -111,7 +111,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
           }
 
           // DEBUG LOG
-          console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Description = '${description}', Category = '${category}', Is Expense = ${isExpenseTransaction(description, category)}, Final Amount = ${rawAmount}, Type = ${transactionType}`);
+          // console.log(`[DEBUG] Row ${i+1}: Amount String = '${amountStr}', Description = '${description}', Category = '${category}', Is Expense = ${isExpenseTransaction(description, category)}, Final Amount = ${rawAmount}, Type = ${transactionType}`);
 
           if (transactionType) {
             const date = normalizeDate(values[dateIndex] || '');
