@@ -26,20 +26,29 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
 
   // Filter transactions based on selected period
   const filteredTransactions = transactions.filter(t => {
+    if (selectedPeriod === 'all') return true;
+    
     const transactionDate = new Date(t.date);
     const now = new Date();
     
+    // Reset time to start of day for accurate comparison
+    transactionDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    
     switch (selectedPeriod) {
       case 'month':
-        return transactionDate.getMonth() === now.getMonth() && 
-               transactionDate.getFullYear() === now.getFullYear();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
       case 'quarter':
         const currentQuarter = Math.floor(now.getMonth() / 3);
-        const transactionQuarter = Math.floor(transactionDate.getMonth() / 3);
-        return transactionQuarter === currentQuarter && 
-               transactionDate.getFullYear() === now.getFullYear();
+        const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
+        const endOfQuarter = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+        return transactionDate >= startOfQuarter && transactionDate <= endOfQuarter;
       case 'year':
-        return transactionDate.getFullYear() === now.getFullYear();
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const endOfYear = new Date(now.getFullYear(), 11, 31);
+        return transactionDate >= startOfYear && transactionDate <= endOfYear;
       default:
         return true;
     }
