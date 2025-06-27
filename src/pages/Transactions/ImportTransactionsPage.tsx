@@ -165,7 +165,7 @@ const ImportTransactionsPage: React.FC = () => {
     }, 2000);
   };
 
-  const handleExportTransformed = (format: 'csv' | 'json') => {
+  const handleExportTransformed = async (format: 'csv' | 'json') => {
     if (!transformedData) return;
     
     const filename = `transformed_transactions_${new Date().toISOString().split('T')[0]}`;
