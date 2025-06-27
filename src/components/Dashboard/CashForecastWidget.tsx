@@ -197,17 +197,14 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={useAI && isConfigured}
+                checked={useAI}
                 onChange={(e) => {
-                  if (isConfigured) {
-                    console.log('🎯 AI checkbox toggled:', e.target.checked);
-                    setUseAI(e.target.checked);
-                  }
+                  console.log('🎯 AI checkbox toggled:', e.target.checked);
+                  setUseAI(e.target.checked);
                 }}
-                disabled={!isConfigured}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
-              <span className={`ml-2 text-sm ${isConfigured ? 'text-gray-700' : 'text-gray-400'}`}>
+              <span className="ml-2 text-sm text-gray-700">
                 AI Predictions
                 {!isConfigured && (
                   <span className="ml-1 text-xs text-gray-400">(API key required)</span>
