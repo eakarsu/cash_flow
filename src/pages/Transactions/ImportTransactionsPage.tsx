@@ -52,6 +52,10 @@ const ImportTransactionsPage: React.FC = () => {
         
         console.log('✅ Parsed transactions from CSV:', importedTransactions.length);
         
+        // IMMEDIATELY replace all transactions with the new imported ones
+        console.log('🔄 IMMEDIATELY replacing all transactions with imported data');
+        replaceAllTransactions(importedTransactions);
+        
         // Store raw data for transformation
         setRawData(importedTransactions);
         
@@ -62,43 +66,22 @@ const ImportTransactionsPage: React.FC = () => {
           const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
           setSuggestedTransformations(suggestions.transformations);
           
-          // Auto-apply transformations and save to file (background operation)
-          if (suggestions.transformations.length > 0) {
-            console.log("🔄 [AUTO-TRANSFORM] Starting background transformation and save...");
-            
-            // Apply all suggested transformations automatically
-            const transformedResult = await aiService.applyTransformations(
-              importedTransactions, 
-              suggestions.transformations
-            );
-            
-            // Save transformed data to file automatically
-            try {
-              const savedFilename = await aiService.saveTransformedDataToFile(
-                transformedResult, 
-                file.name
-              );
-              console.log(`✅ [AUTO-TRANSFORM] Transformed data automatically saved as: ${savedFilename}`);
-              
-              // Navigate to dashboard after successful save
-              setTimeout(() => {
-                console.log("🏠 [AUTO-TRANSFORM] Navigating to dashboard after successful transformation and save");
-                navigate('/');
-              }, 2000);
-            } catch (saveError) {
-              console.warn("⚠️ [AUTO-TRANSFORM] Failed to save transformed data:", saveError);
-              // Still navigate to dashboard even if save failed
-              setTimeout(() => {
-                console.log("🏠 [AUTO-TRANSFORM] Navigating to dashboard (save failed but import succeeded)");
-                navigate('/');
-              }, 2000);
-            }
-          }
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI has suggested ${suggestions.transformations.length} data transformations.`);
           
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions. AI has suggested ${suggestions.transformations.length} data transformations.`);
+          // Navigate to dashboard after successful import
+          setTimeout(() => {
+            console.log("🏠 Navigating to dashboard after successful import");
+            navigate('/');
+          }, 2000);
         } catch (aiError) {
           console.warn('AI transformation suggestions failed:', aiError);
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions. AI transformations not available.`);
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available.`);
+          
+          // Navigate to dashboard even if AI failed
+          setTimeout(() => {
+            console.log("🏠 Navigating to dashboard (AI failed but import succeeded)");
+            navigate('/');
+          }, 2000);
         }
         
       } catch (error) {
