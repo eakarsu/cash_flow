@@ -110,7 +110,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
   for (let i = 5; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
-    const monthTransactions = transactions.filter(t => {
+    const monthTransactions = filteredTransactions.filter(t => {
       const tDate = new Date(t.date);
       return tDate.getMonth() === date.getMonth() && 
              tDate.getFullYear() === date.getFullYear();
