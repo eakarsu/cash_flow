@@ -59,20 +59,24 @@ const ImportTransactionsPage: React.FC = () => {
         // Store raw data for transformation
         setRawData(importedTransactions);
         
-        // Try to get AI transformation suggestions and auto-save transformed data
+        // Try to get AI transformation suggestions
         try {
           const aiService = new AIColumnMappingService();
           const headers = Object.keys(importedTransactions[0] || {});
           const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
           setSuggestedTransformations(suggestions.transformations);
           
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI has suggested ${suggestions.transformations.length} data transformations.`);
-          
-          // Navigate to dashboard after successful import
-          setTimeout(() => {
-            console.log("🏠 Navigating to dashboard after successful import");
-            navigate('/');
-          }, 2000);
+          if (suggestions.transformations.length > 0) {
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI has suggested ${suggestions.transformations.length} data transformations. You can apply them below or navigate to dashboard.`);
+            console.log("🤖 AI transformations available, staying on page for user to apply them");
+          } else {
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. No AI transformations suggested.`);
+            // Navigate to dashboard after successful import if no transformations
+            setTimeout(() => {
+              console.log("🏠 Navigating to dashboard (no transformations suggested)");
+              navigate('/');
+            }, 2000);
+          }
         } catch (aiError) {
           console.warn('AI transformation suggestions failed:', aiError);
           setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available.`);
@@ -240,6 +244,18 @@ const ImportTransactionsPage: React.FC = () => {
                   {importResult}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Navigation Button */}
+          {suggestedTransformations.length > 0 && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => navigate('/')}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Skip Transformations & Go to Dashboard
+              </button>
             </div>
           )}
 
