@@ -182,9 +182,9 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
                 console.log('🔄 Manual refresh triggered');
                 refreshPrediction();
               }}
-              disabled={aiLoading || !isConfigured}
+              disabled={aiLoading}
               className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isConfigured ? "Refresh AI insights" : "API key required for AI insights"}
+              title={isConfigured ? "Refresh AI insights" : "Configure API key to enable AI insights"}
             >
               <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
             </button>

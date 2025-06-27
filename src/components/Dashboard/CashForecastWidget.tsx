@@ -216,9 +216,9 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
                 console.log('🔄 Manual refresh triggered');
                 refreshPrediction();
               }}
-              disabled={aiLoading || !isConfigured}
+              disabled={aiLoading}
               className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isConfigured ? "Refresh AI predictions" : "API key required for AI predictions"}
+              title={isConfigured ? "Refresh AI predictions" : "Configure API key to enable AI predictions"}
             >
               <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
             </button>
