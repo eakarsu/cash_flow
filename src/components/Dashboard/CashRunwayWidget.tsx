@@ -165,11 +165,12 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({ transactions }) => 
   const runwayTrend = monthlyTrends.map((month, index) => {
     // Calculate historical balance at this point in time
     const targetDate = new Date();
-    targetDate.setMonth(targetDate.getMonth() - (5 - index));
+    targetDate.setMonth(targetDate.getMonth() - (11 - index));
     targetDate.setDate(1); // First day of the month
     
-    // Get all transactions up to this historical point
-    const historicalTransactions = sortedTransactions.filter(t => 
+    // Get all transactions up to this historical point (use transactions from memoized data)
+    const sortedAllTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const historicalTransactions = sortedAllTransactions.filter(t => 
       new Date(t.date) <= targetDate
     );
     
