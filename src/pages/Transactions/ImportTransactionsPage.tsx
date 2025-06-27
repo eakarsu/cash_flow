@@ -111,7 +111,18 @@ const ImportTransactionsPage: React.FC = () => {
       
       const result = await aiService.applyTransformations(rawData, transformationsToApply);
       setTransformedData(result);
-      setImportResult(`Applied ${transformationsToApply.length} transformations. ${result.newColumns.length} new columns created.`);
+      
+      // Automatically save transformed data to file as side effect
+      try {
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `transformed_transactions_${timestamp}.csv`;
+        exportToCSV(result.transformedData, filename);
+        console.log(`✅ Automatically saved transformed data as: ${filename}`);
+        setImportResult(`Applied ${transformationsToApply.length} transformations. ${result.newColumns.length} new columns created. File automatically saved as ${filename}.`);
+      } catch (saveError) {
+        console.warn('⚠️ Failed to auto-save transformed data:', saveError);
+        setImportResult(`Applied ${transformationsToApply.length} transformations. ${result.newColumns.length} new columns created. (Auto-save failed)`);
+      }
     } catch (error) {
       console.error('Transformation failed:', error);
       setImportResult(`Error applying transformations: ${error instanceof Error ? error.message : 'Unknown error'}`);
