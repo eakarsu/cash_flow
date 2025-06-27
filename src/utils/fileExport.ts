@@ -34,28 +34,18 @@ export const exportToCSV = (data: ExportData[], filename: string = 'transformed_
 
   console.log(`📁 CSV content length: ${csvContent.length} characters`);
 
-  // Create and download file
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
+  // Simple file download
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
   
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    
-    console.log(`📁 Triggering download for: ${filename}`);
-    link.click();
-    
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    console.log(`✅ File exported successfully: ${filename}`);
-  } else {
-    console.error('❌ Browser does not support file downloads');
-    throw new Error('Browser does not support file downloads');
-  }
+  console.log(`✅ File saved: ${filename}`);
 };
 
 export const exportToJSON = (data: ExportData[], filename: string = 'transformed_data.json'): void => {
