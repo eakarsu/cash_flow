@@ -13,9 +13,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Import routes
 const contactRouter = require('./src/api/routes/contact');
+const exportRouter = require('./src/api/routes/export');
 
 // API routes
 app.use('/api/contact', contactRouter);
+app.use('/api/export', exportRouter);
 
 // Serve static files from React build (for production)
 if (process.env.NODE_ENV === 'production') {

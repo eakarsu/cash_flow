@@ -3,79 +3,92 @@ export interface ExportData {
   [key: string]: any;
 }
 
-export const exportToCSV = (data: ExportData[], filename: string = 'transformed_data.csv'): void => {
+export const exportToCSV = async (data: ExportData[], filename: string = 'transformed_data.csv'): Promise<void> => {
   if (!data || data.length === 0) {
     console.error('❌ No data to export');
     throw new Error('No data to export');
   }
 
-  console.log(`📁 Starting CSV export: ${filename} with ${data.length} rows`);
+  console.log(`📁 Starting server-side CSV export: ${filename} with ${data.length} rows`);
 
-  // Get all unique headers from the data
-  const headers = Array.from(new Set(data.flatMap(row => Object.keys(row))));
-  console.log(`📁 CSV headers: ${headers.join(', ')}`);
-  
-  // Create CSV content
-  const csvContent = [
-    // Header row
-    headers.join(','),
-    // Data rows
-    ...data.map(row => 
-      headers.map(header => {
-        const value = row[header] || '';
-        // Escape values that contain commas, quotes, or newlines
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
-      }).join(',')
-    )
-  ].join('\n');
+  try {
+    const response = await fetch('/api/export/csv', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data,
+        filename
+      })
+    });
 
-  console.log(`📁 CSV content length: ${csvContent.length} characters`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to export CSV');
+    }
 
-  // Simple file download
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  
-  console.log(`✅ File saved: ${filename}`);
-};
-
-export const exportToJSON = (data: ExportData[], filename: string = 'transformed_data.json'): void => {
-  if (!data || data.length === 0) {
-    console.error('❌ No data to export');
-    throw new Error('No data to export');
-  }
-
-  console.log(`📁 Starting JSON export: ${filename} with ${data.length} rows`);
-
-  const jsonContent = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-  const link = document.createElement('a');
-  
-  if (link.download !== undefined) {
+    // Get the CSV content as blob
+    const blob = await response.blob();
+    
+    // Create download link
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    
-    console.log(`📁 Triggering download for: ${filename}`);
-    link.click();
-    
-    document.body.removeChild(link);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    console.log(`✅ File exported successfully: ${filename}`);
-  } else {
-    console.error('❌ Browser does not support file downloads');
-    throw new Error('Browser does not support file downloads');
+    console.log(`✅ File exported via server: ${filename}`);
+  } catch (error) {
+    console.error('❌ Server export failed:', error);
+    throw error;
+  }
+};
+
+export const exportToJSON = async (data: ExportData[], filename: string = 'transformed_data.json'): Promise<void> => {
+  if (!data || data.length === 0) {
+    console.error('❌ No data to export');
+    throw new Error('No data to export');
+  }
+
+  console.log(`📁 Starting server-side JSON export: ${filename} with ${data.length} rows`);
+
+  try {
+    const response = await fetch('/api/export/json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data,
+        filename
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to export JSON');
+    }
+
+    // Get the JSON content as blob
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log(`✅ File exported via server: ${filename}`);
+  } catch (error) {
+    console.error('❌ Server export failed:', error);
+    throw error;
   }
 };

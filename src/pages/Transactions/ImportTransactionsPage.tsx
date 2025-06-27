@@ -77,7 +77,7 @@ const ImportTransactionsPage: React.FC = () => {
             try {
               const timestamp = new Date().toISOString().split('T')[0];
               const filename = `transformed_transactions_${timestamp}.csv`;
-              exportToCSV(result.transformedData, filename);
+              await exportToCSV(result.transformedData, filename);
               console.log(`✅ Automatically saved transformed data as: ${filename}`);
               setImportResult(`Successfully imported ${importedTransactions.length} transactions. Applied ${suggestions.transformations.length} AI transformations and saved as ${filename}.`);
             } catch (saveError) {
@@ -172,9 +172,9 @@ const ImportTransactionsPage: React.FC = () => {
     
     try {
       if (format === 'csv') {
-        exportToCSV(transformedData.transformedData, `${filename}.csv`);
+        await exportToCSV(transformedData.transformedData, `${filename}.csv`);
       } else {
-        exportToJSON(transformedData.transformedData, `${filename}.json`);
+        await exportToJSON(transformedData.transformedData, `${filename}.json`);
       }
       setImportResult(`Successfully exported transformed data as ${format.toUpperCase()}.`);
     } catch (error) {
