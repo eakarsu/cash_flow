@@ -59,14 +59,34 @@ const ImportTransactionsPage: React.FC = () => {
         // Store raw data for transformation
         setRawData(importedTransactions);
         
-        // Try to get AI transformation suggestions and auto-save transformed data
+        // Try to get AI transformation suggestions and auto-apply them
         try {
           const aiService = new AIColumnMappingService();
           const headers = Object.keys(importedTransactions[0] || {});
           const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
           setSuggestedTransformations(suggestions.transformations);
           
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI has suggested ${suggestions.transformations.length} data transformations.`);
+          if (suggestions.transformations.length > 0) {
+            console.log('🤖 Auto-applying AI transformations and saving file...');
+            
+            // Auto-apply all transformations
+            const result = await aiService.applyTransformations(importedTransactions, suggestions.transformations);
+            setTransformedData(result);
+            
+            // Automatically save transformed data to file
+            try {
+              const timestamp = new Date().toISOString().split('T')[0];
+              const filename = `transformed_transactions_${timestamp}.csv`;
+              exportToCSV(result.transformedData, filename);
+              console.log(`✅ Automatically saved transformed data as: ${filename}`);
+              setImportResult(`Successfully imported ${importedTransactions.length} transactions. Applied ${suggestions.transformations.length} AI transformations and saved as ${filename}.`);
+            } catch (saveError) {
+              console.warn('⚠️ Failed to auto-save transformed data:', saveError);
+              setImportResult(`Successfully imported ${importedTransactions.length} transactions. Applied ${suggestions.transformations.length} AI transformations. (Auto-save failed)`);
+            }
+          } else {
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. No AI transformations suggested.`);
+          }
         } catch (aiError) {
           console.warn('AI transformation suggestions failed:', aiError);
           setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available.`);
