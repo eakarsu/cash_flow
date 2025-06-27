@@ -1,14 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, AlertCircle, Download, Wand2, Eye } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext.tsx';
 import { parseCSV } from '../../utils/csvParser.ts';
+import AIColumnMappingService, { DataTransformation, TransformedData } from '../../services/aiColumnMappingService.ts';
+import { exportToCSV, exportToJSON } from '../../utils/fileExport.ts';
 
 const ImportTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
   const { replaceAllTransactions, resetAppState } = useTransactions();
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [transformedData, setTransformedData] = useState<TransformedData | null>(null);
+  const [suggestedTransformations, setSuggestedTransformations] = useState<DataTransformation[]>([]);
+  const [selectedTransformations, setSelectedTransformations] = useState<string[]>([]);
+  const [rawData, setRawData] = useState<any[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debug: Log component mount
@@ -44,26 +52,54 @@ const ImportTransactionsPage: React.FC = () => {
         
         console.log('✅ Parsed transactions from CSV:', importedTransactions.length);
         
-        // Validate transaction count makes sense
-        if (importedTransactions.length === 0) {
-          throw new Error('No valid transactions found in the CSV file');
+        // Store raw data for transformation
+        setRawData(importedTransactions);
+        
+        // Try to get AI transformation suggestions and auto-save transformed data
+        try {
+          const aiService = new AIColumnMappingService();
+          const headers = Object.keys(importedTransactions[0] || {});
+          const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
+          setSuggestedTransformations(suggestions.transformations);
+          
+          // Auto-apply transformations and save to file (background operation)
+          if (suggestions.transformations.length > 0) {
+            console.log("🔄 [AUTO-TRANSFORM] Starting background transformation and save...");
+            
+            // Apply all suggested transformations automatically
+            const transformedResult = await aiService.applyTransformations(
+              importedTransactions, 
+              suggestions.transformations
+            );
+            
+            // Save transformed data to file automatically
+            try {
+              const savedFilename = await aiService.saveTransformedDataToFile(
+                transformedResult, 
+                file.name
+              );
+              console.log(`✅ [AUTO-TRANSFORM] Transformed data automatically saved as: ${savedFilename}`);
+              
+              // Navigate to dashboard after successful save
+              setTimeout(() => {
+                console.log("🏠 [AUTO-TRANSFORM] Navigating to dashboard after successful transformation and save");
+                navigate('/');
+              }, 2000);
+            } catch (saveError) {
+              console.warn("⚠️ [AUTO-TRANSFORM] Failed to save transformed data:", saveError);
+              // Still navigate to dashboard even if save failed
+              setTimeout(() => {
+                console.log("🏠 [AUTO-TRANSFORM] Navigating to dashboard (save failed but import succeeded)");
+                navigate('/');
+              }, 2000);
+            }
+          }
+          
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions. AI has suggested ${suggestions.transformations.length} data transformations.`);
+        } catch (aiError) {
+          console.warn('AI transformation suggestions failed:', aiError);
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions. AI transformations not available.`);
         }
-        
-        // Sort transactions by date (newest first)
-        const sortedTransactions = importedTransactions.sort((a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        
-        // FORCE replace with ONLY uploaded data
-        console.log('🚀 FORCE setting ONLY uploaded transactions:', sortedTransactions.length);
-        replaceAllTransactions(sortedTransactions);
-        
-        setImportResult(`Successfully imported ${importedTransactions.length} transactions. All previous data has been completely replaced.`);
-        
-        // Auto-navigate back to dashboard after successful import
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
         
       } catch (error) {
         console.error('❌ Error importing CSV:', error);
@@ -77,6 +113,64 @@ const ImportTransactionsPage: React.FC = () => {
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleApplyTransformations = async () => {
+    if (!rawData.length || selectedTransformations.length === 0) return;
+    
+    setIsTransforming(true);
+    try {
+      const aiService = new AIColumnMappingService();
+      const transformationsToApply = suggestedTransformations.filter(t => 
+        selectedTransformations.includes(t.id)
+      );
+      
+      const result = await aiService.applyTransformations(rawData, transformationsToApply);
+      setTransformedData(result);
+      setImportResult(`Applied ${transformationsToApply.length} transformations. ${result.newColumns.length} new columns created.`);
+    } catch (error) {
+      console.error('Transformation failed:', error);
+      setImportResult(`Error applying transformations: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsTransforming(false);
+    }
+  };
+
+  const handleImportToApp = () => {
+    if (!transformedData) return;
+    
+    // Sort transactions by date (newest first)
+    const sortedTransactions = transformedData.transformedData.sort((a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    // FORCE replace with transformed data
+    console.log('🚀 FORCE setting transformed transactions:', sortedTransactions.length);
+    replaceAllTransactions(sortedTransactions);
+    
+    setImportResult(`Successfully imported ${sortedTransactions.length} transformed transactions to the app.`);
+    
+    // Auto-navigate back to dashboard after successful import
+    setTimeout(() => {
+      navigate('/');
+    }, 2000);
+  };
+
+  const handleExportTransformed = (format: 'csv' | 'json') => {
+    if (!transformedData) return;
+    
+    const filename = `transformed_transactions_${new Date().toISOString().split('T')[0]}`;
+    
+    try {
+      if (format === 'csv') {
+        exportToCSV(transformedData.transformedData, `${filename}.csv`);
+      } else {
+        exportToJSON(transformedData.transformedData, `${filename}.json`);
+      }
+      setImportResult(`Successfully exported transformed data as ${format.toUpperCase()}.`);
+    } catch (error) {
+      setImportResult(`Error exporting data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -151,6 +245,131 @@ const ImportTransactionsPage: React.FC = () => {
                 }`}>
                   {importResult}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* AI Transformations Section */}
+          {suggestedTransformations.length > 0 && (
+            <div className="mt-8 border-t border-gray-200 pt-6">
+              <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                <Wand2 className="h-4 w-4 mr-2" />
+                AI Suggested Transformations
+              </h4>
+              <div className="space-y-3">
+                {suggestedTransformations.map((transformation) => (
+                  <label key={transformation.id} className="flex items-start space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedTransformations.includes(transformation.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTransformations([...selectedTransformations, transformation.id]);
+                        } else {
+                          setSelectedTransformations(selectedTransformations.filter(id => id !== transformation.id));
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-900">{transformation.name}</div>
+                      <div className="text-gray-600">{transformation.description}</div>
+                      <div className="text-xs text-gray-500">
+                        {transformation.sourceColumn} → {transformation.targetColumn}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              
+              <div className="flex space-x-3 mt-4">
+                <button
+                  onClick={handleApplyTransformations}
+                  disabled={isTransforming || selectedTransformations.length === 0}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  {isTransforming ? 'Transforming...' : 'Apply Transformations'}
+                </button>
+                
+                {transformedData && (
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {showPreview ? 'Hide Preview' : 'Preview Data'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Data Preview */}
+          {showPreview && transformedData && (
+            <div className="mt-6 border-t border-gray-200 pt-6">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Transformed Data Preview</h4>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {Object.keys(transformedData.transformedData[0] || {}).map((header) => (
+                        <th key={header} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {header}
+                          {transformedData.newColumns.includes(header) && (
+                            <span className="ml-1 text-purple-600">*</span>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {transformedData.transformedData.slice(0, 5).map((row, index) => (
+                      <tr key={index}>
+                        {Object.values(row).map((value: any, cellIndex) => (
+                          <td key={cellIndex} className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {String(value)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                * New columns created by AI transformations. Showing first 5 rows of {transformedData.transformedData.length} total.
+              </p>
+            </div>
+          )}
+
+          {/* Export and Import Actions */}
+          {transformedData && (
+            <div className="mt-6 border-t border-gray-200 pt-6">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Actions</h4>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleImportToApp}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import to App
+                </button>
+                
+                <button
+                  onClick={() => handleExportTransformed('csv')}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </button>
+                
+                <button
+                  onClick={() => handleExportTransformed('json')}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export JSON
+                </button>
               </div>
             </div>
           )}
