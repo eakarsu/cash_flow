@@ -262,6 +262,9 @@ Return ONLY a JSON response in this exact format:
   }
 
   private fallbackCategorize(description: string): string {
+    if (!description || typeof description !== 'string') {
+      return 'Other';
+    }
     const desc = description.toLowerCase();
     if (desc.includes('grocery') || desc.includes('food') || desc.includes('restaurant')) return 'Food & Dining';
     if (desc.includes('gas') || desc.includes('fuel') || desc.includes('station')) return 'Transportation';
