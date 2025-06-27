@@ -10,6 +10,37 @@ interface CashForecastWidgetProps {
 
 const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
   const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
+  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
+
+  // Filter transactions based on selected period
+  const filteredTransactions = transactions.filter(t => {
+    if (selectedPeriod === 'all') return true;
+    
+    const transactionDate = new Date(t.date);
+    const now = new Date();
+    
+    // Reset time to start of day for accurate comparison
+    transactionDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    
+    switch (selectedPeriod) {
+      case 'month':
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
+      case 'quarter':
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
+        const endOfQuarter = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+        return transactionDate >= startOfQuarter && transactionDate <= endOfQuarter;
+      case 'year':
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const endOfYear = new Date(now.getFullYear(), 11, 31);
+        return transactionDate >= startOfYear && transactionDate <= endOfYear;
+      default:
+        return true;
+    }
+  });
   
   // Calculate current balance manually by sorting transactions chronologically and summing amounts
   const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -35,8 +66,8 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     transactionCount: transactions.length
   });
 
-  // Calculate average weekly cash flows
-  const weeklyData = transactions.reduce((acc, transaction) => {
+  // Calculate average weekly cash flows using filtered transactions
+  const weeklyData = filteredTransactions.reduce((acc, transaction) => {
     const date = new Date(transaction.date);
     const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
     
