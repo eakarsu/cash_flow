@@ -6,6 +6,9 @@ const QuickBooksService = require('../../services/QuickBooksService');
 const qbService = new QuickBooksService();
 let userTokens = {};
 
+// Export userTokens so other modules can access it
+module.exports.userTokens = userTokens;
+
 // QuickBooks OAuth endpoints
 router.get('/quickbooks', (req, res) => {
   try {

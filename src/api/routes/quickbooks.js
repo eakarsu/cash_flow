@@ -4,7 +4,8 @@ const QuickBooksService = require('../../services/QuickBooksService');
 
 // Initialize services
 const qbService = new QuickBooksService();
-let userTokens = {};
+const authModule = require('./auth');
+let userTokens = authModule.userTokens;
 
 // QuickBooks OAuth endpoints
 router.get('/auth', (req, res) => {
