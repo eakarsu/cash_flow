@@ -7,6 +7,20 @@ const qbService = new QuickBooksService();
 const authModule = require('./auth');
 let userTokens = authModule.userTokens;
 
+// QuickBooks Authorization endpoint
+router.get('/auth', async (req, res) => {
+  try {
+    const authUri = qbService.getAuthUri();
+    res.json({ 
+      success: true,
+      authUri: authUri,
+      message: 'Visit this URL to authorize QuickBooks access'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get all transactions (combined view)
 router.get('/transactions', async (req, res) => {
   try {

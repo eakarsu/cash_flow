@@ -23,7 +23,7 @@ const QuickBooksAuthPage: React.FC = () => {
       console.log('🎯 Calling /auth/quickbooks endpoint...');
       
       // Call the authorization endpoint
-      const authResponse = await fetch('/auth/quickbooks', {
+      const authResponse = await fetch('/api/quickbooks/auth', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
