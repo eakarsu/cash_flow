@@ -4,7 +4,7 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 require('dotenv').config();
-
+const history = require('connect-history-api-fallback'); // <-- add this
 const axios = require('axios');
 const { Parser } = require('json2csv');
 // Import services and processors
@@ -30,6 +30,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // Middleware to attach user tokens to requests
 app.use((req, res, next) => {
   req.userTokens = userTokens;
@@ -53,6 +54,7 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
 
 
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -64,21 +66,22 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+
+// 1. Use history fallback BEFORE static
+app.use(
+  history({
+    // Only rewrite for non-API requests
+    rewrites: [
+      { from: /^\/api\/.*$/, to: context => context.parsedUrl.path },
+      { from: /^\/auth\/.*$/, to: context => context.parsedUrl.path },
+      { from: /^\/oauth\/.*$/, to: context => context.parsedUrl.path }
+    ]
+  })
+);
+
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Handle React Router - send index.html for all non-API routes
-app.get('*', (req, res) => {
-  // Don't serve index.html for API routes
-  if (req.path.startsWith('/api/') || 
-      req.path.startsWith('/auth/') || 
-      req.path.startsWith('/oauth/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  
-  // For all other routes, serve index.html (React Router will handle client-side routing)
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
 
 // ==========================================
 // HELPER FUNCTIONS
