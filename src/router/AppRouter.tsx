@@ -34,6 +34,9 @@ import DocumentationPage from '../pages/Support/DocumentationPage.tsx';
 import TutorialsPage from '../pages/Support/TutorialsPage.tsx';
 import SupportContactPage from '../pages/Support/SupportContactPage.tsx';
 
+// Integration pages
+import IntegrationPage from '../pages/Integration/IntegrationPage.tsx';
+
 // Settings pages
 import SettingsPage from '../pages/Settings/SettingsPage.tsx';
 import BillingPage from '../pages/Settings/BillingPage.tsx';
@@ -93,6 +96,9 @@ const AppRouter: React.FC = () => {
             <Route path="/transactions/edit/:id" element={<EditTransactionPage />} />
             <Route path="/transactions/import" element={<ImportTransactionsPage />} />
             <Route path="/transactions/categories" element={<PlaceholderPage title="Transaction Categories" description="Manage and organize your transaction categories" />} />
+            
+            {/* Integration Pages */}
+            <Route path="/integration" element={<IntegrationPage />} />
             
             {/* Reports Pages */}
             <Route path="/reports" element={<ReportsPage />} />
