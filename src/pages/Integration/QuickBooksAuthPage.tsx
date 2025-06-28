@@ -34,14 +34,17 @@ const QuickBooksAuthPage: React.FC = () => {
 
       console.log('📡 Response status:', authResponse.status);
       console.log('📡 Response headers:', authResponse.headers);
+      console.log('📡 Response URL:', authResponse.url);
       
       // Check if response is actually JSON
       const contentType = authResponse.headers.get('content-type');
+      console.log('📡 Content-Type:', contentType);
+      
       if (!contentType || !contentType.includes('application/json')) {
         console.error('❌ Response is not JSON, content-type:', contentType);
         const responseText = await authResponse.text();
-        console.error('❌ Response body:', responseText);
-        throw new Error(`Server returned ${contentType} instead of JSON. Check if the API route is properly configured.`);
+        console.error('❌ Response body (first 500 chars):', responseText.substring(0, 500));
+        throw new Error(`Server returned ${contentType} instead of JSON. The Express server may not have the /api/quickbooks route properly mounted.`);
       }
 
       if (!authResponse.ok) {
