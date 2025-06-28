@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
-import SEOHead from '../../components/SEO/SEOHead';
+import SEOHead from '../../components/SEO/SEOHead.tsx';
 import { useTransactions } from '../../context/TransactionContext.tsx';
 
 interface AuthStatus {
