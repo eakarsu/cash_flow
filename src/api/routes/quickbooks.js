@@ -1,264 +1,13 @@
 const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const multer = require('multer');
-const fs = require('fs');
-require('dotenv').config();
-
-const axios = require('axios');
-const { Parser } = require('json2csv');
-// Import services and processors
-const GenericExcelUploadService = require('./services/GenericExcelUploadService');
-const FileProcessor = require('./processors/FileProcessor'); // ← ADD THIS LINE
-const DatabaseProcessor = require('./processors/DatabaseProcessor');
-const QuickBooksProcessor = require('./processors/QuickBooksProcessor');
-const QuickBooksService = require('./services/QuickBooksService');
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
+const router = express.Router();
+const QuickBooksService = require('../../services/QuickBooksService');
 
 // Initialize services
 const qbService = new QuickBooksService();
 let userTokens = {};
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Import routes
-const contactRouter = require('./src/api/routes/contact');
-const exportRouter = require('./src/api/routes/export');
-const authRouter = require('./src/api/routes/auth');
-const quickbooksRouter = require('./src/api/routes/quickbooks');
-const uploadRouter = require('./src/api/routes/upload');
-const transactionsRouter = require('./src/api/routes/transactions');
-
-// API routes
-app.use('/api/contact', contactRouter);
-app.use('/api/export', exportRouter);
-app.use('/auth', authRouter);
-app.use('/api/quickbooks', quickbooksRouter);
-app.use('/api/upload', uploadRouter);
-app.use('/api/transactions', transactionsRouter);
-
-
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, 'build')));
-
-
-
-
-app.get('/api/export-transactions', async (req, res) => {
-  try {
-    // Fetch real data from your API
-    const response = await axios.get('http://localhost:5010/api/quickbooks/transactions');
-    if (!response.data || !response.data.data || !response.data.data.transactions) {
-      return res.status(500).json({ error: 'Invalid transactions data' });
-    }
-
-    const rawTransactions = response.data.data.transactions;
-    // Ensure rawTransactions is an array
-    if (!Array.isArray(rawTransactions)) {
-      return res.status(500).json({ error: 'Transactions data is not an array' });
-    }
-
-    // Transform to Transaction interface
-    const transformed = rawTransactions.map(t => ({
-      id: t.id || '',
-      date: t.date || '',
-      amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0,
-      description: t.description || '',
-      category: t.account|| '',
-      type: (t.type === 'income' || t.type === 'inflow') ? 'inflow' : 'outflow',
-      merchant: t.merchant || '',
-      paymentRef: t.paymentRef || '',
-      balance: typeof t.balance === 'number' ? t.balance : (t.balance ? parseFloat(t.balance) : '')
-    }));
-
-    // Define CSV fields
-    const fields = [
-      { label: 'id', value: 'id' },
-      { label: 'date', value: 'date' },
-      { label: 'amount', value: 'amount' },
-      { label: 'description', value: 'description' },
-      { label: 'category', value: 'category' },
-      { label: 'type', value: 'type' },
-      { label: 'merchant', value: 'merchant' },
-      { label: 'paymentRef', value: 'paymentRef' },
-      { label: 'balance', value: 'balance' }
-    ];
-
-    // Create CSV parser
-    const parser = new Parser({ fields });
-    const csv = parser.parse(transformed);
-
-    // Set headers for CSV download
-    res.header('Content-Type', 'text/csv');
-    res.attachment('exported_transactions.csv');
-    res.send(csv);
-  } catch (error) {
-    console.error('Error exporting transactions:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-
-// ==========================================
-// GENERIC EXCEL UPLOAD ENDPOINT
-// ==========================================
-
-app.post('/api/upload-generic', upload.single('transactionFile'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ 
-        error: 'No file uploaded',
-        message: 'Please select an Excel (.xlsx, .xls) or CSV file'
-      });
-    }
-
-    console.log(`Processing generic upload: ${req.file.originalname}`);
-
-    // Configure the generic service
-    const uploadService = new GenericExcelUploadService({
-     
-      validation: {
-        requireDate: true,
-        requireDescription: true,
-        requireAmount: true,
-        allowNegativeAmounts: true
-      }
-    });
-
-    // ✅ FIXED: Add processors based on request parameters
-    const { processors = 'file' } = req.body; // Default to file storage
-    const processorList = processors.split(',');
-
-    if (processorList.includes('file')) {
-      // ✅ File-based storage (works immediately)
-      const fileProcessor = new FileProcessor({ 
-        dataDir: './data',
-        filename: 'transactions.json'
-      });
-      uploadService.addProcessor(fileProcessor);
-    }
-
-    if (processorList.includes('database')) {
-      // ✅ SQLite database (properly initialized)
-      const dbProcessor = new DatabaseProcessor({
-        tableName: 'transactions',
-        dbPath: './data/cashflow.db'
-      });
-      uploadService.addProcessor(dbProcessor);
-    }
-
-    if (processorList.includes('quickbooks') && userTokens.accessToken) {
-      // QuickBooks processor
-      const QuickBooksService = require('./services/QuickBooksService');
-      const qbProcessor = new QuickBooksProcessor(
-        userTokens.accessToken,
-        userTokens.refreshToken,
-        userTokens.realmId
-      );
-      uploadService.addProcessor(qbProcessor);
-    }
-
-    // Process the file
-    const results = await uploadService.processUpload(req.file.path);
-
-    // Clean up uploaded file
-    fs.unlinkSync(req.file.path);
-
-    res.json({
-      success: true,
-      message: 'File processed successfully!',
-      data: {
-        fileName: req.file.originalname,
-        fileSize: req.file.size,
-        totalProcessed: results.totalProcessed,
-        successfulProcessors: results.successfulProcessors,
-        processorResults: results.processorResults,
-        errors: results.errors.length,
-        errorDetails: results.errors.slice(0, 5)
-      }
-    });
-
-  } catch (error) {
-    console.error('Generic upload processing error:', error);
-    
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    res.status(500).json({ 
-      error: error.message,
-      details: 'Failed to process uploaded file'
-    });
-  }
-});
-
-
-// Configuration endpoint to set up processors
-app.post('/api/configure-processors', (req, res) => {
-  const { columnMappings, processors } = req.body;
-  
-  // Store configuration (in production, use database/session)
-  // This is just a demonstration
-  
-  res.json({
-    success: true,
-    message: 'Processors configured successfully',
-    configuration: {
-      columnMappings,
-      processors,
-      timestamp: new Date().toISOString()
-    }
-  });
-});
-
-// Get supported file formats and configurations
-app.get('/api/upload-formats', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      supportedFormats: ['.xlsx', '.xls', '.csv'],
-      maxFileSize: '10MB',
-      availableProcessors: [
-        {
-          name: 'database',
-          description: 'Save to database',
-          required: false
-        },
-        {
-          name: 'quickbooks',
-          description: 'Sync to QuickBooks',
-          required: userTokens.accessToken ? false : true,
-          requiresAuth: true
-        }
-      ],
-      columnMappings: {
-        required: ['date', 'amount'],
-        optional: ['description', 'category', 'reference'],
-        supportedDateFormats: ['YYYY-MM-DD', 'MM/DD/YYYY', 'DD/MM/YYYY']
-      },
-      sampleData: {
-        'Date': '2024-06-01',
-        'Description': 'Monthly Rent',
-        'Amount': '-2500'
-      }
-    }
-  });
-});
-
-// ==========================================
-// EXISTING ENDPOINTS (Keep your auth and QB)
-// ==========================================
-
 // QuickBooks OAuth endpoints
-app.get('/auth/quickbooks', (req, res) => {
+router.get('/auth', (req, res) => {
   try {
     const authUri = qbService.getAuthUri();
     res.json({ 
@@ -271,7 +20,7 @@ app.get('/auth/quickbooks', (req, res) => {
   }
 });
 
-app.get('/auth/callback', async (req, res) => {
+router.get('/auth/callback', async (req, res) => {
   try {
     const tokenData = await qbService.handleCallback(req.url);
     userTokens = {
@@ -290,45 +39,8 @@ app.get('/auth/callback', async (req, res) => {
   }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK',
-    service: 'Generic Excel Upload API',
-    timestamp: new Date().toISOString(),
-    quickbooksConnected: !!userTokens.accessToken,
-    uploadEnabled: true
-  });
-});
-
-// Option A: Add the missing endpoint to server.js
-app.get('/api/transactions', async (req, res) => {
-  try {
-    // Get transactions from file storage
-    const fileProcessor = new FileProcessor({
-      dataDir: './data',
-      filename: 'transactions.json'
-    });
-    
-    const transactions = await fileProcessor.getTransactions();
-    
-    res.json({
-      success: true,
-      data: transactions,
-      count: transactions.length
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ==========================================
-// QUICKBOOKS TRANSACTION RETRIEVAL ENDPOINTS
-// ==========================================
-
 // Get all transactions (combined view)
-// ✅ ENHANCED: Extract subcategory from description
-app.get('/api/quickbooks/transactions', async (req, res) => {
+router.get('/transactions', async (req, res) => {
   try {
     if (!userTokens.accessToken) {
       return res.status(401).json({
@@ -366,7 +78,7 @@ app.get('/api/quickbooks/transactions', async (req, res) => {
       const line = purchase.Line?.[0] || {};
       const description = line.Description || 'No description';
       
-      // ✅ Extract subcategory from brackets like "Banking fee [Bank Fees]"
+      // Extract subcategory from brackets like "Banking fee [Bank Fees]"
       const subcategoryMatch = description.match(/\[(.*?)\]$/);
       const subcategory = subcategoryMatch ? subcategoryMatch[1] : null;
       const cleanDescription = description.replace(/\s*\[.*?\]$/, '');
@@ -377,8 +89,8 @@ app.get('/api/quickbooks/transactions', async (req, res) => {
         type: 'expense',
         subType: 'purchase',
         amount: -(purchase.TotalAmt || 0),
-        description: cleanDescription, // ✅ Clean description without brackets
-        subcategory: subcategory, // ✅ Extracted subcategory like "Bank Fees"
+        description: cleanDescription,
+        subcategory: subcategory,
         category: line.AccountBasedExpenseLineDetail?.AccountRef?.name || 'Unknown',
         account: line.AccountBasedExpenseLineDetail?.AccountRef?.name || 'Unknown',
         quickbooksId: purchase.Id,
@@ -394,7 +106,7 @@ app.get('/api/quickbooks/transactions', async (req, res) => {
       const line = entry.Line?.[0] || {};
       const description = line.Description || 'No description';
       
-      // ✅ Extract subcategory from brackets
+      // Extract subcategory from brackets
       const subcategoryMatch = description.match(/\[(.*?)\]$/);
       const subcategory = subcategoryMatch ? subcategoryMatch[1] : null;
       const cleanDescription = description.replace(/\s*\[.*?\]$/, '');
@@ -406,7 +118,7 @@ app.get('/api/quickbooks/transactions', async (req, res) => {
         subType: 'journal_entry',
         amount: entry.Line?.find(l => l.JournalEntryLineDetail?.PostingType === 'Credit')?.Amount || 0,
         description: cleanDescription,
-        subcategory: subcategory, // ✅ Extracted subcategory
+        subcategory: subcategory,
         category: 'Sales',
         account: entry.Line?.find(l => l.JournalEntryLineDetail?.PostingType === 'Credit')?.JournalEntryLineDetail?.AccountRef?.name || 'Sales',
         quickbooksId: entry.Id,
@@ -416,8 +128,6 @@ app.get('/api/quickbooks/transactions', async (req, res) => {
         }
       };
     });
-
-
 
     const allTransactions = [...expenseTransactions, ...incomeTransactions];
     
@@ -456,9 +166,8 @@ app.get('/api/quickbooks/transactions', async (req, res) => {
   }
 });
 
-
 // Get expenses only
-app.get('/api/quickbooks/expenses', async (req, res) => {
+router.get('/expenses', async (req, res) => {
   try {
     if (!userTokens.accessToken) {
       return res.status(401).json({ 
@@ -505,7 +214,7 @@ app.get('/api/quickbooks/expenses', async (req, res) => {
 });
 
 // Get income only  
-app.get('/api/quickbooks/income', async (req, res) => {
+router.get('/income', async (req, res) => {
   try {
     if (!userTokens.accessToken) {
       return res.status(401).json({ 
@@ -571,11 +280,8 @@ app.get('/api/quickbooks/income', async (req, res) => {
   }
 });
 
-// ==========================================
-// DELETE ALL QUICKBOOKS TRANSACTIONS
-// ==========================================
-
-app.delete('/api/quickbooks/transactions/all', async (req, res) => {
+// Delete all transactions
+router.delete('/transactions/all', async (req, res) => {
   try {
     if (!userTokens.accessToken) {
       return res.status(401).json({
@@ -622,9 +328,6 @@ app.delete('/api/quickbooks/transactions/all', async (req, res) => {
     deleteResults.totalFound = purchases.length + journalEntries.length + salesReceipts.length;
 
     console.log(`📊 Found ${deleteResults.totalFound} transactions to delete`);
-    console.log(`   - Purchases: ${purchases.length}`);
-    console.log(`   - Journal Entries: ${journalEntries.length}`);
-    console.log(`   - Sales Receipts: ${salesReceipts.length}`);
 
     // Delete Purchases (Expenses)
     deleteResults.details.purchases.found = purchases.length;
@@ -704,7 +407,7 @@ app.delete('/api/quickbooks/transactions/all', async (req, res) => {
 });
 
 // Delete with confirmation endpoint (safer)
-app.post('/api/quickbooks/transactions/delete-all-confirm', async (req, res) => {
+router.post('/transactions/delete-all-confirm', async (req, res) => {
   try {
     const { confirmPhrase } = req.body;
     
@@ -717,6 +420,7 @@ app.post('/api/quickbooks/transactions/delete-all-confirm', async (req, res) => 
     }
 
     // Call the delete endpoint internally
+    const axios = require('axios');
     const deleteRequest = await axios.delete('http://localhost:5010/api/quickbooks/transactions/all');
     res.json(deleteRequest.data);
 
@@ -729,90 +433,7 @@ app.post('/api/quickbooks/transactions/delete-all-confirm', async (req, res) => 
   }
 });
 
-// Handle React Router - send index.html for all non-API routes
-app.get('*', (req, res) => {
-  // Don't serve index.html for API routes
-  if (req.path.startsWith('/api/') || 
-      req.path.startsWith('/auth/') || 
-      req.path.startsWith('/oauth/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
-
-// ==========================================
-// DELETION HELPER FUNCTIONS (CORRECTED)
-// ==========================================
-// ✅ Helper method to extract subcategory from account name
-function extractSubcategoryFromAccount(accountName) {
-  // If account name contains parent info, extract subcategory
-  // Example: "Miscellaneous:Bank Fees" → "Bank Fees"
-  if (accountName && accountName.includes(':')) {
-    return accountName.split(':').pop().trim();
-  }
-  return null;
-}
-
-async function deletePurchase(qbo, id, syncToken) {
-  return new Promise((resolve, reject) => {
-    // Create the purchase object with Id and SyncToken
-    const purchaseToDelete = {
-      Id: id,
-      SyncToken: syncToken
-    };
-    
-    qbo.deletePurchase(purchaseToDelete, (err, result) => {
-      if (err) {
-        reject(new Error(`Delete Purchase failed: ${err.Fault?.Error?.[0]?.Detail || err.message}`));
-      } else {
-        resolve(result);
-      }
-    });
-  });
-}
-
-async function deleteJournalEntry(qbo, id, syncToken) {
-  return new Promise((resolve, reject) => {
-    // Create the journal entry object with Id and SyncToken
-    const journalEntryToDelete = {
-      Id: id,
-      SyncToken: syncToken
-    };
-    
-    qbo.deleteJournalEntry(journalEntryToDelete, (err, result) => {
-      if (err) {
-        reject(new Error(`Delete Journal Entry failed: ${err.Fault?.Error?.[0]?.Detail || err.message}`));
-      } else {
-        resolve(result);
-      }
-    });
-  });
-}
-
-async function deleteSalesReceipt(qbo, id, syncToken) {
-  return new Promise((resolve, reject) => {
-    // Create the sales receipt object with Id and SyncToken
-    const salesReceiptToDelete = {
-      Id: id,
-      SyncToken: syncToken
-    };
-    
-    qbo.deleteSalesReceipt(salesReceiptToDelete, (err, result) => {
-      if (err) {
-        reject(new Error(`Delete Sales Receipt failed: ${err.Fault?.Error?.[0]?.Detail || err.message}`));
-      } else {
-        resolve(result);
-      }
-    });
-  });
-}
-
-// ✅ FIXED: Enhanced transaction retrieval
+// Helper functions
 async function getPurchases(qbo) {
   return new Promise((resolve, reject) => {
     qbo.findPurchases({}, (err, purchases) => {
@@ -843,7 +464,6 @@ async function getJournalEntries(qbo) {
   });
 }
 
-
 async function getSalesReceipts(qbo) {
   return new Promise((resolve, reject) => {
     qbo.findSalesReceipts({}, (err, receipts) => {
@@ -853,21 +473,55 @@ async function getSalesReceipts(qbo) {
   });
 }
 
-async function getPayments(qbo) {
+async function deletePurchase(qbo, id, syncToken) {
   return new Promise((resolve, reject) => {
-    qbo.findPayments({}, (err, payments) => {
-      if (err) reject(err);
-      else resolve(payments.QueryResponse?.Payment || []);
+    const purchaseToDelete = {
+      Id: id,
+      SyncToken: syncToken
+    };
+    
+    qbo.deletePurchase(purchaseToDelete, (err, result) => {
+      if (err) {
+        reject(new Error(`Delete Purchase failed: ${err.Fault?.Error?.[0]?.Detail || err.message}`));
+      } else {
+        resolve(result);
+      }
     });
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`🚀 Generic Excel Upload API running on port ${PORT}`);
-  console.log(`📁 Generic Upload: http://localhost:${PORT}/api/upload-generic`);
-  console.log(`⚙️  Configuration: http://localhost:${PORT}/api/configure-processors`);
-  console.log(`📋 Formats Info: http://localhost:${PORT}/api/upload-formats`);
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+async function deleteJournalEntry(qbo, id, syncToken) {
+  return new Promise((resolve, reject) => {
+    const journalEntryToDelete = {
+      Id: id,
+      SyncToken: syncToken
+    };
+    
+    qbo.deleteJournalEntry(journalEntryToDelete, (err, result) => {
+      if (err) {
+        reject(new Error(`Delete Journal Entry failed: ${err.Fault?.Error?.[0]?.Detail || err.message}`));
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
 
+async function deleteSalesReceipt(qbo, id, syncToken) {
+  return new Promise((resolve, reject) => {
+    const salesReceiptToDelete = {
+      Id: id,
+      SyncToken: syncToken
+    };
+    
+    qbo.deleteSalesReceipt(salesReceiptToDelete, (err, result) => {
+      if (err) {
+        reject(new Error(`Delete Sales Receipt failed: ${err.Fault?.Error?.[0]?.Detail || err.message}`));
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+module.exports = router;
