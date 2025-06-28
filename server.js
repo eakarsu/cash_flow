@@ -8,11 +8,12 @@ require('dotenv').config();
 const axios = require('axios');
 const { Parser } = require('json2csv');
 // Import services and processors
-const GenericExcelUploadService = require('./services/GenericExcelUploadService');
-const FileProcessor = require('./processors/FileProcessor'); // ← ADD THIS LINE
-const DatabaseProcessor = require('./processors/DatabaseProcessor');
-const QuickBooksProcessor = require('./processors/QuickBooksProcessor');
-const QuickBooksService = require('./services/QuickBooksService');
+
+const GenericExcelUploadService = require('./src/services/GenericExcelUploadService');
+const FileProcessor = require('./src/processors/FileProcessor'); // ← ADD THIS LINE
+const DatabaseProcessor = require('./src/processors/DatabaseProcessor');
+const QuickBooksProcessor = require('./src/processors/QuickBooksProcessor');
+const QuickBooksService = require('./src/services/QuickBooksService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
