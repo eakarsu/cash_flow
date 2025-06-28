@@ -7,39 +7,6 @@ const qbService = new QuickBooksService();
 const authModule = require('./auth');
 let userTokens = authModule.userTokens;
 
-// QuickBooks OAuth endpoints
-router.get('/auth', (req, res) => {
-  try {
-    const authUri = qbService.getAuthUri();
-    res.json({ 
-      success: true,
-      authUri: authUri,
-      message: 'Visit this URL to authorize QuickBooks access'
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/auth/callback', async (req, res) => {
-  try {
-    const tokenData = await qbService.handleCallback(req.url);
-    userTokens = {
-      accessToken: tokenData.accessToken,
-      refreshToken: tokenData.refreshToken,
-      realmId: tokenData.realmId
-    };
-    
-    res.json({ 
-      success: true, 
-      message: 'QuickBooks connected successfully! You can now upload transaction files.',
-      realmId: tokenData.realmId
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Get all transactions (combined view)
 router.get('/transactions', async (req, res) => {
   try {
@@ -422,7 +389,7 @@ router.post('/transactions/delete-all-confirm', async (req, res) => {
 
     // Call the delete endpoint internally
     const axios = require('axios');
-    const deleteRequest = await axios.delete('http://localhost:5010/api/quickbooks/transactions/all');
+    const deleteRequest = await axios.delete('/api/quickbooks/transactions/all');
     res.json(deleteRequest.data);
 
   } catch (error) {

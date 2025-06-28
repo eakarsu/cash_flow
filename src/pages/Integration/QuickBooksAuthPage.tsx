@@ -28,6 +28,7 @@ const QuickBooksAuthPage: React.FC = () => {
         },
       });
 
+      console.log (' auth:'+authResponse)
       if (!authResponse.ok) {
         throw new Error('Authorization failed');
       }
@@ -121,7 +122,7 @@ const QuickBooksAuthPage: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate('/integration');
+    navigate('/');
   };
 
   return (
