@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
 import SEOHead from '../../components/SEO/SEOHead';
-import { useTransactions } from '../../context/TransactionContext';
+import { useTransactions } from '../../context/TransactionContext.tsx';
 
 interface AuthStatus {
   status: 'idle' | 'authorizing' | 'authorized' | 'importing' | 'success' | 'error';
