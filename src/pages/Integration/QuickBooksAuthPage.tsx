@@ -20,10 +20,10 @@ const QuickBooksAuthPage: React.FC = () => {
     setAuthStatus({ status: 'authorizing', message: 'Getting authorization URL...' });
     
     try {
-      console.log('🎯 Calling /api/quickbooks/auth endpoint...');
+      console.log('🎯 Calling /auth/quickbooks endpoint...');
       
       // Call the authorization endpoint
-      const authResponse = await fetch('/api/quickbooks/auth', {
+      const authResponse = await fetch('/auth/quickbooks', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
