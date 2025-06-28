@@ -53,9 +53,6 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
 
 
-// Serve static files from React build FIRST
-app.use(express.static(path.join(__dirname, 'build')));
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -66,6 +63,9 @@ app.get('/api/health', (req, res) => {
     uploadEnabled: true
   });
 });
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, 'build')));
 
 // Handle React Router - send index.html for all non-API routes
 app.get('*', (req, res) => {
