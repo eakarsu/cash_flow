@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
 import SEOHead from '../../components/SEO/SEOHead.tsx';
 import { useTransactions } from '../../context/TransactionContext.tsx';
+import { API_ENDPOINTS, apiCall } from '../../config/api';
 
 interface AuthStatus {
   status: 'idle' | 'authorizing' | 'authorized' | 'importing' | 'success' | 'error';
@@ -24,12 +25,9 @@ const QuickBooksAuthPage: React.FC = () => {
       console.log('🌐 Current window location:', window.location.origin);
       console.log('📡 Making request to: /api/quickbooks/auth (should proxy to port 3001)');
       
-      // Call the authorization endpoint directly on Express server
-      const authResponse = await fetch('http://localhost:3001/api/quickbooks/auth', {
+      // Call the authorization endpoint using centralized API config
+      const authResponse = await apiCall(API_ENDPOINTS.QUICKBOOKS.AUTH, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       console.log('📡 Response status:', authResponse.status);
@@ -82,12 +80,9 @@ const QuickBooksAuthPage: React.FC = () => {
     setAuthStatus({ status: 'importing', message: 'Importing transactions from QuickBooks...' });
     
     try {
-      // Call the transactions endpoint directly on Express server
-      const transactionsResponse = await fetch('http://localhost:3001/api/quickbooks/transactions', {
+      // Call the transactions endpoint using centralized API config
+      const transactionsResponse = await apiCall(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!transactionsResponse.ok) {
