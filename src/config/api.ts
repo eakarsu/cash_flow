@@ -7,11 +7,13 @@ const getApiBaseUrl = (): string => {
   
   // In development, check if we have a custom API URL
   if (process.env.REACT_APP_API_URL) {
+    console.log('🔧 Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
   
-  // Default: use direct Express server URL since proxy isn't working
-  return 'http://localhost:3001';
+  // Default: use relative URLs (proxy should handle forwarding)
+  console.log('🔧 Using relative URLs with proxy');
+  return '';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
