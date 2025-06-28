@@ -4,7 +4,6 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 require('dotenv').config();
-const history = require('connect-history-api-fallback'); // <-- add this
 const axios = require('axios');
 const { Parser } = require('json2csv');
 // Import services and processors
@@ -67,20 +66,7 @@ app.get('/api/health', (req, res) => {
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Use history fallback ONLY for frontend routes (exclude API completely)
-app.use((req, res, next) => {
-  // Skip history fallback for API routes
-  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/') || req.path.startsWith('/oauth/')) {
-    return next();
-  }
-  
-  // Apply history fallback only for frontend routes
-  history({
-    verbose: true
-  })(req, res, next);
-});
-
-// Catch-all handler for frontend routes (after API routes)
+// Simple catch-all handler for frontend routes (after API routes)
 app.get('*', (req, res) => {
   // Only serve index.html for non-API routes
   if (!req.path.startsWith('/api/') && !req.path.startsWith('/auth/') && !req.path.startsWith('/oauth/')) {
