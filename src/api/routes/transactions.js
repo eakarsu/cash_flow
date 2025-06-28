@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 router.get('/export', async (req, res) => {
   try {
     // Fetch real data from your API
-    const response = await axios.get('http://localhost:3001/api/quickbooks/transactions');
+    const response = await axios.get('/api/quickbooks/transactions');
     if (!response.data || !response.data.data || !response.data.data.transactions) {
       return res.status(500).json({ error: 'Invalid transactions data' });
     }
@@ -49,7 +49,10 @@ router.get('/export', async (req, res) => {
       type: (t.type === 'income' || t.type === 'inflow') ? 'inflow' : 'outflow',
       merchant: t.merchant || '',
       paymentRef: t.paymentRef || '',
-      balance: typeof t.balance === 'number' ? t.balance : (t.balance ? parseFloat(t.balance) : '')
+      balance: typeof t.balance === 'number' ? t.balance : (t.balance ? parseFloat(t.balance) : ''),
+
+      subcategory: t.subcategory
+
     }));
 
     // Define CSV fields
