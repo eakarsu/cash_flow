@@ -35,13 +35,15 @@ const QuickBooksAuthPage: React.FC = () => {
       const authData = await authResponse.json();
       
       if (authData.success && authData.authUri) {
-        console.log('🔗 QuickBooks Authorization URL:');
-        console.log(authData.authUri);
-        console.log('📋 Copy the URL above and paste it in your browser to complete authorization');
+        console.log('🔗 QuickBooks Authorization URL (FULL):');
+        console.log('URL START: ' + authData.authUri);
+        console.log('URL LENGTH: ' + authData.authUri.length + ' characters');
+        console.log('📋 Copy the COMPLETE URL above and paste it in your browser to complete authorization');
+        console.log('🔗 COMPLETE URL: ' + authData.authUri);
         
         setAuthStatus({ 
           status: 'authorized', 
-          message: 'Authorization URL generated! Check the browser console for the URL to complete authorization.' 
+          message: 'Authorization URL generated! Check the browser console for the COMPLETE URL to complete authorization.' 
         });
       } else {
         throw new Error(authData.message || 'Failed to get authorization URL');
@@ -228,9 +230,10 @@ const QuickBooksAuthPage: React.FC = () => {
                     <p className="text-blue-800 text-sm">
                       <strong>Next Steps:</strong>
                       <br />1. Open your browser's developer console (F12)
-                      <br />2. Copy the authorization URL from the console
-                      <br />3. Paste it in a new browser tab to complete authorization
-                      <br />4. After authorization, return here and click "Pull Data from QuickBooks"
+                      <br />2. Look for "COMPLETE URL:" in the console and copy the ENTIRE URL
+                      <br />3. Paste the complete URL in a new browser tab to complete authorization
+                      <br />4. Complete the QuickBooks authorization process in your browser
+                      <br />5. After successful authorization, return here and click "Pull Data from QuickBooks"
                     </p>
                   </div>
                 </div>
