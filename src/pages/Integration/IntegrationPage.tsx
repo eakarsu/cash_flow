@@ -1,5 +1,5 @@
 import React from 'react';
-import SEOHead from '../../components/SEO/SEOHead';
+import SEOHead from '../../components/SEO/SEOHead.tsx';
 
 const IntegrationPage: React.FC = () => {
   return (
