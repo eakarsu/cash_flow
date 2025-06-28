@@ -77,11 +77,19 @@ app.get('/api/health', (req, res) => {
 
 // Handle React Router - send index.html for all non-API routes
 app.get('*', (req, res) => {
-  // Don't serve index.html for API routes
+  // Don't serve index.html for API routes or static assets
   if (req.path.startsWith('/api/') || 
       req.path.startsWith('/auth/') || 
-      req.path.startsWith('/oauth/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
+      req.path.startsWith('/oauth/') ||
+      req.path.startsWith('/static/') ||
+      req.path.includes('.js') ||
+      req.path.includes('.css') ||
+      req.path.includes('.map') ||
+      req.path.includes('.ico') ||
+      req.path.includes('.png') ||
+      req.path.includes('.jpg') ||
+      req.path.includes('.svg')) {
+    return res.status(404).json({ error: 'Resource not found' });
   }
   
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
