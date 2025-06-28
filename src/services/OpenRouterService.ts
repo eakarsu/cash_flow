@@ -31,6 +31,8 @@ class OpenRouterService {
         temperature: number = 0.1,
         maxTokens: number = 1000
     ): Promise<string> {
+        console.log('🤖 [OpenRouter] Making AI call with model:', model);
+        console.log('   [OpenRouter] Messages:', messages.length);
         if (!this.isConfigured()) {
             throw new Error('OpenRouter API key is not configured. Cannot make AI call.');
         }

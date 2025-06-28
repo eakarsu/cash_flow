@@ -30,3 +30,7 @@ yarn-error.log*
 # OS
 Thumbs.db
 .aider*
+.env
+.env
+.env
+.env

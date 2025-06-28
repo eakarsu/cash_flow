@@ -24,3 +24,35 @@ export interface CSVImportInsights {
     reasoning?: string;
   };
 }
+
+export interface DataTransformation {
+  id: string;
+  name: string;
+  description: string;
+  sourceColumn: string;
+  targetColumn: string;
+  transformationType: 'categorize' | 'calculate' | 'enrich' | 'clean';
+  aiPrompt?: string;
+  formula?: string;
+}
+
+export interface TransformedData {
+  originalData: any[];
+  transformedData: any[];
+  transformations: DataTransformation[];
+  newColumns: string[];
+}
+
+export interface AITransformationResponse {
+  transformations: DataTransformation[];
+  confidence: number;
+  reasoning?: string;
+}
+
+export interface SavedTransformationResult {
+  filename: string;
+  timestamp: string;
+  originalRowCount: number;
+  transformedRowCount: number;
+  newColumnsAdded: string[];
+}

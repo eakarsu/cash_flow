@@ -54,7 +54,7 @@ const createTransporter = () => {
     encryptionType: isSSL ? 'SSL' : 'STARTTLS'
   })}`);
   
-  return nodemailer.createTransporter(config);
+  return nodemailer.createTransport(config);
 };
 
 // Validation middleware
@@ -85,7 +85,7 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
     logger.info(`Contact form submission attempt: ${email} (${type}): ${subject}`);
 
     // Determine recipient based on message type
-    const recipient = type === 'sales' ? 'sales@cashflowapp.app' : 'support@cashflowapp.app';
+    const recipient = type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat';
 
     // Check if SMTP is configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_HOST) {
@@ -132,7 +132,7 @@ Message:
 ${message}
 
 ---
-Sent from Cash Flow Manager Contact Form
+Sent from ElitePos Contact Form
 Time: ${new Date().toISOString()}
     `;
 
@@ -190,7 +190,7 @@ Time: ${new Date().toISOString()}
           const emailResult = await altTransporter.sendMail({
             from: process.env.SMTP_FROM || process.env.SMTP_USER,
             to: recipient,
-            subject: `[Cash Flow Manager Contact] ${subject}`,
+            subject: `[ElitePos Contact] ${subject}`,
             text: emailContent,
             replyTo: email,
           });
@@ -200,20 +200,20 @@ Time: ${new Date().toISOString()}
           const confirmationResult = await altTransporter.sendMail({
             from: process.env.SMTP_FROM || process.env.SMTP_USER,
             to: email,
-            subject: 'Thank you for contacting Cash Flow Manager',
+            subject: 'Thank you for contacting ElitePos',
             text: `Hi ${name},
 
-Thank you for contacting Cash Flow Manager. We have received your message and will get back to you within 24 hours.
+Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
 
 Your message:
 Subject: ${subject}
 Message: ${message}
 
 Best regards,
-The Cash Flow Manager Team
+The ElitePos Team
 
 ---
-Cash Flow Manager
+ElitePos
 Phone: 1-804-360-1129
 Email: ${recipient}
 Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
@@ -249,7 +249,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
       const emailResult = await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: recipient,
-        subject: `[Cash Flow Manager Contact] ${subject}`,
+        subject: `[ElitePos Contact] ${subject}`,
         text: emailContent,
         replyTo: email,
       });
@@ -260,20 +260,20 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
       const confirmationResult = await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: email,
-        subject: 'Thank you for contacting Cash Flow Manager',
+        subject: 'Thank you for contacting ElitePos',
         text: `Hi ${name},
 
-Thank you for contacting Cash Flow Manager. We have received your message and will get back to you within 24 hours.
+Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
 
 Your message:
 Subject: ${subject}
 Message: ${message}
 
 Best regards,
-The Cash Flow Manager Team
+The ElitePos Team
 
 ---
-Cash Flow Manager
+ElitePos
 Phone: 1-804-360-1129
 Email: ${recipient}
 Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
