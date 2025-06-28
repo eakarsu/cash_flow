@@ -36,6 +36,7 @@ import SupportContactPage from '../pages/Support/SupportContactPage.tsx';
 
 // Integration pages
 import IntegrationPage from '../pages/Integration/IntegrationPage.tsx';
+import QuickBooksAuthPage from '../pages/Integration/QuickBooksAuthPage.tsx';
 
 // Settings pages
 import SettingsPage from '../pages/Settings/SettingsPage.tsx';
@@ -99,6 +100,7 @@ const AppRouter: React.FC = () => {
             
             {/* Integration Pages */}
             <Route path="/integration" element={<IntegrationPage />} />
+            <Route path="/integration/quickbooks" element={<QuickBooksAuthPage />} />
             
             {/* Reports Pages */}
             <Route path="/reports" element={<ReportsPage />} />

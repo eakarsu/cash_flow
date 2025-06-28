@@ -1,7 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import SEOHead from '../../components/SEO/SEOHead.tsx';
 
 const IntegrationPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleConnectQuickBooks = () => {
+    navigate('/integration/quickbooks');
+  };
+
   return (
     <>
       <SEOHead
