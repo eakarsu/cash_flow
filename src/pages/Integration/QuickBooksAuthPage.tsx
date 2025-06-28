@@ -20,6 +20,8 @@ const QuickBooksAuthPage: React.FC = () => {
     setAuthStatus({ status: 'authorizing', message: 'Getting authorization URL...' });
     
     try {
+      console.log('🎯 Calling /api/quickbooks/auth endpoint...');
+      
       // Call the authorization endpoint
       const authResponse = await fetch('/api/quickbooks/auth', {
         method: 'GET',
@@ -28,12 +30,26 @@ const QuickBooksAuthPage: React.FC = () => {
         },
       });
 
-      console.log (' auth:'+authResponse)
+      console.log('📡 Response status:', authResponse.status);
+      console.log('📡 Response headers:', authResponse.headers);
+      
+      // Check if response is actually JSON
+      const contentType = authResponse.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('❌ Response is not JSON, content-type:', contentType);
+        const responseText = await authResponse.text();
+        console.error('❌ Response body:', responseText);
+        throw new Error(`Server returned ${contentType} instead of JSON. Check if the API route is properly configured.`);
+      }
+
       if (!authResponse.ok) {
-        throw new Error('Authorization failed');
+        const errorText = await authResponse.text();
+        console.error('❌ HTTP Error:', authResponse.status, errorText);
+        throw new Error(`HTTP ${authResponse.status}: ${errorText}`);
       }
 
       const authData = await authResponse.json();
+      console.log('✅ Auth response data:', authData);
       
       if (authData.success && authData.authUri) {
         console.log('🔗 QuickBooks Authorization URL (FULL):');

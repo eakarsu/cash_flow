@@ -9,7 +9,19 @@ let userTokens = authModule.userTokens;
 
 // QuickBooks Authorization endpoint
 router.get('/auth', async (req, res) => {
+  console.log('🎯 QuickBooks /auth endpoint hit!');
+  
   try {
+    // Check if required environment variables are set
+    if (!process.env.QB_CLIENT_ID) {
+      console.error('❌ QB_CLIENT_ID environment variable not set');
+      return res.status(500).json({
+        success: false,
+        error: 'QB_CLIENT_ID not configured',
+        message: 'QuickBooks Client ID is not configured in environment variables'
+      });
+    }
+
     const QuickBooks = require('node-quickbooks');
     
     // Generate authorization URL
@@ -30,7 +42,7 @@ router.get('/auth', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error generating QuickBooks authorization URL:', error);
+    console.error('❌ Error generating QuickBooks authorization URL:', error);
     res.status(500).json({
       success: false,
       error: error.message,
