@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
 import SEOHead from '../../components/SEO/SEOHead.tsx';
 import { useTransactions } from '../../context/TransactionContext.tsx';
-import { API_ENDPOINTS, apiCall } from '../../config/api';
+import { API_ENDPOINTS, apiCall } from '../../config/api.ts';
 
 interface AuthStatus {
   status: 'idle' | 'authorizing' | 'authorized' | 'importing' | 'success' | 'error';
