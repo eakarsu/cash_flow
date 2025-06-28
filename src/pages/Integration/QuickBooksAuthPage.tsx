@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
 import SEOHead from '../../components/SEO/SEOHead.tsx';
 import { useTransactions } from '../../context/TransactionContext.tsx';
-import { API_ENDPOINTS, apiCall } from '../../config/api.ts';
+import { API_ENDPOINTS, apiCall, API_BASE_URL } from '../../config/api';
 
 interface AuthStatus {
   status: 'idle' | 'authorizing' | 'authorized' | 'importing' | 'success' | 'error';
@@ -80,7 +80,17 @@ const QuickBooksAuthPage: React.FC = () => {
     setAuthStatus({ status: 'importing', message: 'Importing transactions from QuickBooks...' });
     
     try {
-      // Call the transactions endpoint using centralized API config
+      // Call the export endpoint which handles everything
+      const exportResponse = await apiCall(`${API_BASE_URL}/api/transactions/export`, {
+        method: 'GET',
+      });
+
+      if (!exportResponse.ok) {
+        throw new Error('Failed to export transactions');
+      }
+
+      // The export endpoint returns CSV data, so we need to parse it or handle it differently
+      // For now, let's call the transactions endpoint directly to get JSON data
       const transactionsResponse = await apiCall(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS, {
         method: 'GET',
       });
