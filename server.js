@@ -67,23 +67,28 @@ app.get('/api/health', (req, res) => {
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Use history fallback ONLY for non-API routes (this should come AFTER API routes)
-app.use(
+// Use history fallback ONLY for frontend routes (exclude API completely)
+app.use((req, res, next) => {
+  // Skip history fallback for API routes
+  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/') || req.path.startsWith('/oauth/')) {
+    return next();
+  }
+  
+  // Apply history fallback only for frontend routes
   history({
-    // Exclude all API and auth routes from history fallback
-    rewrites: [
-      { from: /^\/api\/.*$/, to: function(context) {
-        return context.parsedUrl.pathname;
-      }},
-      { from: /^\/auth\/.*$/, to: function(context) {
-        return context.parsedUrl.pathname;
-      }},
-      { from: /^\/oauth\/.*$/, to: function(context) {
-        return context.parsedUrl.pathname;
-      }}
-    ]
-  })
-);
+    verbose: true
+  })(req, res, next);
+});
+
+// Catch-all handler for frontend routes (after API routes)
+app.get('*', (req, res) => {
+  // Only serve index.html for non-API routes
+  if (!req.path.startsWith('/api/') && !req.path.startsWith('/auth/') && !req.path.startsWith('/oauth/')) {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  } else {
+    res.status(404).json({ error: 'API endpoint not found' });
+  }
+});
 
 
 // ==========================================
