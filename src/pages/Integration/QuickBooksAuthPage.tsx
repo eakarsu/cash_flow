@@ -20,7 +20,9 @@ const QuickBooksAuthPage: React.FC = () => {
     setAuthStatus({ status: 'authorizing', message: 'Getting authorization URL...' });
     
     try {
-      console.log('🎯 Calling /auth/quickbooks endpoint...');
+      console.log('🎯 Calling /api/quickbooks/auth endpoint...');
+      console.log('🌐 Current window location:', window.location.origin);
+      console.log('📡 Making request to: /api/quickbooks/auth (should proxy to port 3001)');
       
       // Call the authorization endpoint
       const authResponse = await fetch('/api/quickbooks/auth', {
