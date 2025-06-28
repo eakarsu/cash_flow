@@ -29,6 +29,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware to attach user tokens to requests
+app.use((req, res, next) => {
+  req.userTokens = userTokens;
+  next();
+});
+
 // Import routes
 const contactRouter = require('./src/api/routes/contact');
 const exportRouter = require('./src/api/routes/export');
