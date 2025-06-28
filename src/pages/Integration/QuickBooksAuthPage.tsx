@@ -17,7 +17,7 @@ const QuickBooksAuthPage: React.FC = () => {
   const { addTransaction } = useTransactions();
 
   const handleAuthorize = async () => {
-    setAuthStatus({ status: 'authorizing', message: 'Connecting to QuickBooks...' });
+    setAuthStatus({ status: 'authorizing', message: 'Getting authorization URL...' });
     
     try {
       // Call the authorization endpoint
@@ -34,20 +34,22 @@ const QuickBooksAuthPage: React.FC = () => {
 
       const authData = await authResponse.json();
       
-      if (authData.success) {
-        setAuthStatus({ status: 'authorized', message: 'Successfully connected to QuickBooks!' });
+      if (authData.success && authData.authUri) {
+        console.log('🔗 QuickBooks Authorization URL:');
+        console.log(authData.authUri);
+        console.log('📋 Copy the URL above and paste it in your browser to complete authorization');
         
-        // Wait a moment then start importing transactions
-        setTimeout(() => {
-          importTransactions();
-        }, 1500);
+        setAuthStatus({ 
+          status: 'authorized', 
+          message: 'Authorization URL generated! Check the browser console for the URL to complete authorization.' 
+        });
       } else {
-        throw new Error(authData.message || 'Authorization failed');
+        throw new Error(authData.message || 'Failed to get authorization URL');
       }
     } catch (error) {
       setAuthStatus({ 
         status: 'error', 
-        error: error instanceof Error ? error.message : 'Failed to connect to QuickBooks' 
+        error: error instanceof Error ? error.message : 'Failed to get authorization URL' 
       });
     }
   };
@@ -222,6 +224,15 @@ const QuickBooksAuthPage: React.FC = () => {
                 <div className="text-center">
                   <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-4" />
                   <p className="text-green-600 font-medium">{authStatus.message}</p>
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-blue-800 text-sm">
+                      <strong>Next Steps:</strong>
+                      <br />1. Open your browser's developer console (F12)
+                      <br />2. Copy the authorization URL from the console
+                      <br />3. Paste it in a new browser tab to complete authorization
+                      <br />4. After authorization, return here and click "Pull Data from QuickBooks"
+                    </p>
+                  </div>
                 </div>
               )}
 
