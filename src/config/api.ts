@@ -1,23 +1,6 @@
-// API configuration for different environments
-const getApiBaseUrl = (): string => {
-  // In production, use relative URLs (same domain)
-  if (process.env.NODE_ENV === 'production') {
-    return '';
-  }
-  
-  // In development, check if we have a custom API URL
-  if (process.env.REACT_APP_API_URL) {
-    console.log('🔧 Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-    return process.env.REACT_APP_API_URL;
-  }
-  
-  // Default: use relative URLs (proxy should handle forwarding)
-  console.log('🔧 Using relative URLs with proxy');
-  return '';
-};
+// API configuration using environment variable
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
 
-export const API_BASE_URL = getApiBaseUrl();
-console.log ('API_BASE_URL:',API_BASE_URL)
 export const API_ENDPOINTS = {
   QUICKBOOKS: {
     AUTH: `${API_BASE_URL}/api/quickbooks/auth`,
