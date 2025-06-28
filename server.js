@@ -53,8 +53,6 @@ app.use('/api/quickbooks', quickbooksRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
 
-
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -66,21 +64,26 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, 'build')));
 
-// 1. Use history fallback BEFORE static
+// Use history fallback ONLY for non-API routes (this should come AFTER API routes)
 app.use(
   history({
-    // Only rewrite for non-API requests
+    // Exclude all API and auth routes from history fallback
     rewrites: [
-      { from: /^\/api\/.*$/, to: context => context.parsedUrl.path },
-      { from: /^\/auth\/.*$/, to: context => context.parsedUrl.path },
-      { from: /^\/oauth\/.*$/, to: context => context.parsedUrl.path }
+      { from: /^\/api\/.*$/, to: function(context) {
+        return context.parsedUrl.pathname;
+      }},
+      { from: /^\/auth\/.*$/, to: function(context) {
+        return context.parsedUrl.pathname;
+      }},
+      { from: /^\/oauth\/.*$/, to: function(context) {
+        return context.parsedUrl.pathname;
+      }}
     ]
   })
 );
-
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, 'build')));
 
 
 // ==========================================
