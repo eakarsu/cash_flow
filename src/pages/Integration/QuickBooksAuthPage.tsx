@@ -91,9 +91,9 @@ const QuickBooksAuthPage: React.FC = () => {
 
       const transactionsData = await transactionsResponse.json();
       
-      if (transactionsData.success && transactionsData.transactions) {
+      if (transactionsData.success && transactionsData.data && transactionsData.data.transactions) {
         // Process and add transactions to the context
-        const transactions = transactionsData.transactions;
+        const transactions = transactionsData.data.transactions;
         setTransactionCount(transactions.length);
         
         // Add each transaction to the context
@@ -101,11 +101,11 @@ const QuickBooksAuthPage: React.FC = () => {
           addTransaction({
             id: transaction.id || Date.now().toString() + Math.random(),
             date: transaction.date,
-            description: transaction.description || transaction.memo || 'QuickBooks Transaction',
+            description: transaction.description || 'QuickBooks Transaction',
             amount: transaction.amount,
             category: transaction.category || 'Uncategorized',
-            balance: transaction.balance || 0,
-            type: transaction.amount >= 0 ? 'income' : 'expense'
+            balance: 0,
+            type: transaction.type || (transaction.amount >= 0 ? 'income' : 'expense')
           });
         });
 
