@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const QuickBooksService = require('../../services/QuickBooksService');
+const QuickBooksService = require('../../services/QuickBooksService.js');
 
 // Initialize services
 const qbService = new QuickBooksService();

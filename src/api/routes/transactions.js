@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 router.get('/export', async (req, res) => {
   try {
     // Fetch real data from your API
-    const response = await axios.get('http://localhost:5010/api/quickbooks/transactions');
+    const response = await axios.get('/api/quickbooks/transactions');
     if (!response.data || !response.data.data || !response.data.data.transactions) {
       return res.status(500).json({ error: 'Invalid transactions data' });
     }
