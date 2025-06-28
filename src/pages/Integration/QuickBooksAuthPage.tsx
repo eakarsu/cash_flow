@@ -24,8 +24,8 @@ const QuickBooksAuthPage: React.FC = () => {
       console.log('🌐 Current window location:', window.location.origin);
       console.log('📡 Making request to: /api/quickbooks/auth (should proxy to port 3001)');
       
-      // Call the authorization endpoint
-      const authResponse = await fetch('/api/quickbooks/auth', {
+      // Call the authorization endpoint directly on Express server
+      const authResponse = await fetch('http://localhost:3001/api/quickbooks/auth', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -82,8 +82,8 @@ const QuickBooksAuthPage: React.FC = () => {
     setAuthStatus({ status: 'importing', message: 'Importing transactions from QuickBooks...' });
     
     try {
-      // Call the transactions endpoint
-      const transactionsResponse = await fetch('/api/quickbooks/transactions', {
+      // Call the transactions endpoint directly on Express server
+      const transactionsResponse = await fetch('http://localhost:3001/api/quickbooks/transactions', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
