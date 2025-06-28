@@ -103,6 +103,10 @@ const QuickBooksAuthPage: React.FC = () => {
     }
   };
 
+  const handlePullData = async () => {
+    await importTransactions();
+  };
+
   const handleRetry = () => {
     setAuthStatus({ status: 'idle' });
     setTransactionCount(0);
