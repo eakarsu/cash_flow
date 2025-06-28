@@ -52,6 +52,15 @@ app.use('/api/quickbooks', quickbooksRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
 
+// Debug: Log all registered routes
+console.log('🔧 Registered routes:');
+console.log('  - /api/contact');
+console.log('  - /api/export');
+console.log('  - /auth');
+console.log('  - /api/quickbooks');
+console.log('  - /api/upload');
+console.log('  - /api/transactions');
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -72,7 +81,9 @@ app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/') && !req.path.startsWith('/auth/') && !req.path.startsWith('/oauth/')) {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
   } else {
-    res.status(404).json({ error: 'API endpoint not found' });
+    // This should not be reached if routes are properly defined
+    console.error(`❌ Unmatched API route: ${req.method} ${req.path}`);
+    res.status(404).json({ error: 'API endpoint not found', path: req.path });
   }
 });
 

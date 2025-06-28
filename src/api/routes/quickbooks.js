@@ -9,14 +9,21 @@ let userTokens = authModule.userTokens;
 
 // QuickBooks Authorization endpoint
 router.get('/auth', async (req, res) => {
+  console.log('🎯 QuickBooks /auth route hit!');
+  console.log('📍 Request path:', req.path);
+  console.log('📍 Request method:', req.method);
+  
   try {
     const authUri = qbService.getAuthUri();
+    console.log('✅ Generated auth URI successfully');
+    
     res.json({ 
       success: true,
       authUri: authUri,
       message: 'Visit this URL to authorize QuickBooks access'
     });
   } catch (error) {
+    console.error('❌ Error in QuickBooks auth route:', error);
     res.status(500).json({ error: error.message });
   }
 });
