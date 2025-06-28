@@ -129,6 +129,15 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
             </Link>
 
             <Link
+              to="/integration"
+              className={`text-sm font-medium ${
+                isActive('/integration') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
+              }`}
+            >
+              Integration
+            </Link>
+
+            <Link
               to="/reports"
               className={`text-sm font-medium ${
                 isActive('/reports') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
@@ -307,6 +316,13 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Transactions
+              </Link>
+              <Link
+                to="/integration"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Integration
               </Link>
               <Link
                 to="/reports"
