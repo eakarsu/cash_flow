@@ -53,15 +53,6 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
 
 
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, 'build')));
-
-
-
-
-
-
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -73,7 +64,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Option A: Add the missing endpoint to server.js
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, 'build')));
 
 // Handle React Router - send index.html for all non-API routes
 app.get('*', (req, res) => {
@@ -84,8 +76,7 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  // For all other routes (including static assets that weren't found), serve index.html
-  // The express.static middleware above will handle actual static files
+  // For all other routes, serve index.html (React Router will handle client-side routing)
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
