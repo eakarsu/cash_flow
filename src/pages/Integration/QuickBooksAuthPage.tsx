@@ -89,47 +89,14 @@ const QuickBooksAuthPage: React.FC = () => {
         throw new Error('Failed to export transactions');
       }
 
-      // The export endpoint returns CSV data, so we need to parse it or handle it differently
-      // For now, let's call the transactions endpoint directly to get JSON data
-      const transactionsResponse = await apiCall(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS, {
-        method: 'GET',
+      setAuthStatus({ 
+        status: 'success', 
+        message: 'Successfully exported transactions from QuickBooks!' 
       });
-
-      if (!transactionsResponse.ok) {
-        throw new Error('Failed to fetch transactions');
-      }
-
-      const transactionsData = await transactionsResponse.json();
-      
-      if (transactionsData.success && transactionsData.data && transactionsData.data.transactions) {
-        // Process and add transactions to the context
-        const transactions = transactionsData.data.transactions;
-        setTransactionCount(transactions.length);
-        
-        // Add each transaction to the context
-        transactions.forEach((transaction: any) => {
-          addTransaction({
-            id: transaction.id || Date.now().toString() + Math.random(),
-            date: transaction.date,
-            description: transaction.description || 'QuickBooks Transaction',
-            amount: transaction.amount,
-            category: transaction.category || 'Uncategorized',
-            balance: 0,
-            type: transaction.type || (transaction.amount >= 0 ? 'income' : 'expense')
-          });
-        });
-
-        setAuthStatus({ 
-          status: 'success', 
-          message: `Successfully imported ${transactions.length} transactions from QuickBooks!` 
-        });
-      } else {
-        throw new Error(transactionsData.message || 'Failed to import transactions');
-      }
     } catch (error) {
       setAuthStatus({ 
         status: 'error', 
-        error: error instanceof Error ? error.message : 'Failed to import transactions' 
+        error: error instanceof Error ? error.message : 'Failed to export transactions' 
       });
     }
   };
