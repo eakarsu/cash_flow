@@ -1,18 +1,33 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const multer = require('multer');
-const fs = require('fs');
-require('dotenv').config();
-const axios = require('axios');
-const { Parser } = require('json2csv');
-// Import services and processors
 
-const GenericExcelUploadService = require('./src/services/GenericExcelUploadService');
-const FileProcessor = require('./src/processors/FileProcessor'); // ← ADD THIS LINE
-const DatabaseProcessor = require('./src/processors/DatabaseProcessor');
-const QuickBooksProcessor = require('./src/processors/QuickBooksProcessor');
-const QuickBooksService = require('./src/services/QuickBooksService');
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import fs from 'fs';
+import dotenv from 'dotenv';
+import history from 'connect-history-api-fallback';
+import axios from 'axios';
+import { Parser } from 'json2csv';
+import GenericExcelUploadService from './src/services/GenericExcelUploadService.js';
+import FileProcessor from './src/processors/FileProcessor.js';
+import DatabaseProcessor from './src/processors/DatabaseProcessor.js';
+import QuickBooksProcessor from './src/processors/QuickBooksProcessor.js';
+import QuickBooksService from './src/services/QuickBooksService.js';
+
+// Import routers
+import contactRouter from './src/api/routes/contact.js';
+import exportRouter from './src/api/routes/export.js';
+
+import quickbooksRouter from './src/api/routes/quickbooks.js';
+import uploadRouter from './src/api/routes/upload.js';
+import transactionsRouter from './src/api/routes/transactions.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import 'dotenv/config'; // Load env vars first
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Import services and processors
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,7 +36,6 @@ const PORT = process.env.PORT || 3001;
 const upload = multer({ dest: 'uploads/' });
 
 // Initialize services
-const qbService = new QuickBooksService();
 let userTokens = {};
 
 // Middleware
@@ -37,17 +51,12 @@ app.use((req, res, next) => {
 });
 
 // Import routes
-const contactRouter = require('./src/api/routes/contact');
-const exportRouter = require('./src/api/routes/export');
-const authRouter = require('./src/api/routes/auth');
-const quickbooksRouter = require('./src/api/routes/quickbooks');
-const uploadRouter = require('./src/api/routes/upload');
-const transactionsRouter = require('./src/api/routes/transactions');
+
 
 // API routes
 app.use('/api/contact', contactRouter);
 app.use('/api/export', exportRouter);
-app.use('/auth', authRouter);
+
 app.use('/api/quickbooks', quickbooksRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
@@ -56,7 +65,6 @@ app.use('/api/transactions', transactionsRouter);
 console.log('🔧 Registered routes:');
 console.log('  - /api/contact');
 console.log('  - /api/export');
-console.log('  - /auth');
 console.log('  - /api/quickbooks');
 console.log('  - /api/upload');
 console.log('  - /api/transactions');

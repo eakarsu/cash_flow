@@ -1,11 +1,20 @@
-const express = require('express');
+import express from 'express';
+import QuickBooksService from '../../services/QuickBooksService.js';
+import { Parser } from 'json2csv';
+import FileProcessor from '../../processors/FileProcessor.js';
+import 'dotenv/config'
+import axios from 'axios';
+import QuickBooks from 'node-quickbooks';
+
 const router = express.Router();
-const QuickBooksService = require('../../services/QuickBooksService');
+
+
+import { API_ENDPOINTS,  apiCall,API_BASE_URL } from '../../config/api.ts';
 
 // Initialize services
 const qbService = new QuickBooksService();
-const authModule = require('./auth');
-let userTokens = authModule.userTokens;
+let userTokens = {};
+
 
 // QuickBooks Authorization endpoint
 router.get('/auth', async (req, res) => {
@@ -28,6 +37,26 @@ router.get('/auth', async (req, res) => {
   }
 });
 
+router.get('/callback', async (req, res) => {
+  try {
+    const tokenData = await qbService.handleCallback(req.url);
+    userTokens = {
+      accessToken: tokenData.accessToken,
+      refreshToken: tokenData.refreshToken,
+      realmId: tokenData.realmId
+    };
+    
+    res.json({ 
+      success: true, 
+      message: 'QuickBooks connected successfully! You can now upload transaction files.',
+      realmId: tokenData.realmId
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Get all transactions (combined view)
 router.get('/transactions', async (req, res) => {
   try {
@@ -38,7 +67,7 @@ router.get('/transactions', async (req, res) => {
       });
     }
 
-    const QuickBooks = require('node-quickbooks');
+    
     const qbo = new QuickBooks(
       process.env.QB_CLIENT_ID,
       process.env.QB_CLIENT_SECRET,
@@ -409,7 +438,6 @@ router.post('/transactions/delete-all-confirm', async (req, res) => {
     }
 
     // Call the delete endpoint internally
-    const axios = require('axios');
     const deleteRequest = await axios.delete('/api/quickbooks/transactions/all');
     res.json(deleteRequest.data);
 
@@ -421,6 +449,67 @@ router.post('/transactions/delete-all-confirm', async (req, res) => {
     });
   }
 });
+
+router.get('/export', async (req, res) => {
+  try {
+    console.log ('export called')
+    // Fetch real data from your API on Express server
+    const response = await axios.get(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS);
+    if (!response.data || !response.data.data || !response.data.data.transactions) {
+      return res.status(500).json({ error: 'Invalid transactions data' });
+    }
+
+    const rawTransactions = response.data.data.transactions;
+    // Ensure rawTransactions is an array
+    if (!Array.isArray(rawTransactions)) {
+      return res.status(500).json({ error: 'Transactions data is not an array' });
+    }
+    console.log ('transactions:',rawTransactions)
+    // Transform to Transaction interface
+    const transformed = rawTransactions.map(t => ({
+      id: t.id || '',
+      date: t.date || '',
+      amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0,
+      description: t.description || '',
+      category: t.account|| '',
+      subcategory: t.subcategory|| '',
+      type: (t.type === 'income' || t.type === 'inflow') ? 'inflow' : 'outflow',
+      merchant: t.merchant || '',
+      paymentRef: t.paymentRef || '',
+      balance: typeof t.balance === 'number' ? t.balance : (t.balance ? parseFloat(t.balance) : ''),
+
+      subcategory: t.subcategory
+
+    }));
+
+    // Define CSV fields
+    const fields = [
+      { label: 'id', value: 'id' },
+      { label: 'date', value: 'date' },
+      { label: 'amount', value: 'amount' },
+      { label: 'description', value: 'description' },
+      { label: 'category', value: 'category' },
+      { label: 'subcategory', value: 'subcategory' },
+      { label: 'type', value: 'type' },
+      { label: 'merchant', value: 'merchant' },
+      { label: 'paymentRef', value: 'paymentRef' },
+      { label: 'balance', value: 'balance' }
+    ];
+
+    // Create CSV parser
+    const parser = new Parser({ fields });
+    const csv = parser.parse(transformed);
+
+    // Set headers for CSV download
+    res.header('Content-Type', 'text/csv');
+    res.attachment('exported_transactions.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting transactions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Helper functions
 async function getPurchases(qbo) {
@@ -513,4 +602,5 @@ async function deleteSalesReceipt(qbo, id, syncToken) {
   });
 }
 
-module.exports = router;
+export default router;
+

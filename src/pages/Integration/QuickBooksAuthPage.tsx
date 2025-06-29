@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
 import SEOHead from '../../components/SEO/SEOHead.tsx';
 import { useTransactions } from '../../context/TransactionContext.tsx';
-import { API_ENDPOINTS, apiCall, API_BASE_URL } from '../../config/api';
+import { API_ENDPOINTS,  apiCall,API_BASE_URL } from '../../config/api.ts';
 
 interface AuthStatus {
   status: 'idle' | 'authorizing' | 'authorized' | 'importing' | 'success' | 'error';
@@ -81,7 +81,7 @@ const QuickBooksAuthPage: React.FC = () => {
     
     try {
       // Call the export endpoint which handles everything
-      const exportResponse = await apiCall(`${API_BASE_URL}/api/transactions/export`, {
+      const exportResponse = await apiCall(API_ENDPOINTS.QUICKBOOKS.EXPORT, {
         method: 'GET',
       });
 

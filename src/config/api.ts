@@ -7,12 +7,12 @@ export const API_ENDPOINTS = {
     TRANSACTIONS: `${API_BASE_URL}/api/quickbooks/transactions`,
     EXPENSES: `${API_BASE_URL}/api/quickbooks/expenses`,
     INCOME: `${API_BASE_URL}/api/quickbooks/income`,
+    EXPORT: `${API_BASE_URL}/api/quickbooks/export`,
   },
   HEALTH: `${API_BASE_URL}/api/health`,
   CONTACT: `${API_BASE_URL}/api/contact`,
   EXPORT: `${API_BASE_URL}/api/export`,
   UPLOAD: `${API_BASE_URL}/api/upload`,
-  TRANSACTIONS: `${API_BASE_URL}/api/transactions`,
 };
 
 // Helper function to make API calls

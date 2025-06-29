@@ -11,6 +11,7 @@ class QuickBooksService {
       redirectUri: process.env.QB_REDIRECT_URI,
       logging: true
     });
+    console.log ('outhclient :',this.oauthClient)
   }
 
   // ✅ ADD THIS METHOD (this was missing!)
