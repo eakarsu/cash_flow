@@ -15,7 +15,7 @@ const QuickBooksAuthPage: React.FC = () => {
   const [authStatus, setAuthStatus] = useState<AuthStatus>({ status: 'idle' });
   const [transactionCount, setTransactionCount] = useState(0);
   const navigate = useNavigate();
-  const { addTransaction } = useTransactions();
+  const { addTransaction, replaceAllTransactions } = useTransactions();
 
   const handleAuthorize = async () => {
     setAuthStatus({ status: 'authorizing', message: 'Getting authorization URL...' });
@@ -95,21 +95,22 @@ const QuickBooksAuthPage: React.FC = () => {
         const transactions = exportData.data.transactions;
         setTransactionCount(transactions.length);
         
-        // Add each transaction to the context with imported- prefix
-        transactions.forEach((transaction: any) => {
-          addTransaction({
-            id: `imported-${transaction.id}`,
-            date: transaction.date,
-            description: transaction.description,
-            amount: transaction.amount,
-            category: transaction.category,
-            subcategory: transaction.subcategory,
-            balance: transaction.balance || 0,
-            type: transaction.type,
-            merchant: transaction.merchant,
-            paymentRef: transaction.paymentRef
-          });
-        });
+        // Transform all transactions with imported- prefix
+        const transformedTransactions = transactions.map((transaction: any) => ({
+          id: `imported-${transaction.id}`,
+          date: transaction.date,
+          description: transaction.description,
+          amount: transaction.amount,
+          category: transaction.category,
+          subcategory: transaction.subcategory,
+          balance: transaction.balance || 0,
+          type: transaction.type,
+          merchant: transaction.merchant,
+          paymentRef: transaction.paymentRef
+        }));
+
+        // Replace all transactions at once instead of adding one by one
+        replaceAllTransactions(transformedTransactions);
 
         setAuthStatus({ 
           status: 'success', 
