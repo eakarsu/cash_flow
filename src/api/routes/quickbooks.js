@@ -5,7 +5,7 @@ import FileProcessor from '../../processors/FileProcessor.js';
 import 'dotenv/config'
 import axios from 'axios';
 import QuickBooks from 'node-quickbooks';
-import { Transaction } from '../types';
+
 const router = express.Router();
 
 
