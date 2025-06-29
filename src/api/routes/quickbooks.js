@@ -5,7 +5,7 @@ import FileProcessor from '../../processors/FileProcessor.js';
 import 'dotenv/config'
 import axios from 'axios';
 import QuickBooks from 'node-quickbooks';
-
+import { Transaction } from '../types';
 const router = express.Router();
 
 
@@ -464,7 +464,7 @@ router.get('/export', async (req, res) => {
     if (!Array.isArray(rawTransactions)) {
       return res.status(500).json({ error: 'Transactions data is not an array' });
     }
-    console.log ('transactions:',rawTransactions)
+
     // Transform to Transaction interface
     const transformed = rawTransactions.map(t => ({
       id: t.id || '',
