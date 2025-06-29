@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
     EXPENSES: `${API_BASE_URL}/api/quickbooks/expenses`,
     INCOME: `${API_BASE_URL}/api/quickbooks/income`,
     EXPORT: `${API_BASE_URL}/api/quickbooks/export`,
+    EXPORT_JSON: `${API_BASE_URL}/api/quickbooks/export?format=json`,
   },
   HEALTH: `${API_BASE_URL}/api/health`,
   CONTACT: `${API_BASE_URL}/api/contact`,

@@ -452,7 +452,9 @@ router.post('/transactions/delete-all-confirm', async (req, res) => {
 
 router.get('/export', async (req, res) => {
   try {
-    console.log ('export called')
+    console.log('export called');
+    const format = req.query.format || 'csv'; // Default to CSV for backward compatibility
+    
     // Fetch real data from your API on Express server
     const response = await axios.get(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS);
     if (!response.data || !response.data.data || !response.data.data.transactions) {
@@ -471,18 +473,31 @@ router.get('/export', async (req, res) => {
       date: t.date || '',
       amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0,
       description: t.description || '',
-      category: t.account|| '',
-      subcategory: t.subcategory|| '',
+      category: t.account || '',
+      subcategory: t.subcategory || '',
       type: (t.type === 'income' || t.type === 'inflow') ? 'inflow' : 'outflow',
       merchant: t.merchant || '',
       paymentRef: t.paymentRef || '',
       balance: typeof t.balance === 'number' ? t.balance : (t.balance ? parseFloat(t.balance) : ''),
-
-      subcategory: t.subcategory
-
     }));
 
-    // Define CSV fields
+    // Return JSON format if requested
+    if (format === 'json') {
+      return res.json({
+        success: true,
+        data: {
+          transactions: transformed,
+          count: transformed.length,
+          summary: {
+            totalInflow: transformed.filter(t => t.type === 'inflow').reduce((sum, t) => sum + t.amount, 0),
+            totalOutflow: transformed.filter(t => t.type === 'outflow').reduce((sum, t) => sum + Math.abs(t.amount), 0),
+            netCashFlow: transformed.reduce((sum, t) => sum + t.amount, 0)
+          }
+        }
+      });
+    }
+
+    // Default CSV format
     const fields = [
       { label: 'id', value: 'id' },
       { label: 'date', value: 'date' },
