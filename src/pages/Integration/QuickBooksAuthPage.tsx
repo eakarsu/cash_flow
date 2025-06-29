@@ -95,10 +95,10 @@ const QuickBooksAuthPage: React.FC = () => {
         const transactions = exportData.data.transactions;
         setTransactionCount(transactions.length);
         
-        // Add each transaction to the context
+        // Add each transaction to the context with imported- prefix
         transactions.forEach((transaction: any) => {
           addTransaction({
-            id: transaction.id,
+            id: `imported-${transaction.id}`,
             date: transaction.date,
             description: transaction.description,
             amount: transaction.amount,

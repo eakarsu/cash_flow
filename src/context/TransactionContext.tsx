@@ -73,11 +73,20 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     }
   }, [transactions.length]);
 
-  const addTransaction = (transactionData: Omit<Transaction, 'id'>) => {
-    const newTransaction: Transaction = {
-      ...transactionData,
-      id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
+  const addTransaction = (transactionData: Omit<Transaction, 'id'> | Transaction) => {
+    let newTransaction: Transaction;
+    
+    // If transaction already has an ID (like from QuickBooks import), use it
+    if ('id' in transactionData && transactionData.id) {
+      newTransaction = transactionData as Transaction;
+    } else {
+      // Generate new ID for manual transactions
+      newTransaction = {
+        ...transactionData,
+        id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      };
+    }
+    
     const updatedTransactions = [newTransaction, ...transactions];
     setTransactions(updatedTransactions);
     localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
