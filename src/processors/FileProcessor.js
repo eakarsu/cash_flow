@@ -1,6 +1,7 @@
-const TransactionProcessor = require('../interfaces/TransactionProcessor');
-const fs = require('fs');
-const path = require('path');
+import TransactionProcessor from '../interfaces/TransactionProcessor.js'
+import fs from 'fs'
+import path from 'path'
+
 
 class FileProcessor extends TransactionProcessor {
   constructor(config = {}) {
@@ -81,4 +82,5 @@ class FileProcessor extends TransactionProcessor {
   }
 }
 
-module.exports = FileProcessor;
+export default  FileProcessor
+

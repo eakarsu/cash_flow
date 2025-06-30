@@ -1,5 +1,8 @@
-const OAuthClient = require('intuit-oauth');
-const QuickBooks = require('node-quickbooks');
+
+import OAuthClient from 'intuit-oauth'
+import QuickBooks from 'node-quickbooks'
+import crypto from 'crypto';
+
 
 class QuickBooksService {
   constructor() {
@@ -33,7 +36,7 @@ class QuickBooksService {
   // Helper method for secure state generation
   generateState() {
     // Generate secure random state for CSRF protection
-    return require('crypto').randomBytes(16).toString('hex');
+    return crypto.randomBytes(16).toString('hex');
   }
 
   // Handle OAuth callback
@@ -114,6 +117,6 @@ class QuickBooksService {
     });
   }
 }
+export default  QuickBooksService
 
-module.exports = QuickBooksService;
 

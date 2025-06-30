@@ -1,8 +1,8 @@
-// src/services/aiCashFlowService.ts
+// src/services/aiCashFlowService
 
-import OpenRouterService from './OpenRouterService.ts';
-import AIColumnMappingService from './aiColumnMappingService.ts';
-import { ColumnMapping, CSVImportInsights } from '../types/columnMapping.ts';
+import OpenRouterService from './OpenRouterService';
+import AIColumnMappingService from './aiColumnMappingService';
+import { ColumnMapping, CSVImportInsights } from '../types/columnMapping';
 
 export interface OpenRouterResponse {
   choices: Array<{
@@ -500,4 +500,4 @@ Return ONLY the JSON response, no additional text.`;
 }
 
 export default AICashFlowService;
-export type { CashFlowPrediction };
+

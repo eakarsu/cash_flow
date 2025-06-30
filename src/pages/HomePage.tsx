@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar, Star, Users, Shield, Zap } from 'lucide-react';
-import { useTransactions } from '../context/TransactionContext.tsx';
-import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget.tsx';
-import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget.tsx';
-import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget.tsx';
-import CashForecastWidget from '../components/Dashboard/CashForecastWidget.tsx';
+import { useTransactions } from '../context/TransactionContext';
+import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
+import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
+import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
+import CashForecastWidget from '../components/Dashboard/CashForecastWidget';
 
 const HomePage: React.FC = () => {
   const { transactions } = useTransactions();

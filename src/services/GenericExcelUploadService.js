@@ -1,5 +1,6 @@
-const XLSX = require('xlsx');
-const moment = require('moment');
+import XLSX from 'xlsx'
+import moment from 'moment'
+
 
 class GenericExcelUploadService {
   constructor(config = {}) {
@@ -277,5 +278,5 @@ class GenericExcelUploadService {
     this.config.processors = this.config.processors.filter(p => p.name !== processorName);
   }
 }
+export default  GenericExcelUploadService
 
-module.exports = GenericExcelUploadService;

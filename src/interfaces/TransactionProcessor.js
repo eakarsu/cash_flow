@@ -16,4 +16,5 @@ class TransactionProcessor {
   }
 }
 
-module.exports = TransactionProcessor;
+export default TransactionProcessor
+

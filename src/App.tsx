@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { TransactionProvider } from './context/TransactionContext.tsx';
-import { AICashFlowProvider } from './context/AICashFlowContext.tsx';
-import AppRouter from './router/AppRouter.tsx';
+import { TransactionProvider } from './context/TransactionContext';
+import { AICashFlowProvider } from './context/AICashFlowContext';
+import AppRouter from './router/AppRouter';
 
 function App() {
   useEffect(() => {

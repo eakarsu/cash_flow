@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { TrendingDown, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlowContext } from '../../context/AICashFlowContext.tsx';
+import { useAICashFlowContext } from '../../context/AICashFlowContext';
 
 interface CashOutflowsWidgetProps {
   transactions: Transaction[];
@@ -131,6 +131,7 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
       maximumFractionDigits: 0,
     }).format(value);
   };
+
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

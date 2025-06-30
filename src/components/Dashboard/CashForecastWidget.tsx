@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, TrendingUp, TrendingDown, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlowContext } from '../../context/AICashFlowContext.tsx';
+import { useAICashFlowContext } from '../../context/AICashFlowContext';
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
@@ -144,6 +144,14 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
       }
       return forecast;
     })();
+
+  // CHANGED: Guard for empty transactions or zero outflow
+  if (transactions.length === 0) {
+    return <div>No transactions available to forecast cash flow.</div>; // ADDED
+  }
+  if (avgWeeklyInflows === 0) {
+    return <div>Not enough outflow data for forecast.</div>; // ADDED
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

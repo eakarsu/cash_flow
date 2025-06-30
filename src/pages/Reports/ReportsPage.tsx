@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart3, Download, Calendar, Filter, TrendingUp, DollarSign } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext.tsx';
+import { useTransactions } from '../../context/TransactionContext';
 
 const ReportsPage: React.FC = () => {
   const { transactions } = useTransactions();

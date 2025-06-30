@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Clock, AlertTriangle, CheckCircle, AlertCircle, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Transaction } from '../../types';
-import { useAICashFlowContext } from '../../context/AICashFlowContext.tsx';
+import { useAICashFlowContext } from '../../context/AICashFlowContext';
 
 interface CashRunwayWidgetProps {
   transactions: Transaction[];

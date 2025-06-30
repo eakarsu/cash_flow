@@ -1,4 +1,4 @@
-// src/types/columnMapping.ts
+// src/types/columnMapping
 
 export interface ColumnMapping {
   date?: string;

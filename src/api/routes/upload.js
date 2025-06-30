@@ -1,11 +1,13 @@
-const express = require('express');
+import express from 'express'
+import multer from 'multer'
+import fs from 'fs'
+
 const router = express.Router();
-const multer = require('multer');
-const fs = require('fs');
-const GenericExcelUploadService = require('../../services/GenericExcelUploadService');
-const FileProcessor = require('../../processors/FileProcessor');
-const DatabaseProcessor = require('../../processors/DatabaseProcessor');
-const QuickBooksProcessor = require('../../processors/QuickBooksProcessor');
+
+import GenericExcelUploadService from '../../services/GenericExcelUploadService.js';
+import  FileProcessor from '../../processors/FileProcessor.js';
+import DatabaseProcessor from '../../processors/DatabaseProcessor.js';
+import QuickBooksProcessor from '../../processors/QuickBooksProcessor.js';
 
 // Configure multer for file uploads
 const upload = multer({ dest: 'uploads/' });
@@ -144,4 +146,5 @@ router.get('/formats', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router
+

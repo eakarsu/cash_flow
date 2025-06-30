@@ -1,47 +1,47 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from '../components/Layout/Layout.tsx';
-import HomePage from '../pages/HomePage.tsx';
-import PlaceholderPage from '../components/PlaceholderPage.tsx';
-import { useTransactions } from '../context/TransactionContext.tsx';
+import Layout from '../components/Layout/Layout';
+import HomePage from '../pages/HomePage';
+import PlaceholderPage from '../components/PlaceholderPage';
+import { useTransactions } from '../context/TransactionContext';
 
 // Transaction pages
-import TransactionsPage from '../pages/Transactions/TransactionsPage.tsx';
-import AddTransactionPage from '../pages/Transactions/AddTransactionPage.tsx';
-import EditTransactionPage from '../pages/Transactions/EditTransactionPage.tsx';
-import ImportTransactionsPage from '../pages/Transactions/ImportTransactionsPage.tsx';
+import TransactionsPage from '../pages/Transactions/TransactionsPage';
+import AddTransactionPage from '../pages/Transactions/AddTransactionPage';
+import EditTransactionPage from '../pages/Transactions/EditTransactionPage';
+import ImportTransactionsPage from '../pages/Transactions/ImportTransactionsPage';
 
 // Analytics pages
-import CashInflowsPage from '../pages/Analytics/CashInflowsPage.tsx';
-import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage.tsx';
-import CashRunwayPage from '../pages/Analytics/CashRunwayPage.tsx';
-import CashForecastPage from '../pages/Analytics/CashForecastPage.tsx';
+import CashInflowsPage from '../pages/Analytics/CashInflowsPage';
+import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage';
+import CashRunwayPage from '../pages/Analytics/CashRunwayPage';
+import CashForecastPage from '../pages/Analytics/CashForecastPage';
 
 // Reports pages
-import ReportsPage from '../pages/Reports/ReportsPage.tsx';
+import ReportsPage from '../pages/Reports/ReportsPage';
 
 // Company pages
-import AboutPage from '../pages/Company/AboutPage.tsx';
-import ContactPage from '../pages/Company/ContactPage.tsx';
+import AboutPage from '../pages/Company/AboutPage';
+import ContactPage from '../pages/Company/ContactPage';
 
 // Marketing pages
-import FeaturesPage from '../pages/Marketing/FeaturesPage.tsx';
-import PricingPage from '../pages/Marketing/PricingPage.tsx';
+import FeaturesPage from '../pages/Marketing/FeaturesPage';
+import PricingPage from '../pages/Marketing/PricingPage';
 
 // Support pages
-import HelpPage from '../pages/Support/HelpPage.tsx';
-import DocumentationPage from '../pages/Support/DocumentationPage.tsx';
-import TutorialsPage from '../pages/Support/TutorialsPage.tsx';
-import SupportContactPage from '../pages/Support/SupportContactPage.tsx';
+import HelpPage from '../pages/Support/HelpPage';
+import DocumentationPage from '../pages/Support/DocumentationPage';
+import TutorialsPage from '../pages/Support/TutorialsPage';
+import SupportContactPage from '../pages/Support/SupportContactPage';
 
 // Integration pages
-import IntegrationPage from '../pages/Integration/IntegrationPage.tsx';
-import QuickBooksAuthPage from '../pages/Integration/QuickBooksAuthPage.tsx';
+import IntegrationPage from '../pages/Integration/IntegrationPage';
+import QuickBooksAuthPage from '../pages/Integration/QuickBooksAuthPage';
 
 // Settings pages
-import SettingsPage from '../pages/Settings/SettingsPage.tsx';
-import BillingPage from '../pages/Settings/BillingPage.tsx';
-import ProfilePage from '../pages/Settings/ProfilePage.tsx';
+import SettingsPage from '../pages/Settings/SettingsPage';
+import BillingPage from '../pages/Settings/BillingPage';
+import ProfilePage from '../pages/Settings/ProfilePage';
 
 const AppRouter: React.FC = () => {
   const { transactions } = useTransactions();

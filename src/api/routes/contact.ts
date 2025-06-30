@@ -1,8 +1,11 @@
-import { Router, Request, Response } from 'express';
+// Fix the Express imports
+import express, { Router } from 'express';
+import type { Request, Response } from 'express'; // Import types separately
+
 import { body, validationResult } from 'express-validator';
 import nodemailer from 'nodemailer';
-import { config } from '../config/environment';
-import { logger } from '../utils/logger';
+import smtp from '../config/environment.js';
+import  logger  from '../../utils/logger.js';
 
 const router = Router();
 
@@ -45,12 +48,12 @@ const createTransporter = () => {
   };
   
   logger.info(`Creating SMTP transporter with config: ${JSON.stringify({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    user: config.auth.user,
-    hasPassword: !!config.auth.pass,
-    passwordLength: config.auth.pass?.length || 0,
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    user: smtp.auth.user,
+    hasPassword: !!smtp.auth.pass,
+    passwordLength: smtp.auth.pass?.length || 0,
     encryptionType: isSSL ? 'SSL' : 'STARTTLS'
   })}`);
   
@@ -147,7 +150,7 @@ Time: ${new Date().toISOString()}
         await transporter.verify();
         logger.info('SMTP transporter verified successfully');
       } catch (verifyError: any) {
-        logger.warn('SMTP verification failed, trying alternative configuration:', verifyError.message);
+        logger.warn(`SMTP verification failed, trying alternative configuration: ${verifyError.message}`);
         
         // Try alternative port/encryption method
         const currentPort = parseInt(process.env.SMTP_PORT || '587');
@@ -194,7 +197,7 @@ Time: ${new Date().toISOString()}
             text: emailContent,
             replyTo: email,
           });
-          logger.info('Email sent with alternative config:', emailResult.messageId);
+          logger.info(`Email sent with alternative config: ${emailResult.messageId}`);
           
           // Send confirmation email
           const confirmationResult = await altTransporter.sendMail({
@@ -218,7 +221,7 @@ Phone: 1-804-360-1129
 Email: ${recipient}
 Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
           });
-          logger.info('Confirmation email sent with alternative config:', confirmationResult.messageId);
+          logger.info(`Confirmation email sent with alternative config: ${confirmationResult.messageId}`);
           
           logger.info(`📧 EMAIL SENT SUCCESSFULLY (ALT CONFIG):
             ═══════════════════════════════════════
@@ -239,7 +242,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
           });
           
         } catch (altError: any) {
-          logger.error('Alternative SMTP configuration also failed:', altError.message);
+          logger.error(`Alternative SMTP configuration also failed: ${altError.message}`);
           throw verifyError; // Throw original error to fall through to logging
         }
       }
@@ -253,7 +256,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
         text: emailContent,
         replyTo: email,
       });
-      logger.info('Email sent to recipient successfully:', emailResult.messageId);
+      logger.info(`Email sent to recipient successfully: ${emailResult.messageId}`);
 
       // Send confirmation email to user
       logger.info(`Sending confirmation email to ${email}...`);
@@ -278,7 +281,7 @@ Phone: 1-804-360-1129
 Email: ${recipient}
 Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
       });
-      logger.info('Confirmation email sent successfully:', confirmationResult.messageId);
+      logger.info(`Confirmation email sent successfully: ${confirmationResult.messageId}`);
 
       // Also log for record keeping
       logger.info(`📧 EMAIL SENT SUCCESSFULLY:
@@ -300,7 +303,7 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
       });
 
     } catch (emailError: any) {
-      logger.error('Email sending failed:', emailError);
+      logger.error(`Email sending failed: ${emailError}`);
       
       // Fallback to logging if email fails
       logger.info(`📧 EMAIL FAILED - LOGGING INSTEAD:
@@ -328,11 +331,11 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
     }
 
   } catch (error) {
-    logger.error('Contact form error:', error);
+    logger.error(`Contact form error: ${error}`);
     
     // More detailed error response for debugging
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Detailed error:', errorMessage);
+    logger.error(`Detailed error:c${errorMessage}`);
     
     res.status(500).json({
       success: false,

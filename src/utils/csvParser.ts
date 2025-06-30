@@ -1,7 +1,7 @@
-// src/utils/csvParser.ts
+// src/utils/csvParser
 
 import { Transaction } from '../types';
-import { ColumnMapping } from '../types/columnMapping.ts';
+import { ColumnMapping } from '../types/columnMapping';
 
 async function getAICashFlowService() {
   try {
@@ -13,7 +13,7 @@ async function getAICashFlowService() {
     console.log('🤖 Could not get existing AI service:', error);
   }
   
-  const { default: AICashFlowService } = await import('../services/aiCashFlowService.ts');
+  const { default: AICashFlowService } = await import('../services/aiCashFlowService');
   return new AICashFlowService();
 }
 
@@ -69,7 +69,7 @@ export const parseCSV = (file: File): Promise<Transaction[]> => {
         
         // Let's use the fallback mapping for now to ensure consistency, as AI mapping can vary.
         // This makes debugging predictable.
-        const columnMapping = new (await import('../services/aiColumnMappingService.ts')).default().fallbackMapping(originalHeaders);
+        const columnMapping = new (await import('../services/aiColumnMappingService')).default().fallbackMapping(originalHeaders);
         console.log('✅ Using Fallback Column mapping for predictable debugging:', columnMapping);
         
         const transactions: Transaction[] = [];

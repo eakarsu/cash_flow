@@ -5,11 +5,11 @@ import FileProcessor from '../../processors/FileProcessor.js';
 import 'dotenv/config'
 import axios from 'axios';
 import QuickBooks from 'node-quickbooks';
-
+import { URL } from 'url'
 const router = express.Router();
 
 
-import { API_ENDPOINTS,  apiCall,API_BASE_URL } from '../../config/api.ts';
+import { API_ENDPOINTS,  apiCall,API_BASE_URL } from '../../config/api.js';
 
 // Initialize services
 const qbService = new QuickBooksService();
@@ -455,8 +455,11 @@ router.get('/export', async (req, res) => {
     console.log('export called');
     const format = req.query.format || 'csv'; // Default to CSV for backward compatibility
     
+    let export_url = API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS;
+    export_url = replacePortInUrl(export_url, 3001);
+    console.log (` calling for transactions ${export_url}`)
     // Fetch real data from your API on Express server
-    const response = await axios.get(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS);
+    const response = await axios.get(export_url);
     if (!response.data || !response.data.data || !response.data.data.transactions) {
       return res.status(500).json({ error: 'Invalid transactions data' });
     }
@@ -525,6 +528,12 @@ router.get('/export', async (req, res) => {
   }
 });
 
+
+function replacePortInUrl(urlString, newPort) {
+    const urlObj = new URL(urlString);
+    urlObj.port = newPort;
+    return urlObj.toString();
+}
 
 // Helper functions
 async function getPurchases(qbo) {

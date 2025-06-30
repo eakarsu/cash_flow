@@ -13,7 +13,16 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Expose port
+RUN npm run build
+RUN npm run build:server
 
-# Start the development server
-CMD ["npm", "run", "dev:production"]
+# Install serve for static frontend
+RUN npm install -g serve
+
+# Install concurrently for running both servers
+RUN npm install -g concurrently
+
+# Add local node_modules binaries to PATH
+ENV PATH=/app/node_modules/.bin:$PATH
+
+CMD ["concurrently", "node dist/server.js", "serve -s build -l 3000"]

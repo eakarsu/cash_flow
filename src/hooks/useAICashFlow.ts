@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AICashFlowService, { CashFlowPrediction } from '../services/aiCashFlowService.ts';
+import AICashFlowService, { CashFlowPrediction } from '../services/aiCashFlowService';
 import { Transaction } from '../types';
 
 interface UseAICashFlowOptions {

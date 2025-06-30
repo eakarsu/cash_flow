@@ -1,6 +1,11 @@
-const { SitemapStream, streamToPromise } = require('sitemap');
-const { createWriteStream } = require('fs');
-const path = require('path');
+import { SitemapStream, streamToPromise } from 'sitemap';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const generateSitemap = async () => {
   const sitemap = new SitemapStream({ hostname: 'https://cashflowapp.app' });
@@ -17,6 +22,11 @@ const generateSitemap = async () => {
     { url: '/tutorials', changefreq: 'weekly', priority: 0.6 },
     { url: '/support', changefreq: 'monthly', priority: 0.6 },
     { url: '/blog', changefreq: 'weekly', priority: 0.8 },
+    { url: '/analytics', changefreq: 'weekly', priority: 0.8 },
+    { url: '/integration', changefreq: 'weekly', priority: 0.8 },
+    { url: '/transactions', changefreq: 'weekly', priority: 0.7 },
+    { url: '/reports', changefreq: 'weekly', priority: 0.7 },
+    { url: '/settings', changefreq: 'monthly', priority: 0.6 }
   ];
 
   // Write routes to sitemap
@@ -31,14 +41,27 @@ const generateSitemap = async () => {
 
   sitemap.end();
 
-  // Generate sitemap
-  const sitemapXML = await streamToPromise(sitemap);
-  
-  // Write to public directory
-  const publicPath = path.join(__dirname, '../public/sitemap.xml');
-  require('fs').writeFileSync(publicPath, sitemapXML.toString());
-  
-  console.log('Sitemap generated successfully!');
+  try {
+    // Generate sitemap
+    const sitemapXML = await streamToPromise(sitemap);
+    
+    // Write to build directory (not public, since React builds to build/)
+    const buildPath = path.join(__dirname, '../build/sitemap.xml');
+    
+    // Ensure build directory exists
+    const buildDir = path.dirname(buildPath);
+    if (!fs.existsSync(buildDir)) {
+      fs.mkdirSync(buildDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(buildPath, sitemapXML.toString());
+    
+    console.log('Sitemap generated successfully!');
+    console.log(`Sitemap saved to: ${buildPath}`);
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    throw error;
+  }
 };
 
 generateSitemap().catch(console.error);

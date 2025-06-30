@@ -1,8 +1,10 @@
-const express = require('express');
+import express from 'express'
+import axios from 'axios'; 
+import {Parser} from 'json2csv'
+import FileProcessor from '../../processors/FileProcessor.js'
+
 const router = express.Router();
-const axios = require('axios');
-const { Parser } = require('json2csv');
-const FileProcessor = require('../../processors/FileProcessor');
+
 
 // Get all transactions from file storage
 router.get('/', async (req, res) => {
@@ -82,4 +84,5 @@ router.get('/export', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router
+

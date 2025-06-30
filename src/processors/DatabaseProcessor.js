@@ -1,6 +1,10 @@
-const TransactionProcessor = require('../interfaces/TransactionProcessor');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// New ES Module style:
+import TransactionProcessor from '../interfaces/TransactionProcessor.js';
+import sqlite3 from 'sqlite3';
+import path from 'path';
+
+// For sqlite3.verbose(), you'll need to call it after import:
+const db = sqlite3.verbose();
 
 class DatabaseProcessor extends TransactionProcessor {
   constructor(config = {}) {
@@ -129,5 +133,5 @@ class DatabaseProcessor extends TransactionProcessor {
     });
   }
 }
+export default  DatabaseProcessor;
 
-module.exports = DatabaseProcessor;

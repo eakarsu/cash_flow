@@ -9,5 +9,5 @@ const logger = {
     console.error(`[ERROR] ${new Date().toISOString()}: ${message}`);
   }
 };
+export default logger
 
-module.exports = { logger };

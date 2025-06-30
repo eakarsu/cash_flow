@@ -17,7 +17,7 @@ export const API_ENDPOINTS = {
 };
 
 // Helper function to make API calls
-export const apiCall = async (endpoint: string, options?: RequestInit) => {
+export const apiCall = async (endpoint, options) => {
   const response = await fetch(endpoint, {
     headers: {
       'Content-Type': 'application/json',

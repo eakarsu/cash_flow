@@ -1,4 +1,4 @@
-// src/services/OpenRouterService.ts
+// src/services/OpenRouterService
 
 interface AIChatMessage {
   role: 'user' | 'assistant' | 'system';

@@ -1,4 +1,4 @@
-const QuickBooks = require('node-quickbooks');
+import QuickBooks from 'node-quickbooks';
 
 class AccountMappingService {
   constructor(accessToken, refreshToken, realmId) {
@@ -358,5 +358,5 @@ async createQuickBooksAccount(categoryName, transactionType = 'expense') {
     };
   }
 }
+export default AccountMappingService
 
-module.exports = AccountMappingService;

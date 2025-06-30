@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, DollarSign, Calendar, Filter } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext.tsx';
-import CashInflowsWidget from '../../components/Dashboard/CashInflowsWidget.tsx';
+import { useTransactions } from '../../context/TransactionContext';
+import CashInflowsWidget from '../../components/Dashboard/CashInflowsWidget';
 
 const CashInflowsPage: React.FC = () => {
   const { transactions } = useTransactions();

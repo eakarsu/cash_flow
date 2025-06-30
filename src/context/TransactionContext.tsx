@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { Transaction } from '../types/index';
-import { useLocalStorage } from '../hooks/useLocalStorage.ts';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface TransactionContextType {
   transactions: Transaction[];

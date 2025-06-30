@@ -1,7 +1,8 @@
-const TransactionProcessor = require('../interfaces/TransactionProcessor');
-const QuickBooks = require('node-quickbooks');
-const AccountMappingService = require('../services/AccountMappingService');
-const moment = require('moment');
+// New ES Module style:
+import TransactionProcessor from '../interfaces/TransactionProcessor.js';
+import QuickBooks from 'node-quickbooks';
+import AccountMappingService from '../services/AccountMappingService.js';
+import moment from 'moment';
 
 class QuickBooksProcessor extends TransactionProcessor {
   constructor(accessToken, refreshToken, realmId, config = {}) {
@@ -193,4 +194,5 @@ async createIncomeTransaction(transaction, formattedDate) {
   }
 }
 
-module.exports = QuickBooksProcessor;
+// At the bottom, change CommonJS export to ES export:
+export default QuickBooksProcessor;  // ✅ ES module export

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, Download, Search } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext.tsx';
+import { useTransactions } from '../../context/TransactionContext';
 
 const TransactionsPage: React.FC = () => {
   const { transactions, deleteTransaction } = useTransactions();

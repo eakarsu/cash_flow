@@ -1,7 +1,7 @@
-// src/services/aiColumnMappingService.ts
+// src/services/aiColumnMappingService
 
 import { ColumnMapping, AIColumnMappingResponse, DataTransformation, AITransformationResponse, TransformedData } from '../types/columnMapping';
-import OpenRouterService from './OpenRouterService.ts';
+import OpenRouterService from './OpenRouterService';
 
 class AIColumnMappingService {
   private openRouterService: OpenRouterService;

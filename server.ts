@@ -7,11 +7,7 @@ import dotenv from 'dotenv';
 import history from 'connect-history-api-fallback';
 import axios from 'axios';
 import { Parser } from 'json2csv';
-import GenericExcelUploadService from './src/services/GenericExcelUploadService.js';
-import FileProcessor from './src/processors/FileProcessor.js';
-import DatabaseProcessor from './src/processors/DatabaseProcessor.js';
-import QuickBooksProcessor from './src/processors/QuickBooksProcessor.js';
-import QuickBooksService from './src/services/QuickBooksService.js';
+
 
 // Import routers
 import contactRouter from './src/api/routes/contact.js';
@@ -36,13 +32,16 @@ const PORT = process.env.PORT || 3001;
 const upload = multer({ dest: 'uploads/' });
 
 // Initialize services
-let userTokens = {};
+let userTokens:UserTokens = {};
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+interface UserTokens {
+  accessToken?: string;
+  // ... other properties
+}
 
 // Middleware to attach user tokens to requests
 app.use((req, res, next) => {
@@ -106,7 +105,7 @@ app.listen(PORT, () => {
   console.log(`📁 Generic Upload: http://localhost:${PORT}/api/upload-generic`);
   console.log(`⚙️  Configuration: http://localhost:${PORT}/api/configure-processors`);
   console.log(`📋 Formats Info: http://localhost:${PORT}/api/upload-formats`);
-  console.log(`Server running on port ${PORT}`);
+  console.log(`quikcbooks Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 

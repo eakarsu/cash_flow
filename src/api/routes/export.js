@@ -1,7 +1,12 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
+import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url';
+
 const router = express.Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create exports directory if it doesn't exist
 const exportsDir = path.join(__dirname, '../../exports');
@@ -99,4 +104,5 @@ router.post('/json', (req, res) => {
   }
 });
 
-module.exports = router;
+export default router
+
