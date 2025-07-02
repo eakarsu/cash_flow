@@ -57,69 +57,6 @@ const HomePage: React.FC = () => {
     }
   ];
 
-  // Example async function to fetch AI prediction
-  const fetchPrediction = async () => {
-    // Replace with your actual API call
-    // return await fetch('/api/prediction').then(res => res.json());
-    return { /* ...mock prediction data... */ };
-  };
-
-  // Example async function to check if AI is configured
-  const checkAIConfigured = async () => {
-    // Replace with your actual check
-    return true; // or false
-  };
-
-  // Whether to use AI mode
-  const [useAI, setUseAI] = useState<boolean>(false);
-
-  // Whether AI is configured (could be fetched from user profile or API)
-  const [isConfigured, setIsConfigured] = useState<boolean>(true);
-
-  // AI error message, if any
-  const [aiError, setAIError] = useState<string | null>(null);
-
-  // AI prediction result (object or null)
-  const [prediction, setPrediction] = useState<any>(null);
-
-  // Example: check AI configuration on mount
-  React.useEffect(() => {
-    checkAIConfigured().then(setIsConfigured);
-  }, []);
-
-  // Handler to refresh AI prediction
-  const onRefresh = useCallback(() => {
-    if (useAI && isConfigured) {
-      fetchPrediction()
-        .then(pred => {
-          setPrediction(pred);
-          setAIError(null);
-        })
-        .catch(err => {
-          setAIError(err.message || 'Failed to fetch AI prediction');
-          setPrediction(null);
-        });
-    }
-  }, [useAI, isConfigured]);
-
-  // Handler to toggle AI mode
-  const onToggleAI = useCallback((enabled: boolean) => {
-    setUseAI(enabled);
-    if (enabled && isConfigured) {
-      fetchPrediction()
-        .then(pred => {
-          setPrediction(pred);
-          setAIError(null);
-        })
-        .catch(err => {
-          setAIError(err.message || 'Failed to fetch AI prediction');
-          setPrediction(null);
-        });
-    } else {
-      setPrediction(null);
-      setAIError(null);
-    }
-  }, [isConfigured]);
 
   return (
     <>
@@ -143,14 +80,7 @@ const HomePage: React.FC = () => {
                 <Plus className="h-5 w-5 mr-2" />
                 Add Transaction
               </Link>
-              <Link
-                to="/transactions/import"
-                className="bg-primary-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-400 transition-colors inline-flex items-center justify-center"
-                aria-label="Import financial data from CSV files"
-              >
-                <Upload className="h-5 w-5 mr-2" />
-                Import Data
-              </Link>
+             
             </div>
             
             {/* Trust Indicators */}
@@ -245,12 +175,7 @@ const HomePage: React.FC = () => {
               Get started by importing your transaction data or adding transactions manually.
             </p>
             <div className="mt-6 flex justify-center space-x-4">
-              <Link
-                to="/transactions/import"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
-              >
-                Import CSV
-              </Link>
+             
               <Link
                 to="/transactions/add"
                 className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -414,19 +339,6 @@ const HomePage: React.FC = () => {
             </div>
           </Link>
 
-          <Link
-            to="/transactions/import"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
-            aria-label="Import transaction data from CSV files"
-          >
-            <div className="flex items-center">
-              <Upload className="h-8 w-8 text-primary-600" />
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Import Data</h3>
-                <p className="text-sm text-gray-500">Upload transactions from CSV files</p>
-              </div>
-            </div>
-          </Link>
         </section>
       </main>
     </>

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEOHead from '../../components/SEO/SEOHead';
-
+import { Link } from 'react-router-dom';
+import {Upload} from 'lucide-react';
 const IntegrationPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -57,6 +58,27 @@ const IntegrationPage: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* CSV Import */}
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  CSV Import
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Upload transactions from CSV files for quick data import
+                </p>
+                <Link
+                  to="/transactions/import"
+                  className="bg-primary-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-400 transition-colors inline-flex items-center justify-center w-full"
+                  aria-label="Import financial data from CSV files"
+                >
+                  <Upload className="h-5 w-5 mr-2" />
+                  Import Data
+                </Link>
+              </div>
+            </div>
+          
 
             {/* Placeholder for future integrations */}
             <div className="bg-white rounded-lg shadow-md p-6 opacity-50">
