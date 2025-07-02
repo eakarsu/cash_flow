@@ -245,19 +245,52 @@ Return ONLY a JSON response in this exact format:
       return;
     }
 
-    // AI-powered categorization for each row
-    for (const row of data) {
+    console.log(`🤖 [BATCH CATEGORIZE] Processing ${data.length} transactions in a single AI call`);
+
+    try {
+      // ✅ BATCH PROCESSING: Send all descriptions in one API call
+      const descriptions = data.map((row, index) => 
+        `${index + 1}. "${row[transformation.sourceColumn] || 'Unknown'}"`
+      ).join('\n');
+
+      const batchPrompt = `${transformation.aiPrompt}
+
+Please categorize these ${data.length} transactions. Return ONLY a JSON array with categories in the same order:
+
+${descriptions}
+
+Return format: ["Category1", "Category2", "Category3", ...]
+Use these common categories: Food & Dining, Transportation, Shopping, Income, Housing, Healthcare, Entertainment, Utilities, Other`;
+
+      const response = await this.openRouterService.callAI([
+        { role: 'user', content: batchPrompt }
+      ], 'anthropic/claude-3.5-sonnet', 0.1, 1000);
+
+      // Parse the JSON response
+      let categories: string[];
       try {
-        const prompt = `${transformation.aiPrompt}\n\nTransaction: "${row[transformation.sourceColumn]}"\n\nReturn only the category name.`;
-        const category = await this.openRouterService.callAI([
-          { role: 'user', content: prompt }
-        ], 'anthropic/claude-3.5-sonnet', 0.1, 50);
-        
-        row[transformation.targetColumn] = category.trim();
-      } catch (error) {
-        console.warn(`Failed to categorize "${row[transformation.sourceColumn]}", using fallback`);
-        row[transformation.targetColumn] = this.fallbackCategorize(row[transformation.sourceColumn]);
+        categories = JSON.parse(response.trim());
+        if (!Array.isArray(categories) || categories.length !== data.length) {
+          throw new Error('Invalid response format');
+        }
+      } catch (parseError) {
+        console.warn('❌ Failed to parse AI batch categorization response, using fallback');
+        throw parseError;
       }
+
+      // Apply categories to rows
+      data.forEach((row, index) => {
+        row[transformation.targetColumn] = categories[index] || this.fallbackCategorize(row[transformation.sourceColumn]);
+      });
+
+      console.log(`✅ [BATCH CATEGORIZE] Successfully categorized ${data.length} transactions with 1 API call`);
+
+    } catch (error) {
+      console.warn(`❌ [BATCH CATEGORIZE] Batch categorization failed, using fallback for all rows:`, error);
+      // Fallback to rule-based categorization for all rows
+      data.forEach(row => {
+        row[transformation.targetColumn] = this.fallbackCategorize(row[transformation.sourceColumn]);
+      });
     }
   }
 

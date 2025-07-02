@@ -17,6 +17,7 @@ const ImportTransactionsPage: React.FC = () => {
   const [selectedTransformations, setSelectedTransformations] = useState<string[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [enableAI, setEnableAI] = useState(false); // ✅ ADD: AI toggle
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debug: Log component mount
@@ -59,37 +60,21 @@ const ImportTransactionsPage: React.FC = () => {
         // Store raw data for transformation
         setRawData(importedTransactions);
         
-        // Try to get AI transformation suggestions and auto-apply them
-        try {
-          const aiService = new AIColumnMappingService();
-          const headers = Object.keys(importedTransactions[0] || {});
-          const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
-          setSuggestedTransformations(suggestions.transformations);
-          
-          if (suggestions.transformations.length > 0) {
-            console.log('🤖 Auto-applying AI transformations and saving file...');
-            
-            // Auto-apply all transformations
-            const result = await aiService.applyTransformations(importedTransactions, suggestions.transformations);
-            setTransformedData(result);
-            
-            // Automatically save transformed data to file
-            try {
-              const timestamp = new Date().toISOString().split('T')[0];
-              const filename = `transformed_transactions_${timestamp}.csv`;
-              await exportToCSV(result.transformedData, filename);
-              console.log(`✅ Automatically saved transformed data as: ${filename}`);
-              setImportResult(`Successfully imported ${importedTransactions.length} transactions. Applied ${suggestions.transformations.length} AI transformations and saved as ${filename}.`);
-            } catch (saveError) {
-              console.warn('⚠️ Failed to auto-save transformed data:', saveError);
-              setImportResult(`Successfully imported ${importedTransactions.length} transactions. Applied ${suggestions.transformations.length} AI transformations. (Auto-save failed)`);
-            }
-          } else {
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. No AI transformations suggested.`);
+        // ✅ IMPROVED: Only get AI suggestions if enabled, don't auto-apply
+        if (enableAI) {
+          try {
+            console.log('🤖 Getting AI transformation suggestions...');
+            const aiService = new AIColumnMappingService();
+            const headers = Object.keys(importedTransactions[0] || {});
+            const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
+            setSuggestedTransformations(suggestions.transformations);
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions. ${suggestions.transformations.length} AI transformations suggested. Choose which ones to apply below.`);
+          } catch (aiError) {
+            console.warn('AI transformation suggestions failed:', aiError);
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions. AI transformations not available.`);
           }
-        } catch (aiError) {
-          console.warn('AI transformation suggestions failed:', aiError);
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data. AI transformations not available.`);
+        } else {
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data.`);
         }
         
         // Navigate to dashboard after successful import
@@ -219,6 +204,19 @@ const ImportTransactionsPage: React.FC = () => {
               style={{ display: 'none' }}
             />
             
+            {/* ✅ ADD: AI Toggle */}
+            <div className="mb-4">
+              <label className="flex items-center justify-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={enableAI}
+                  onChange={(e) => setEnableAI(e.target.checked)}
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-700">Enable AI transformations (uses API credits)</span>
+              </label>
+            </div>
+
             <button
               onClick={(e) => {
                 e.preventDefault();
