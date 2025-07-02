@@ -275,17 +275,6 @@ const ImportTransactionsPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Navigation Button */}
-          {(suggestedTransformations.length > 0 || !enableAITransformations) && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => navigate('/')}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Go to Dashboard
-              </button>
-            </div>
-          )}
 
           {/* AI Transformations Section */}
           {suggestedTransformations.length > 0 && (
