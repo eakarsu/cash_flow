@@ -45,13 +45,52 @@ const ImportTransactionsPage: React.FC = () => {
       try {
         console.log('📁 Starting file import:', file.name, 'Size:', file.size, 'bytes');
         
-        const importedTransactions = await parseCSV(file);
+        // ✅ NEW: Get raw CSV headers FIRST for AI analysis
+        let importedTransactions;
+        
+        if (enableAI) {
+          try {
+            console.log('🤖 Step 1: Getting raw CSV headers for AI analysis...');
+            
+            // Parse CSV to get raw headers first
+            const rawCsvData = await parseCSV(file, { getRawHeaders: true });
+            const rawHeaders = Object.keys(rawCsvData[0] || {});
+            console.log('📋 Raw CSV headers:', rawHeaders);
+            
+            // Get AI column mapping suggestions
+            console.log('🤖 Step 2: Getting AI column mapping suggestions...');
+            const aiService = new AIColumnMappingService();
+            const aiColumnMapping = await aiService.suggestColumnMapping(rawHeaders);
+            console.log('🎯 AI suggested column mapping:', aiColumnMapping);
+            
+            // Re-parse CSV with AI-suggested column mappings
+            console.log('🤖 Step 3: Re-parsing CSV with AI column mappings...');
+            importedTransactions = await parseCSV(file, { 
+              columnMappings: aiColumnMapping 
+            });
+            
+            // Get transformation suggestions
+            const transformSuggestions = await aiService.suggestDataTransformations(importedTransactions, rawHeaders);
+            setSuggestedTransformations(transformSuggestions.transformations);
+            
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions using AI column mapping. ${transformSuggestions.transformations.length} transformations suggested.`);
+            
+          } catch (aiError) {
+            console.warn('AI-enhanced import failed, falling back to standard import:', aiError);
+            importedTransactions = await parseCSV(file);
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions (AI mapping failed, used fallback).`);
+          }
+        } else {
+          // Standard import without AI
+          importedTransactions = await parseCSV(file);
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data.`);
+        }
         
         if (importedTransactions.length === 0) {
           throw new Error('No valid transactions found in the CSV file');
         }
         
-        console.log('✅ Parsed transactions from CSV:', importedTransactions.length);
+        console.log('✅ Final parsed transactions:', importedTransactions.length);
         
         // IMMEDIATELY replace all transactions with the new imported ones
         console.log('🔄 IMMEDIATELY replacing all transactions with imported data');
@@ -59,23 +98,6 @@ const ImportTransactionsPage: React.FC = () => {
         
         // Store raw data for transformation
         setRawData(importedTransactions);
-        
-        // ✅ IMPROVED: Only get AI suggestions if enabled, don't auto-apply
-        if (enableAI) {
-          try {
-            console.log('🤖 Getting AI transformation suggestions...');
-            const aiService = new AIColumnMappingService();
-            const headers = Object.keys(importedTransactions[0] || {});
-            const suggestions = await aiService.suggestDataTransformations(importedTransactions, headers);
-            setSuggestedTransformations(suggestions.transformations);
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions. ${suggestions.transformations.length} AI transformations suggested. Choose which ones to apply below.`);
-          } catch (aiError) {
-            console.warn('AI transformation suggestions failed:', aiError);
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions. AI transformations not available.`);
-          }
-        } else {
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data.`);
-        }
         
         // Navigate to dashboard after successful import
         setTimeout(() => {

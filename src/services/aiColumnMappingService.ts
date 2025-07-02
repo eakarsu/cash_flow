@@ -10,6 +10,33 @@ class AIColumnMappingService {
     this.openRouterService = new OpenRouterService(apiKey);
   }
 
+  // ✅ NEW: AI Column Mapping Method
+  async suggestColumnMapping(headers: string[]): Promise<ColumnMapping> {
+    console.log("🤖 [AI MAPPING] Requesting AI column mapping suggestions...");
+    console.log("   [AI MAPPING] Headers to analyze:", headers);
+    
+    if (!this.openRouterService.isConfigured()) {
+      console.warn("   [AI MAPPING] AI service not configured, using fallback");
+      return this.fallbackMapping(headers);
+    }
+
+    try {
+      const prompt = this.createColumnMappingPrompt(headers);
+      const response = await this.openRouterService.callAI([
+        { role: 'user', content: prompt }
+      ], 'anthropic/claude-3.5-sonnet', 0.1, 500);
+      
+      const mapping = this.parseAIColumnMappingResponse(response, headers);
+      console.log("✅ [AI MAPPING] AI column mapping successful:", mapping);
+      return mapping;
+      
+    } catch (error) {
+      console.error("❌ [AI MAPPING] AI column mapping failed:", error);
+      console.log("   [AI MAPPING] Falling back to heuristic mapping");
+      return this.fallbackMapping(headers);
+    }
+  }
+
   createColumnMappingPrompt(headers: string[]): string {
     return `You are a financial data expert. I need you to map CSV column headers from a bank statement to our standard transaction fields.
 
