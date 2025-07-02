@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { DollarSign, Menu, X, ChevronDown, User, LogOut, Upload, Download } from 'lucide-react';
+import { DollarSign, Menu, X, ChevronDown, User, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   onImport?: () => void;
-  onExport?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
+const Header: React.FC<HeaderProps> = ({ onImport }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -185,18 +184,6 @@ const Header: React.FC<HeaderProps> = ({ onImport, onExport }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
-          
-
-            {onExport && (
-              <button
-                onClick={onExport}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export Data
-              </button>
-            )}
-
             {/* User Account / Auth */}
             <div className="hidden lg:flex items-center space-x-4">
               {isLoggedIn ? (
