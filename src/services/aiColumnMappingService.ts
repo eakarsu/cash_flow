@@ -126,6 +126,19 @@ Use the exact header names from the CSV. Set fields to null if no appropriate he
   async suggestDataTransformations(data: any[], headers: string[]): Promise<AITransformationResponse> {
     console.log("🤖 [AI TRANSFORM] Requesting AI data transformation suggestions...");
     
+    // ✅ CHECK: Skip if data already has category fields
+    const hasCategory = headers.some(h => h.toLowerCase().includes('category'));
+    const hasSubcategory = headers.some(h => h.toLowerCase().includes('subcategory'));
+    
+    if (hasCategory || hasSubcategory) {
+      console.log("✅ [AI TRANSFORM] Data already has category fields, skipping AI categorization");
+      return {
+        transformations: [],
+        confidence: 1.0,
+        reasoning: "Data already contains category and subcategory fields. No AI transformations needed."
+      };
+    }
+    
     if (!this.openRouterService.isConfigured()) {
       throw new Error('AI service not configured. Cannot suggest transformations.');
     }
@@ -157,10 +170,11 @@ SAMPLE DATA (first 5 rows):
 ${sampleData.map((row, index) => `Row ${index + 1}: ${JSON.stringify(row)}`).join('\n')}
 
 Suggest transformations that would create valuable new columns such as:
-- Transaction categorization based on description
 - Calculated fields (running totals, percentages, etc.)
 - Data enrichment (extracting merchant names, locations, etc.)
 - Data cleaning (standardizing formats, removing duplicates)
+
+NOTE: Do NOT suggest categorization transformations if category/subcategory columns already exist.
 
 Return ONLY a JSON response in this exact format:
 {
