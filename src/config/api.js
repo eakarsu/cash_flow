@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   CONTACT: `${API_BASE_URL}/api/contact`,
   EXPORT: `${API_BASE_URL}/api/export`,
   UPLOAD: `${API_BASE_URL}/api/upload`,
+  CONTACT: `${API_BASE_URL}/api/contact`,
 };
 
 // Helper function to make API calls

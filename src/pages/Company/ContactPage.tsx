@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, Building, Users, Globe } from 'lucide-react';
+import { API_ENDPOINTS,  apiCall,API_BASE_URL } from '../../config/api.js';
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -29,7 +30,8 @@ const ContactPage: React.FC = () => {
     try {
       console.log('Contact form submitted:', formData);
 
-      const response = await fetch('/api/contact', {
+    
+      const response = await fetch(API_ENDPOINTS.CONTACT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
