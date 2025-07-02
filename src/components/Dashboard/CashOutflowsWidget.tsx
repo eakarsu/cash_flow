@@ -1,8 +1,29 @@
 import React, { useState, useMemo } from 'react';
-import { TrendingDown, AlertCircle, Brain, RefreshCw } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { TrendingDown, DollarSign, AlertTriangle,Brain } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import { Transaction } from '../../types';
 import { useAICashFlowContext } from '../../context/AICashFlowContext';
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 interface CashOutflowsWidgetProps {
   transactions: Transaction[];
@@ -10,118 +31,98 @@ interface CashOutflowsWidgetProps {
 
 const COLORS = ['#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981', '#3b82f6'];
 
-const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions }) => {
+const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({
+  transactions,
+
+}) => {
+
+  const {
+  prediction,
+  loading: aiLoading,
+  error: aiError,
+  refreshPrediction,
+  isConfigured,
+  useAI,
+  setUseAI
+} = useAICashFlowContext();
+
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
-  
-  // Use shared AI context
-  const { 
-    prediction, 
-    loading: aiLoading, 
-    error: aiError, 
-    refreshPrediction, 
-    isConfigured,
-    useAI,
-    setUseAI
-  } = useAICashFlowContext();
 
-  // Filter transactions based on selected period
-  const filteredTransactions = transactions.filter(t => {
-    if (selectedPeriod === 'all') return true;
-    
-    const transactionDate = new Date(t.date);
+  const { filteredTransactions, outflowTransactions, totalOutflows, categoryArray, monthlyTrends } = useMemo(() => {
     const now = new Date();
-    
-    // Reset time to start of day for accurate comparison
-    transactionDate.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
-    
-    switch (selectedPeriod) {
-      case 'month':
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
-      case 'quarter':
-        const currentQuarter = Math.floor(now.getMonth() / 3);
-        const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
-        const endOfQuarter = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
-        return transactionDate >= startOfQuarter && transactionDate <= endOfQuarter;
-      case 'year':
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const endOfYear = new Date(now.getFullYear(), 11, 31);
-        return transactionDate >= startOfYear && transactionDate <= endOfYear;
-      default:
-        return true;
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+
+    if (selectedPeriod !== 'all') {
+      switch (selectedPeriod) {
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          break;
+        case 'quarter':
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+          endDate = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear(), 11, 31);
+          break;
+      }
     }
-  });
 
-  const outflowTransactions = filteredTransactions.filter(t => t.amount < 0);
-  const totalOutflows = outflowTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  
-  const categoryBreakdown = outflowTransactions.reduce((acc, transaction) => {
-    const category = transaction.category;
-    if (!acc[category]) {
-      acc[category] = { category, amount: 0, count: 0 };
+    const filtered = selectedPeriod === 'all' ? transactions : transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      transactionDate.setHours(0, 0, 0, 0);
+      return transactionDate >= startDate! && transactionDate <= endDate!;
+    });
+
+    const outflows = filtered.filter(t => t.amount < 0);
+    const totalOutflow = outflows.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    const categoryBreakdown = outflows.reduce((acc, transaction) => {
+      const category = transaction.category;
+      if (!acc[category]) {
+        acc[category] = { category, amount: 0, count: 0 };
+      }
+      acc[category].amount += Math.abs(transaction.amount);
+      acc[category].count += 1;
+      return acc;
+    }, {} as Record<string, any>);
+
+    const categories = Object.values(categoryBreakdown).map(cat => ({
+      ...cat,
+      percentage: totalOutflow > 0 ? (cat.amount / totalOutflow) * 100 : 0
+    })).sort((a, b) => b.amount - a.amount);
+
+    const trends: Array<{ month: string; inflows: number; outflows: number; }> = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+      const monthTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate >= monthStart && tDate <= monthEnd;
+      });
+
+      trends.push({
+        month: date.toLocaleDateString('en-US', { month: 'short' }),
+        inflows: monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
+        outflows: monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
+      });
     }
-    acc[category].amount += Math.abs(transaction.amount);
-    acc[category].count += 1;
-    return acc;
-  }, {} as Record<string, { category: string; amount: number; count: number }>);
 
-  const categoryArray = Object.values(categoryBreakdown).map(cat => ({
-    ...cat,
-    percentage: totalOutflows > 0 ? (cat.amount / totalOutflows) * 100 : 0
-  })).sort((a, b) => b.amount - a.amount);
-
-  console.log('💰 CashOutflows AI State:', {
-    useAI,
-    prediction: !!prediction,
-    categoryInsights: prediction?.categoryInsights?.length || 0,
-    isConfigured
-  });
-
-  // Use AI category insights to modify the category breakdown if available
-  const enhancedCategoryArray = useAI && prediction?.categoryInsights && prediction.categoryInsights.length > 0 
-    ? categoryArray.map(category => {
-        const aiInsight = prediction.categoryInsights.find(insight => 
-          insight.category.toLowerCase() === category.category.toLowerCase()
-        );
-        return {
-          ...category,
-          aiProjected: aiInsight?.projectedAmount || category.amount,
-          aiTrend: aiInsight?.trend || 'stable',
-          aiRisk: aiInsight?.riskLevel || 'medium'
-        };
-      })
-    : categoryArray;
-
-  console.log('📊 Category data decision:', {
-    useAI,
-    originalCategories: categoryArray.length,
-    enhancedCategories: enhancedCategoryArray.length,
-    hasAIInsights: !!(prediction?.categoryInsights?.length)
-  });
-
-  // Generate monthly trends for the last 6 months using all transactions (not filtered by period)
-  const monthlyTrends: Array<{
-    month: string;
-    inflows: number;
-    outflows: number;
-  }> = [];
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    const monthTransactions = transactions.filter(t => {
-      const tDate = new Date(t.date);
-      return tDate.getMonth() === date.getMonth() && 
-             tDate.getFullYear() === date.getFullYear();
-    });
-    
-    monthlyTrends.push({
-      month: date.toLocaleDateString('en-US', { month: 'short' } as Intl.DateTimeFormatOptions),
-      inflows: monthTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
-      outflows: monthTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
-    });
-  }
+    return {
+      filteredTransactions: filtered,
+      outflowTransactions: outflows,
+      totalOutflows: totalOutflow,
+      categoryArray: categories,
+      monthlyTrends: trends
+    };
+  }, [transactions, selectedPeriod]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -132,214 +133,275 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
     }).format(value);
   };
 
+  // Bar chart data for monthly trends
+  const barChartData = {
+    labels: monthlyTrends.map(trend => trend.month),
+    datasets: [
+      {
+        label: 'Outflows',
+        data: monthlyTrends.map(trend => trend.outflows),
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => `Outflows: ${formatCurrency(context.parsed.y)}`,
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value: any) => value === 0 ? '0' : `$${(value / 1000).toFixed(0)}k`,
+        },
+      },
+    },
+  };
+
+  // Doughnut chart data for category breakdown
+  const doughnutChartData = {
+    labels: categoryArray.slice(0, 6).map(cat => cat.category),
+    datasets: [
+      {
+        data: categoryArray.slice(0, 6).map(cat => cat.amount),
+        backgroundColor: COLORS,
+        borderColor: COLORS.map(color => color),
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const doughnutChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const category = categoryArray[context.dataIndex];
+            return `${category.category}: ${formatCurrency(category.amount)} (${category.percentage.toFixed(1)}%)`;
+          },
+        },
+      },
+    },
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white p-6 rounded-lg shadow">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="p-2 bg-danger-50 rounded-lg">
-            {useAI && isConfigured ? (
-              <Brain className="h-6 w-6 text-danger-600" />
-            ) : (
-              <TrendingDown className="h-6 w-6 text-danger-600" />
-            )}
-          </div>
-          <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900">
-              Cash Outflows
-              {useAI && isConfigured && (
-                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-danger-100 text-danger-800">
-                  AI-Enhanced
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {useAI && isConfigured ? 'AI-enhanced expense analysis' : 'Expenses and spending analysis'}
-            </p>
-          </div>
-        </div>
+        <div className="flex items-center space-x-2">
+          <TrendingDown className="h-5 w-5 text-danger-600" />
+          <h3 className="text-lg font-medium text-gray-900">Cash Outflows</h3>
 
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center">
-            <label className="flex items-center">
+          {/* 1. Enable AI Button (only if AI is configured but not enabled) */}
+          {/* NEW: Enable AI Checkbox */}
+          {isConfigured && (
+            <label className="flex items-center ml-4">
               <input
                 type="checkbox"
                 checked={useAI}
-                onChange={(e) => {
-                  console.log('🎯 AI checkbox toggled:', e.target.checked);
-                  setUseAI(e.target.checked);
-                }}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                onChange={e => setUseAI(e.target.checked)}
+                className="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
-                AI Insights
-                {!isConfigured && (
-                  <span className="ml-1 text-xs text-gray-400">(API key required)</span>
-                )}
-              </span>
+              <span className="ml-2 text-sm text-gray-700">Enable AI</span>
             </label>
+          )}
+
+          {/* 2. AI Toggle Switch (only if AI is configured and enabled) */}
+          {isConfigured && useAI && (
+            <label className="flex items-center ml-4">
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={e => setUseAI(e.target.checked)}
+                className="form-checkbox"
+              />
+              <span className="ml-2 text-sm">AI</span>
+            </label>
+          )}
+          {/* 3. Refresh Button (only if AI is enabled) */}
+          {isConfigured && useAI && (
             <button
-              onClick={() => {
-                console.log('🔄 Manual refresh triggered');
-                refreshPrediction();
-              }}
+              className="ml-4 px-3 py-1 bg-gray-100 rounded text-sm text-gray-700 hover:bg-gray-200"
+              onClick={refreshPrediction}
               disabled={aiLoading}
-              className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isConfigured ? "Refresh AI insights" : "Configure API key to enable AI insights"}
+              title="Refresh Prediction"
+              type="button"
             >
-              <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+              {aiLoading ? 'Refreshing...' : 'Refresh'}
             </button>
-          </div>
+          )}
           
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value as 'month' | 'quarter' | 'year' | 'all')}
-            className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value="all">All Time</option>
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="year">This Year</option>
-          </select>
+        </div>
+        <div className="text-sm text-gray-500">
+          {useAI && isConfigured ? 'AI-enhanced expense analysis' : 'Expenses and spending analysis'}
         </div>
       </div>
 
-      {/* AI Category Insights */}
-      {useAI && prediction?.categoryInsights && prediction.categoryInsights.length > 0 && (
-        <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-orange-900 mb-3">AI Category Insights</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {prediction.categoryInsights.map((insight, index) => (
-              <div key={index} className="bg-white rounded-lg p-3 border border-orange-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900">{insight.category}</span>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    insight.riskLevel === 'high' ? 'bg-red-100 text-red-800' :
-                    insight.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {insight.riskLevel} risk
-                  </span>
+      {/* AI Error */}
+      {aiError && (
+        <div className="mb-6 p-4 bg-red-50 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <span className="text-sm font-medium text-red-800">AI Analysis Error: {aiError}</span>
+          </div>
+          <p className="text-sm text-red-700 mt-1">Showing historical data only</p>
+        </div>
+      )}
+
+      {/* Period Selector */}
+      <div className="mb-6">
+        <select
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value as any)}
+          className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+        >
+          <option value="all">All Time</option>
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+        </select>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-red-50 p-4 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <DollarSign className="h-5 w-5 text-red-600" />
+            <span className="text-sm font-medium text-red-600">Total Outflows</span>
+          </div>
+          <p className="text-2xl font-bold text-red-900 mt-1">
+            {formatCurrency(totalOutflows)}
+          </p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="text-sm font-medium text-gray-600">Expense Categories</span>
+          <div className="mt-2 space-y-2">
+            {categoryArray.slice(0, 5).map((category, index) => (
+              <div key={category.category} className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span className="text-sm text-gray-700">{category.category}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">
-                    Trend: {insight.trend}
-                  </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {formatCurrency(insight.projectedAmount)}
-                  </span>
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900">
+                    {formatCurrency(category.amount)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {totalOutflows > 0 ? `${category.percentage.toFixed(1)}%` : '0%'}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      )}
 
-      {/* Error Display */}
-      {aiError && useAI && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-800">AI Analysis Error: {aiError}</p>
-          <p className="text-xs text-red-600 mt-1">Showing historical data only</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Summary Stats */}
-        <div className="space-y-4">
-          <div className="bg-danger-50 rounded-lg p-4">
-            <div className="flex items-center">
-              <AlertCircle className="h-8 w-8 text-danger-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-danger-600">Total Outflows</p>
-                <p className="text-2xl font-bold text-danger-900">
-                  {formatCurrency(totalOutflows)}
-                </p>
-              </div>
+          {/* Largest Expense Category */}
+          {categoryArray.length > 0 ? (
+            <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+              <span className="text-sm font-medium text-yellow-800">Largest Expense Category</span>
+              <p className="text-sm text-yellow-700 mt-1">
+                {categoryArray[0].category} accounts for {categoryArray[0].percentage.toFixed(1)}% of total spending ({formatCurrency(categoryArray[0].amount)})
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className="mt-4 text-gray-500 text-sm">No spending data for this period.</div>
+          )}
+        </div>
+      </div>
 
-          {/* Category Breakdown */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Expense Categories</h4>
-            <div className="space-y-2">
-              {categoryArray.slice(0, 5).map((category, index) => (
-                <div key={category.category} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div
-                      className="w-3 h-3 rounded-full mr-2"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className="text-sm text-gray-600">{category.category}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {formatCurrency(category.amount)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {category.percentage.toFixed(1)}%
-                    </p>
+      {/* AI Category Insights */}
+      {useAI && prediction?.categoryInsights && (
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center space-x-2 mb-3">
+            <Brain className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-900">AI Category Analysis</span>
+          </div>
+          
+          <div className="space-y-3">
+            {prediction.categoryInsights
+              .filter(insight => 
+                // For inflows: show revenue categories, for outflows: show expense categories
+                insight.category === 'Sales' ? true : insight.category !== 'Sales'
+              )
+              .map((insight, index) => (
+                <div key={index} className="bg-white p-3 rounded border-l-4 border-blue-400">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h6 className="font-medium text-gray-900">{insight.category}</h6>
+                      <p className="text-sm text-gray-600">
+                        Trend: <span className={`font-medium ${
+                          insight.trend === 'increasing' ? 'text-green-600' : 
+                          insight.trend === 'decreasing' ? 'text-red-600' : 'text-yellow-600'
+                        }`}>{insight.trend}</span>
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Projected: ${insight.projectedAmount?.toLocaleString()}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded ${
+                      insight.riskLevel === 'high' ? 'bg-red-100 text-red-800' :
+                      insight.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {insight.riskLevel} risk
+                    </span>
                   </div>
                 </div>
               ))}
-            </div>
           </div>
+        </div>
+      )}
 
-          {/* Top Spending Alert */}
-          {categoryArray.length > 0 && (
-            <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-warning-600 mt-0.5" />
-                <div className="ml-2">
-                  <p className="text-sm font-medium text-warning-800">
-                    Largest Expense Category
-                  </p>
-                  <p className="text-sm text-warning-700">
-                    {categoryArray[0].category} accounts for {categoryArray[0].percentage.toFixed(1)}%
-                    of total spending ({formatCurrency(categoryArray[0].amount)})
-                  </p>
-                </div>
-              </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Monthly Trends Bar Chart */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">6-Month Spending Trend</h4>
+          {monthlyTrends.length > 0 && monthlyTrends.some(trend => trend.outflows > 0) ? (
+            <div style={{ height: '200px' }}>
+              <Bar data={barChartData} options={barChartOptions} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[200px] bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No spending data for this period.</p>
             </div>
           )}
         </div>
 
-        {/* Charts */}
-        <div className="space-y-6">
-          {/* Monthly Trends */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">6-Month Spending Trend</h4>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={monthlyTrends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Outflows']} />
-                <Bar dataKey="outflows" fill="#ef4444" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Category Pie Chart */}
-          {categoryArray.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Expense Distribution</h4>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={categoryArray.slice(0, 5)}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="amount"
-                    nameKey="category"
-                  >
-                    {categoryArray.slice(0, 5).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                </PieChart>
-              </ResponsiveContainer>
+        {/* Category Distribution Doughnut Chart */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">Expense Distribution</h4>
+          {categoryArray.length > 0 && categoryArray.some(cat => cat.amount > 0) ? (
+            <div style={{ height: '200px' }}>
+              <Doughnut data={doughnutChartData} options={doughnutChartOptions} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[200px] bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No expense data for this period.</p>
             </div>
           )}
         </div>
@@ -349,3 +411,4 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({ transactions })
 };
 
 export default CashOutflowsWidget;
+

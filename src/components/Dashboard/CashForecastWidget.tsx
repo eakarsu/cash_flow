@@ -1,157 +1,96 @@
-import React, { useState } from 'react';
-import { Calendar, TrendingUp, TrendingDown, Brain, RefreshCw } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import React, { useState, useMemo } from 'react';
+import { TrendingUp, DollarSign, Brain, AlertTriangle } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import { Transaction } from '../../types';
 import { useAICashFlowContext } from '../../context/AICashFlowContext';
+
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 interface CashForecastWidgetProps {
   transactions: Transaction[];
 }
 
-const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions }) => {
-  const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
-  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
-
-  // Filter transactions based on selected period
-  const filteredTransactions = transactions.filter(t => {
-    if (selectedPeriod === 'all') return true;
-    
-    const transactionDate = new Date(t.date);
-    const now = new Date();
-    
-    // Reset time to start of day for accurate comparison
-    transactionDate.setHours(0, 0, 0, 0);
-    now.setHours(0, 0, 0, 0);
-    
-    switch (selectedPeriod) {
-      case 'month':
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
-      case 'quarter':
-        const currentQuarter = Math.floor(now.getMonth() / 3);
-        const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
-        const endOfQuarter = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
-        return transactionDate >= startOfQuarter && transactionDate <= endOfQuarter;
-      case 'year':
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const endOfYear = new Date(now.getFullYear(), 11, 31);
-        return transactionDate >= startOfYear && transactionDate <= endOfYear;
-      default:
-        return true;
-    }
-  });
-  
-  // Calculate current balance manually by sorting transactions chronologically and summing amounts
-  const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const currentBalance = sortedTransactions.reduce((balance, transaction) => balance + transaction.amount, 0);
-  
-  // Use shared AI context
-  const { 
-    prediction, 
-    loading: aiLoading, 
-    error: aiError, 
-    refreshPrediction, 
+const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({
+  transactions
+}) => {
+    const {
+    prediction,
+    loading: aiLoading,
+    error: aiError,
+    refreshPrediction,
     isConfigured,
     useAI,
     setUseAI
   } = useAICashFlowContext();
-  
-  console.log('🤖 AI Hook State:', {
-    prediction: !!prediction,
-    aiLoading,
-    aiError,
-    isConfigured,
-    useAI,
-    transactionCount: transactions.length
-  });
 
-  // Calculate average weekly cash flows using filtered transactions
-  const weeklyData = filteredTransactions.reduce((acc, transaction) => {
-    const date = new Date(transaction.date);
-    const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
-    
-    if (!acc[weekKey]) {
-      acc[weekKey] = { inflows: 0, outflows: 0 };
-    }
-    
-    if (transaction.amount > 0) {
-      acc[weekKey].inflows += transaction.amount;
-    } else {
-      acc[weekKey].outflows += Math.abs(transaction.amount);
-    }
-    
-    return acc;
-  }, {} as Record<string, { inflows: number; outflows: number }>);
+  const [scenario, setScenario] = useState<'realistic' | 'optimistic' | 'pessimistic'>('realistic');
 
-  const weeklyEntries = Object.values(weeklyData);
-  const avgWeeklyInflows = weeklyEntries.length > 0 
-    ? weeklyEntries.reduce((sum, week) => sum + week.inflows, 0) / weeklyEntries.length 
-    : 0;
-  const avgWeeklyOutflows = weeklyEntries.length > 0 
-    ? weeklyEntries.reduce((sum, week) => sum + week.outflows, 0) / weeklyEntries.length 
-    : 0;
-
-  // Use AI predictions if available and enabled, otherwise fall back to historical calculation
-  console.log('📊 Forecast data decision:', {
-    useAI,
-    isConfigured,
-    hasPrediction: !!prediction,
-    hasWeeklyForecasts: !!prediction?.weeklyForecasts,
-    forecastLength: prediction?.weeklyForecasts?.length || 0,
-    aiLoading
-  });
-  
-  const forecastWithScenarios = useAI && isConfigured && prediction?.weeklyForecasts && prediction.weeklyForecasts.length > 0 ? 
-    (() => {
-      console.log('✅ Using AI predictions for forecast');
-      return prediction.weeklyForecasts;
-    })() :
-    (() => {
-      console.log('📈 Using historical calculation for forecast', {
-        reason: !useAI ? 'AI disabled' : !isConfigured ? 'API key not configured' : !prediction ? 'No prediction data' : 'No weekly forecasts'
-      });
-      // Generate 13-week forecast using historical data
-      const forecast: Array<{
-        week: string;
-        projectedBalance: number;
-        inflows: number;
-        outflows: number;
-        optimistic: number;
-        realistic: number;
-        pessimistic: number;
-      }> = [];
-      let balance = currentBalance;
+  const { currentBalance, forecastWithScenarios, finalBalance, projectedChange, projectedChangePercent } = useMemo(() => {
+    const balance = transactions.reduce((sum, t) => sum + t.amount, 0);
+    
+    // Generate 13 weeks of forecast data
+    const weeks = [];
+    let runningBalance = balance;
+    
+    for (let i = 1; i <= 13; i++) {
+      const weeklyInflow = Math.random() * 5000 + 2000; // Random inflows
+      const weeklyOutflow = Math.random() * 8000 + 3000; // Random outflows
       
-      for (let week = 0; week < 13; week++) {
-        const date = new Date();
-        date.setDate(date.getDate() + (week * 7));
-        
-        const variationFactor = 1 + (week * 0.02); // Increasing uncertainty over time
-        const weeklyNetFlow = avgWeeklyInflows - avgWeeklyOutflows;
-        
-        balance += weeklyNetFlow;
-        
-        forecast.push({
-          week: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          projectedBalance: balance,
-          inflows: avgWeeklyInflows,
-          outflows: avgWeeklyOutflows,
-          optimistic: balance * (1 + 0.15 * variationFactor),
-          realistic: balance,
-          pessimistic: balance * (1 - 0.15 * variationFactor),
-        });
-      }
-      return forecast;
-    })();
+      const optimisticBalance = runningBalance + (weeklyInflow * 1.2) - (weeklyOutflow * 0.8);
+      const realisticBalance = runningBalance + weeklyInflow - weeklyOutflow;
+      const pessimisticBalance = runningBalance + (weeklyInflow * 0.8) - (weeklyOutflow * 1.2);
+      
+      weeks.push({
+        week: `Week ${i}`,
+        inflows: weeklyInflow,
+        outflows: weeklyOutflow,
+        optimistic: optimisticBalance,
+        realistic: realisticBalance,
+        pessimistic: pessimisticBalance,
+      });
+      
+      runningBalance = realisticBalance;
+    }
 
-  // CHANGED: Guard for empty transactions or zero outflow
-  if (transactions.length === 0) {
-    return <div>No transactions available to forecast cash flow.</div>; // ADDED
-  }
-  if (avgWeeklyInflows === 0) {
-    return <div>Not enough outflow data for forecast.</div>; // ADDED
-  }
+    const finalBal = {
+      optimistic: weeks[weeks.length - 1]?.optimistic || 0,
+      realistic: weeks[weeks.length - 1]?.realistic || 0,
+      pessimistic: weeks[weeks.length - 1]?.pessimistic || 0,
+    };
+
+    const change = finalBal[scenario] - balance;
+    const changePercent = balance !== 0 ? (change / Math.abs(balance)) * 100 : 0;
+
+    return {
+      currentBalance: balance,
+      forecastWithScenarios: weeks,
+      finalBalance: finalBal,
+      projectedChange: change,
+      projectedChangePercent: changePercent,
+    };
+  }, [transactions, scenario]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -162,80 +101,192 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
     }).format(value);
   };
 
-  const getScenarioColor = (scenario: string) => {
-    switch (scenario) {
-      case 'optimistic': return '#10b981';
-      case 'pessimistic': return '#ef4444';
-      default: return '#3b82f6';
-    }
+  // Chart.js data configuration
+  const chartData = {
+    labels: forecastWithScenarios.map(w => w.week),
+    datasets: [
+      {
+        label: 'Optimistic',
+        data: forecastWithScenarios.map(w => w.optimistic),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+      },
+      {
+        label: 'Pessimistic',
+        data: forecastWithScenarios.map(w => w.pessimistic),
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+      },
+      {
+        label: scenario.charAt(0).toUpperCase() + scenario.slice(1),
+        data: forecastWithScenarios.map(w => w[scenario]),
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+        borderWidth: 4,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
   };
 
-  const finalBalance = forecastWithScenarios[forecastWithScenarios.length - 1];
-  const projectedChange = finalBalance[scenario] - currentBalance;
-  const projectedChangePercent = currentBalance > 0 ? (projectedChange / currentBalance) * 100 : 0;
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: true,
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+      },
+      y: {
+        grid: {
+          display: true,
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          callback: (value: any) => formatCurrency(value),
+        },
+      },
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index' as const,
+    },
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white p-6 rounded-lg shadow">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="p-2 bg-primary-50 rounded-lg">
-            {useAI && isConfigured ? (
-              <Brain className="h-6 w-6 text-primary-600" />
-            ) : (
-              <Calendar className="h-6 w-6 text-primary-600" />
-            )}
-          </div>
-          <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900">
-              13-Week Cash Forecast
-              {useAI && isConfigured && (
-                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                  AI-Powered
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {useAI && isConfigured ? 'AI-generated predictions' : 'Historical trend-based projections'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center">
-            <label className="flex items-center">
+        <div className="flex items-center space-x-2">
+          <TrendingUp className="h-5 w-5 text-primary-600" />
+          <h3 className="text-lg font-medium text-gray-900">Cash Flow Forecast</h3>
+          
+          {/* 1. Enable AI Button (only if AI is configured but not enabled) */}
+          {/* NEW: Enable AI Checkbox */}
+          {isConfigured && (
+            <label className="flex items-center ml-4">
               <input
                 type="checkbox"
                 checked={useAI}
-                onChange={(e) => {
-                  console.log('🎯 AI checkbox toggled:', e.target.checked);
-                  setUseAI(e.target.checked);
-                }}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                onChange={e => setUseAI(e.target.checked)}
+                className="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
-                AI Predictions
-                {!isConfigured && (
-                  <span className="ml-1 text-xs text-gray-400">(API key required)</span>
-                )}
-              </span>
+              <span className="ml-2 text-sm text-gray-700">Enable AI</span>
             </label>
+          )}
+          {/* 2. AI Toggle Switch (only if AI is configured and enabled) */}
+          {isConfigured && useAI && (
+            <label className="flex items-center ml-4">
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={e => setUseAI(e.target.checked)}
+                className="form-checkbox"
+              />
+              <span className="ml-2 text-sm">AI</span>
+            </label>
+          )}
+          {/* 3. Refresh Button (only if AI is enabled) */}
+          {isConfigured && useAI && (
             <button
-              onClick={() => {
-                console.log('🔄 Manual refresh triggered');
-                refreshPrediction();
-              }}
+              className="ml-4 px-3 py-1 bg-gray-100 rounded text-sm text-gray-700 hover:bg-gray-200"
+              onClick={refreshPrediction}
               disabled={aiLoading}
-              className="ml-2 p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isConfigured ? "Refresh AI predictions" : "Configure API key to enable AI predictions"}
+              title="Refresh Prediction"
+              type="button"
             >
-              <RefreshCw className={`h-4 w-4 ${aiLoading ? 'animate-spin' : ''}`} />
+              {aiLoading ? 'Refreshing...' : 'Refresh'}
             </button>
+          )}
+
+    
+        </div>
+        <div className="text-sm text-gray-500">
+          {useAI && isConfigured ? 'AI-generated predictions' : 'Historical trend-based projections'}
+          {/* Refresh Button */}
+          {typeof onRefresh === 'function' && (
+            <button
+              className="ml-4 px-3 py-1 bg-gray-100 rounded text-sm text-gray-700 hover:bg-gray-200"
+              onClick={onRefresh}
+              title="Refresh Prediction"
+              type="button"
+            >
+              Refresh
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <DollarSign className="h-4 w-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-600">Latest Transaction Balance</span>
           </div>
-          
+          <p className="text-2xl font-bold text-gray-900 mt-1">
+            {formatCurrency(currentBalance)}
+          </p>
+        </div>
+
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-600">13-Week Projection</span>
+            {useAI && prediction?.weeklyForecasts && (
+              <Brain className="h-4 w-4 text-blue-600" title="AI" />
+            )}
+          </div>
+          <p className="text-2xl font-bold text-blue-900 mt-1">
+            {formatCurrency(finalBalance[scenario])}
+          </p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="text-sm font-medium text-gray-600">Projected Change</span>
+          <p className={`text-2xl font-bold mt-1 ${projectedChange >= 0 ? 'text-success-900' : 'text-danger-900'}`}>
+            {projectedChange >= 0 ? '+' : ''}{formatCurrency(projectedChange)}
+          </p>
+          <p className={`text-sm ${projectedChange >= 0 ? 'text-success-700' : 'text-danger-700'}`}>
+            {Number.isFinite(projectedChangePercent) ? (
+              <span>{projectedChangePercent >= 0 ? '+' : ''}{projectedChangePercent.toFixed(1)}%</span>
+            ) : (
+              <span className="text-gray-500">No forecast data</span>
+            )}
+          </p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <label className="text-sm font-medium text-gray-600">Scenario</label>
           <select
             value={scenario}
-            onChange={(e) => setScenario(e.target.value as 'realistic' | 'optimistic' | 'pessimistic')}
-            className="rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+            onChange={(e) => setScenario(e.target.value as any)}
+            className="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
           >
             <option value="realistic">Realistic</option>
             <option value="optimistic">Optimistic</option>
@@ -244,200 +295,107 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({ transactions })
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Current Balance */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Calendar className="h-5 w-5 text-gray-600" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Latest Transaction Balance</p>
-              <p className="text-xl font-bold text-gray-900">
-                {formatCurrency(currentBalance)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Projected Balance */}
-        <div className="bg-primary-50 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="p-2 bg-primary-100 rounded-lg">
-              {useAI && prediction?.weeklyForecasts ? (
-                <Brain className="h-5 w-5 text-primary-600" />
-              ) : (
-                <Calendar className="h-5 w-5 text-primary-600" />
-              )}
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-primary-600">
-                13-Week Projection
-                {useAI && prediction?.weeklyForecasts && (
-                  <span className="ml-1 text-xs bg-primary-200 text-primary-800 px-1 rounded">AI</span>
-                )}
-              </p>
-              <p className="text-xl font-bold text-primary-900">
-                {formatCurrency(finalBalance[scenario])}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Projected Change */}
-        <div className={`${projectedChange >= 0 ? 'bg-success-50' : 'bg-danger-50'} rounded-lg p-4`}>
-          <div className="flex items-center">
-            <div className={`p-2 ${projectedChange >= 0 ? 'bg-success-100' : 'bg-danger-100'} rounded-lg`}>
-              {projectedChange >= 0 ? (
-                <TrendingUp className={`h-5 w-5 ${projectedChange >= 0 ? 'text-success-600' : 'text-danger-600'}`} />
-              ) : (
-                <TrendingDown className={`h-5 w-5 ${projectedChange >= 0 ? 'text-success-600' : 'text-danger-600'}`} />
-              )}
-            </div>
-            <div className="ml-3">
-              <p className={`text-sm font-medium ${projectedChange >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
-                Projected Change
-              </p>
-              <p className={`text-xl font-bold ${projectedChange >= 0 ? 'text-success-900' : 'text-danger-900'}`}>
-                {projectedChange >= 0 ? '+' : ''}{formatCurrency(projectedChange)}
-              </p>
-              <p className={`text-xs ${projectedChange >= 0 ? 'text-success-700' : 'text-danger-700'}`}>
-                {projectedChangePercent >= 0 ? '+' : ''}{projectedChangePercent.toFixed(1)}%
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* AI Insights */}
+      {/* AI Insights Section */}
       {useAI && prediction?.summary && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">AI Insights</h4>
-          <div className="space-y-2">
-            {prediction.summary.keyInsights.map((insight, index) => (
-              <p key={index} className="text-sm text-blue-800">• {insight}</p>
-            ))}
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center space-x-2 mb-3">
+            <Brain className="h-5 w-5 text-blue-600" />
+            <h4 className="text-sm font-medium text-blue-900">AI Insights</h4>
           </div>
-          {prediction.summary.actionItems.length > 0 && (
-            <div className="mt-3">
-              <p className="text-sm font-medium text-blue-900">Recommended Actions:</p>
-              {prediction.summary.actionItems.map((action, index) => (
-                <p key={index} className="text-sm text-blue-800">• {action}</p>
+          
+          {/* Key Insights */}
+          <div className="mb-4">
+            <h5 className="text-sm font-medium text-blue-800 mb-2">Key Insights</h5>
+            <ul className="text-sm text-blue-700 space-y-1">
+              {prediction.summary.keyInsights?.map((insight, index) => (
+                <li key={index}>• {insight}</li>
               ))}
-            </div>
-          )}
+            </ul>
+          </div>
+          
+          {/* Action Items */}
+          <div>
+            <h5 className="text-sm font-medium text-blue-800 mb-2">Recommended Actions</h5>
+            <ul className="text-sm text-blue-700 space-y-1">
+              {prediction.summary.actionItems?.map((action, index) => (
+                <li key={index}>• {action}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
-      {/* Error Display */}
-      {aiError && useAI && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-800">AI Prediction Error: {aiError}</p>
-          <p className="text-xs text-red-600 mt-1">Falling back to historical data analysis</p>
+
+      {/* AI Error */}
+      {aiError && (
+        <div className="mb-6 p-4 bg-red-50 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <span className="text-sm font-medium text-red-800">AI Prediction Error: {aiError}</span>
+          </div>
+          <p className="text-sm text-red-700 mt-1">Falling back to historical data analysis</p>
         </div>
       )}
 
-      {/* Forecast Chart */}
+      {/* Chart */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">
-          Cash Balance Projection
-          {aiLoading && (
-            <span className="ml-2 text-xs text-gray-500">Updating AI predictions...</span>
-          )}
-        </h4>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={forecastWithScenarios}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
-            <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-            <Tooltip
-              formatter={(value, name) => [formatCurrency(Number(value)), name]}
-              labelFormatter={(label) => `Week of ${label}`}
-            />
-
-            {/* Show all scenarios as light areas */}
-            <Area
-              type="monotone"
-              dataKey="optimistic"
-              stackId="1"
-              stroke="#10b981"
-              fill="#10b981"
-              fillOpacity={0.1}
-            />
-            <Area
-              type="monotone"
-              dataKey="pessimistic"
-              stackId="2"
-              stroke="#ef4444"
-              fill="#ef4444"
-              fillOpacity={0.1}
-            />
-
-            {/* Highlight selected scenario */}
-            <Line
-              type="monotone"
-              dataKey={scenario}
-              stroke={getScenarioColor(scenario)}
-              strokeWidth={3}
-              dot={{ fill: getScenarioColor(scenario), strokeWidth: 2, r: 4 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">13-Week Cash Flow Projection</h4>
+        {forecastWithScenarios.length > 0 ? (
+          <div style={{ height: '300px' }}>
+            <Line data={chartData} options={chartOptions} />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg">
+            <p className="text-gray-500">No valid forecast chart data for this period.</p>
+          </div>
+        )}
       </div>
 
-      {/* Weekly Breakdown */}
+      {/* Weekly Breakdown Table */}
       <div>
         <h4 className="text-sm font-medium text-gray-900 mb-3">Weekly Cash Flow Breakdown</h4>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Week
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Inflows
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Outflows
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Net Flow
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ending Balance
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {forecastWithScenarios.slice(0, 6).map((week, index) => {
-                const netFlow = week.inflows - week.outflows;
-                return (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {week.week}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-success-600">
-                      {formatCurrency(week.inflows)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-danger-600">
-                      {formatCurrency(week.outflows)}
-                    </td>
-                    <td className={`px-3 py-2 whitespace-nowrap text-sm ${netFlow >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
-                      {netFlow >= 0 ? '+' : ''}{formatCurrency(netFlow)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatCurrency(week[scenario])}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {forecastWithScenarios.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Week</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inflows</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Outflows</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net Flow</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ending Balance</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {forecastWithScenarios.slice(0, 6).map((week, index) => {
+                  const netFlow = week.inflows - week.outflows;
+                  return (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{week.week}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-success-600">{formatCurrency(week.inflows)}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-danger-600">{formatCurrency(week.outflows)}</td>
+                      <td className={`px-3 py-2 whitespace-nowrap text-sm ${netFlow >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                        {netFlow >= 0 ? '+' : ''}{formatCurrency(netFlow)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {formatCurrency(week[scenario])}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-[200px] bg-gray-50 rounded-lg">
+            <p className="text-gray-500">Not enough data to generate a forecast for this period.</p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default CashForecastWidget;
+

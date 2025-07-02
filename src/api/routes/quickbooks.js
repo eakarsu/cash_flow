@@ -11,6 +11,7 @@ const router = express.Router();
 
 import { API_ENDPOINTS,  apiCall,API_BASE_URL } from '../../config/api.js';
 
+
 // Initialize services
 const qbService = new QuickBooksService();
 let userTokens = {};
@@ -193,7 +194,6 @@ router.get('/expenses', async (req, res) => {
       });
     }
 
-    const QuickBooks = require('node-quickbooks');
     const qbo = new QuickBooks(
       process.env.QB_CLIENT_ID,
       process.env.QB_CLIENT_SECRET,
@@ -240,7 +240,6 @@ router.get('/income', async (req, res) => {
       });
     }
 
-    const QuickBooks = require('node-quickbooks');
     const qbo = new QuickBooks(
       process.env.QB_CLIENT_ID,
       process.env.QB_CLIENT_SECRET,
@@ -308,7 +307,6 @@ router.delete('/transactions/all', async (req, res) => {
       });
     }
 
-    const QuickBooks = require('node-quickbooks');
     const qbo = new QuickBooks(
       process.env.QB_CLIENT_ID,
       process.env.QB_CLIENT_SECRET,
@@ -455,11 +453,9 @@ router.get('/export', async (req, res) => {
     console.log('export called');
     const format = req.query.format || 'csv'; // Default to CSV for backward compatibility
     
-    let export_url = API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS;
-    export_url = replacePortInUrl(export_url, 3001);
-    console.log (` calling for transactions ${export_url}`)
+    console.log (` calling for transactions ${API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS}`)
     // Fetch real data from your API on Express server
-    const response = await axios.get(export_url);
+    const response = await axios.get(API_ENDPOINTS.QUICKBOOKS.TRANSACTIONS);
     if (!response.data || !response.data.data || !response.data.data.transactions) {
       return res.status(500).json({ error: 'Invalid transactions data' });
     }
@@ -486,6 +482,7 @@ router.get('/export', async (req, res) => {
 
     // Return JSON format if requested
     if (format === 'json') {
+      console.log (`converting transactions to json ${transformed}`)
       return res.json({
         success: true,
         data: {
@@ -518,6 +515,7 @@ router.get('/export', async (req, res) => {
     const parser = new Parser({ fields });
     const csv = parser.parse(transformed);
 
+    console.log (`converting transactions to csv : ${csv}`)
     // Set headers for CSV download
     res.header('Content-Type', 'text/csv');
     res.attachment('exported_transactions.csv');

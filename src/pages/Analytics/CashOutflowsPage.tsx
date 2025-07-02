@@ -118,7 +118,9 @@ const CashOutflowsPage: React.FC = () => {
                       ${Math.abs(transaction.amount).toLocaleString()}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Balance: ${transaction.balance.toLocaleString()}
+                      Balance: ${typeof transaction.balance === 'string' && transaction.balance === '' ? 
+                        'N/A' : 
+                        Number(transaction.balance || 0).toLocaleString()}
                     </p>
                   </div>
                 </div>

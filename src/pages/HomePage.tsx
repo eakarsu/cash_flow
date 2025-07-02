@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useState, useEffect, useCallback} from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar, Star, Users, Shield, Zap } from 'lucide-react';
 import { useTransactions } from '../context/TransactionContext';
@@ -6,6 +6,7 @@ import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
 import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
 import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
 import CashForecastWidget from '../components/Dashboard/CashForecastWidget';
+import ErrorBoundary from './ErrorBoundary';
 
 const HomePage: React.FC = () => {
   const { transactions } = useTransactions();
@@ -55,6 +56,70 @@ const HomePage: React.FC = () => {
       answer: "Yes, Cash Flow Manager supports CSV imports from most banks and accounting software, making it easy to get started with your existing financial data."
     }
   ];
+
+  // Example async function to fetch AI prediction
+  const fetchPrediction = async () => {
+    // Replace with your actual API call
+    // return await fetch('/api/prediction').then(res => res.json());
+    return { /* ...mock prediction data... */ };
+  };
+
+  // Example async function to check if AI is configured
+  const checkAIConfigured = async () => {
+    // Replace with your actual check
+    return true; // or false
+  };
+
+  // Whether to use AI mode
+  const [useAI, setUseAI] = useState<boolean>(false);
+
+  // Whether AI is configured (could be fetched from user profile or API)
+  const [isConfigured, setIsConfigured] = useState<boolean>(true);
+
+  // AI error message, if any
+  const [aiError, setAIError] = useState<string | null>(null);
+
+  // AI prediction result (object or null)
+  const [prediction, setPrediction] = useState<any>(null);
+
+  // Example: check AI configuration on mount
+  React.useEffect(() => {
+    checkAIConfigured().then(setIsConfigured);
+  }, []);
+
+  // Handler to refresh AI prediction
+  const onRefresh = useCallback(() => {
+    if (useAI && isConfigured) {
+      fetchPrediction()
+        .then(pred => {
+          setPrediction(pred);
+          setAIError(null);
+        })
+        .catch(err => {
+          setAIError(err.message || 'Failed to fetch AI prediction');
+          setPrediction(null);
+        });
+    }
+  }, [useAI, isConfigured]);
+
+  // Handler to toggle AI mode
+  const onToggleAI = useCallback((enabled: boolean) => {
+    setUseAI(enabled);
+    if (enabled && isConfigured) {
+      fetchPrediction()
+        .then(pred => {
+          setPrediction(pred);
+          setAIError(null);
+        })
+        .catch(err => {
+          setAIError(err.message || 'Failed to fetch AI prediction');
+          setPrediction(null);
+        });
+    } else {
+      setPrediction(null);
+      setAIError(null);
+    }
+  }, [isConfigured]);
 
   return (
     <>
@@ -206,8 +271,8 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
               <CashRunwayWidget transactions={transactions} />
               <CashForecastWidget transactions={transactions} />
-            </div>
-
+            </div> 
+            
             {/* Recent Transactions */}
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
