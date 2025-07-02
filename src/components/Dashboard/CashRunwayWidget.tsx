@@ -151,18 +151,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({
               </label>
             )}
 
-            {/* 2. AI Toggle Switch (only if AI is configured and enabled) */}
-            {isConfigured && useAI && (
-              <label className="flex items-center ml-4">
-                <input
-                  type="checkbox"
-                  checked={useAI}
-                  onChange={e => setUseAI(e.target.checked)}
-                  className="form-checkbox"
-                />
-                <span className="ml-2 text-sm">AI</span>
-              </label>
-            )}
+           
             {/* 3. Refresh Button (only if AI is enabled) */}
             {isConfigured && useAI && (
               <button
@@ -289,9 +278,10 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({
       </div>
 
       {/* Runway Chart */}
+      {/* Runway Chart */}
       <div>
         <h4 className="text-sm font-medium text-gray-900 mb-3">Runway Comparison</h4>
-        {Number.isFinite(runway) && runway > 0 ? (
+        {burnRate > 0 && currentBalance !== 0 ? (
           <div style={{ height: '200px' }}>
             <Bar data={chartData} options={chartOptions} />
           </div>
@@ -301,6 +291,7 @@ const CashRunwayWidget: React.FC<CashRunwayWidgetProps> = ({
           </div>
         )}
       </div>
+
     </div>
   );
 };

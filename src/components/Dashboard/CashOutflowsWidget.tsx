@@ -226,18 +226,6 @@ const CashOutflowsWidget: React.FC<CashOutflowsWidgetProps> = ({
             </label>
           )}
 
-          {/* 2. AI Toggle Switch (only if AI is configured and enabled) */}
-          {isConfigured && useAI && (
-            <label className="flex items-center ml-4">
-              <input
-                type="checkbox"
-                checked={useAI}
-                onChange={e => setUseAI(e.target.checked)}
-                className="form-checkbox"
-              />
-              <span className="ml-2 text-sm">AI</span>
-            </label>
-          )}
           {/* 3. Refresh Button (only if AI is enabled) */}
           {isConfigured && useAI && (
             <button
