@@ -17,7 +17,7 @@ const ImportTransactionsPage: React.FC = () => {
   const [selectedTransformations, setSelectedTransformations] = useState<string[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
   const [showPreview, setShowPreview] = useState(false);
-  const [enableAI, setEnableAI] = useState(false); // ✅ ADD: AI toggle
+  const [enableAITransformations, setEnableAITransformations] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debug: Log component mount
@@ -45,45 +45,42 @@ const ImportTransactionsPage: React.FC = () => {
       try {
         console.log('📁 Starting file import:', file.name, 'Size:', file.size, 'bytes');
         
-        // ✅ NEW: Get raw CSV headers FIRST for AI analysis
+        // ✅ ALWAYS use AI column mapping (cheap - 1 API call), optionally get transformations
         let importedTransactions;
         
-        if (enableAI) {
-          try {
-            console.log('🤖 Step 1: Getting raw CSV headers for AI analysis...');
-            
-            // Parse CSV to get raw headers first
-            const rawCsvData = await parseCSV(file, { getRawHeaders: true });
-            const rawHeaders = Object.keys(rawCsvData[0] || {});
-            console.log('📋 Raw CSV headers:', rawHeaders);
-            
-            // Get AI column mapping suggestions
-            console.log('🤖 Step 2: Getting AI column mapping suggestions...');
-            const aiService = new AIColumnMappingService();
-            const aiColumnMapping = await aiService.suggestColumnMapping(rawHeaders);
-            console.log('🎯 AI suggested column mapping:', aiColumnMapping);
-            
-            // Re-parse CSV with AI-suggested column mappings
-            console.log('🤖 Step 3: Re-parsing CSV with AI column mappings...');
-            importedTransactions = await parseCSV(file, { 
-              columnMappings: aiColumnMapping 
-            });
-            
-            // Get transformation suggestions
+        try {
+          console.log('🤖 Step 1: Getting raw CSV headers for AI column mapping...');
+          
+          // Parse CSV to get raw headers first
+          const rawCsvData = await parseCSV(file, { getRawHeaders: true });
+          const rawHeaders = Object.keys(rawCsvData[0] || {});
+          console.log('📋 Raw CSV headers:', rawHeaders);
+          
+          // Always get AI column mapping suggestions (cheap)
+          console.log('🤖 Step 2: Getting AI column mapping suggestions...');
+          const aiService = new AIColumnMappingService();
+          const aiColumnMapping = await aiService.suggestColumnMapping(rawHeaders);
+          console.log('🎯 AI suggested column mapping:', aiColumnMapping);
+          
+          // Re-parse CSV with AI-suggested column mappings
+          console.log('🤖 Step 3: Re-parsing CSV with AI column mappings...');
+          importedTransactions = await parseCSV(file, { 
+            columnMappings: aiColumnMapping 
+          });
+          
+          // Only get transformation suggestions if enabled
+          if (enableAITransformations) {
             const transformSuggestions = await aiService.suggestDataTransformations(importedTransactions, rawHeaders);
             setSuggestedTransformations(transformSuggestions.transformations);
-            
             setImportResult(`Successfully imported ${importedTransactions.length} transactions using AI column mapping. ${transformSuggestions.transformations.length} transformations suggested.`);
-            
-          } catch (aiError) {
-            console.warn('AI-enhanced import failed, falling back to standard import:', aiError);
-            importedTransactions = await parseCSV(file);
-            setImportResult(`Successfully imported ${importedTransactions.length} transactions (AI mapping failed, used fallback).`);
+          } else {
+            setImportResult(`Successfully imported ${importedTransactions.length} transactions using AI column mapping.`);
           }
-        } else {
-          // Standard import without AI
+          
+        } catch (aiError) {
+          console.warn('AI-enhanced import failed, falling back to standard import:', aiError);
           importedTransactions = await parseCSV(file);
-          setImportResult(`Successfully imported ${importedTransactions.length} transactions and replaced all existing data.`);
+          setImportResult(`Successfully imported ${importedTransactions.length} transactions (AI mapping failed, used fallback).`);
         }
         
         if (importedTransactions.length === 0) {
@@ -226,18 +223,6 @@ const ImportTransactionsPage: React.FC = () => {
               style={{ display: 'none' }}
             />
             
-            {/* ✅ ADD: AI Toggle */}
-            <div className="mb-4">
-              <label className="flex items-center justify-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={enableAI}
-                  onChange={(e) => setEnableAI(e.target.checked)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-gray-700">Enable AI transformations (uses API credits)</span>
-              </label>
-            </div>
 
             <button
               onClick={(e) => {
@@ -277,14 +262,27 @@ const ImportTransactionsPage: React.FC = () => {
             </div>
           )}
 
+          {/* AI Transformations Toggle */}
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={enableAITransformations}
+                onChange={(e) => setEnableAITransformations(e.target.checked)}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-sm text-gray-700">Get AI transformation suggestions (uses additional API credits)</span>
+            </label>
+          </div>
+
           {/* Navigation Button */}
-          {suggestedTransformations.length > 0 && (
+          {(suggestedTransformations.length > 0 || !enableAITransformations) && (
             <div className="mt-6 text-center">
               <button
                 onClick={() => navigate('/')}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
-                Skip Transformations & Go to Dashboard
+                Go to Dashboard
               </button>
             </div>
           )}
