@@ -1,0 +1,11 @@
+- name: openrouter/anthropic/claude-3-5-sonnet
+  extra_params:
+    extra_body:
+      provider:
+        # Only use Anthropic, not Bedrock
+        order: ["Anthropic"]
+        # Don't fall back to other providers
+        allow_fallbacks: false
+        # Skip providers that may train on inputs
+        data_collection: "deny"
+

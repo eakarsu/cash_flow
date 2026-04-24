@@ -1,0 +1,667 @@
+calling for transactions https://cashflowapp.app/api/quickbooks/transactions
+[0] 🔍 Fetching transactions from QuickBooks...
+[0] {
+[0]   request: {
+[0]     debugId: 3,
+[0]     uri: 'https://sandbox-quickbooks.api.intuit.com/v3/company/9341454912394000/query?query=select%20%2A%20from%20purchase%20startposition%201%20maxresults%201000&minorversion=75&format=json',
+[0]     method: 'GET',
+[0]     headers: {
+[0]       'User-Agent': 'node-quickbooks: version 2.0.46',
+[0]       'Request-Id': 'f8303820-55fa-11f0-aecd-af40861655ce',
+[0]       Authorization: 'Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwieC5vcmciOiJIMCJ9..Qlsk8Aczok2cK_ud85LJNg.wWaVfE3cPqq8A-JAnyv2UBLaZSOvHK9XD98qAyO7ZBJpOHyjAqEPobCi87tG71qdO3N5E1zLLgFO56SBj0GRus8qnzPpOK4R3qCuFM6L2qkQ3kEOSU0pPZ7CY8CktG7qufhSZldrJYve6f9mQ_BwgQN7UgSNXu6lCjyW6xc1bib7MIj6k08kZVD1aJVcFEZFPZinYY8d5LWG_-x-pWZCAbTigeDgYjbROFEhBfKTnCw0Yuw3VnHsVQN1p5M5A_nasxADxSEKJn5wmYn8XiW8EuC0W48sBU8vYraQOVJgLaFMeYTwKOWFWuynO0_hpx5OIgrTXl7HT8CKrA6zAwbbKTSQgIDU8d8jqGwigHxBSKyKWSccGps-pwmvPh0ParC1Y2DgxYWcqiH0enEdqM1pzS64uS7netPbplNarq1YS4J03AMPCXEm4Nl_1S7GYUjrw-ji8GuLHSs8eUBx8F_JC7qI-iy2OYWKlg1UEYYSlEI.xZ-SyAhOQ2-ciszAHQbpfA',
+[0]       host: 'sandbox-quickbooks.api.intuit.com',
+[0]       accept: 'application/json'
+[0]     }
+[0]   }
+[0] }
+[0] {
+[0]   request: {
+[0]     debugId: 4,
+[0]     uri: 'https://sandbox-quickbooks.api.intuit.com/v3/company/9341454912394000/query?query=select%20%2A%20from%20journalEntry%20startposition%201%20maxresults%201000&minorversion=75&format=json',
+[0]     method: 'GET',
+[0]     headers: {
+[0]       'User-Agent': 'node-quickbooks: version 2.0.46',
+[0]       'Request-Id': 'f8308640-55fa-11f0-aecd-af40861655ce',
+[0]       Authorization: 'Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwieC5vcmciOiJIMCJ9..Qlsk8Aczok2cK_ud85LJNg.wWaVfE3cPqq8A-JAnyv2UBLaZSOvHK9XD98qAyO7ZBJpOHyjAqEPobCi87tG71qdO3N5E1zLLgFO56SBj0GRus8qnzPpOK4R3qCuFM6L2qkQ3kEOSU0pPZ7CY8CktG7qufhSZldrJYve6f9mQ_BwgQN7UgSNXu6lCjyW6xc1bib7MIj6k08kZVD1aJVcFEZFPZinYY8d5LWG_-x-pWZCAbTigeDgYjbROFEhBfKTnCw0Yuw3VnHsVQN1p5M5A_nasxADxSEKJn5wmYn8XiW8EuC0W48sBU8vYraQOVJgLaFMeYTwKOWFWuynO0_hpx5OIgrTXl7HT8CKrA6zAwbbKTSQgIDU8d8jqGwigHxBSKyKWSccGps-pwmvPh0ParC1Y2DgxYWcqiH0enEdqM1pzS64uS7netPbplNarq1YS4J03AMPCXEm4Nl_1S7GYUjrw-ji8GuLHSs8eUBx8F_JC7qI-iy2OYWKlg1UEYYSlEI.xZ-SyAhOQ2-ciszAHQbpfA',
+[0]       host: 'sandbox-quickbooks.api.intuit.com',
+[0]       accept: 'application/json'
+[0]     }
+[0]   }
+[0] }
+[0] {
+[0]   response: {
+[0]     debugId: 4,
+[0]     headers: {
+[0]       date: 'Mon, 30 Jun 2025 21:41:24 GMT',
+[0]       'content-type': 'application/json',
+[0]       'transfer-encoding': 'chunked',
+[0]       connection: 'keep-alive',
+[0]       'x-spanid': '69d580cb-633e-5838-9af9-5cdebfe3188e',
+[0]       'x-amzn-trace-id': 'Root=1-68630484-4751add014f9854d0586de7f',
+[0]       'x-content-type-options': 'nosniff',
+[0]       'x-envoy-upstream-service-time': '395',
+[0]       server: 'istio-envoy',
+[0]       'x-envoy-decorator-operation': 'v3-facade-service-desired-service.dev-devx-v3facadeservice-usw2-stg-ids.svc.cluster.local:8090/*',
+[0]       'strict-transport-security': 'max-age=31536000',
+[0]       intuit_tid: '1-68630484-4751add014f9854d0586de7f',
+[0]       'x-request-id': '1-68630484-4751add014f9854d0586de7f'
+[0]     },
+[0]     statusCode: 200,
+[0]     body: { QueryResponse: [Object], time: '2025-06-30T14:41:24.765-07:00' }
+[0]   }
+[0] }
+[0] invoking endpoint: https://sandbox-quickbooks.api.intuit.com/v3/company/9341454912394000/query?query=select * from journalEntry startposition 1 maxresults 1000
+[0]
+[0] {
+[0]   "QueryResponse": {
+[0]     "JournalEntry": [
+[0]       {
+[0]         "Adjustment": false,
+[0]         "TotalAmt": 0,
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "380",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:16-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:16-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-01",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "0",
+[0]             "Description": "Customer payment [Income:Customer Payments]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Debit",
+[0]               "AccountRef": {
+[0]                 "value": "92",
+[0]                 "name": "Undeposited Funds"
+[0]               }
+[0]             }
+[0]           },
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Customer payment [Income:Customer Payments]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Credit",
+[0]               "AccountRef": {
+[0]                 "value": "96",
+[0]                 "name": "Sales"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "Adjustment": false,
+[0]         "TotalAmt": 0,
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "376",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:13-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:13-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-03",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "0",
+[0]             "Description": "POS sale [Point of Sale Transaction]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Debit",
+[0]               "AccountRef": {
+[0]                 "value": "92",
+[0]                 "name": "Undeposited Funds"
+[0]               }
+[0]             }
+[0]           },
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "POS sale [Point of Sale Transaction]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Credit",
+[0]               "AccountRef": {
+[0]                 "value": "96",
+[0]                 "name": "Sales"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "Adjustment": false,
+[0]         "TotalAmt": 0,
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "373",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:12-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:12-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-06",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "0",
+[0]             "Description": "Customer payment [Payment Received]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Debit",
+[0]               "AccountRef": {
+[0]                 "value": "92",
+[0]                 "name": "Undeposited Funds"
+[0]               }
+[0]             }
+[0]           },
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Customer payment [Payment Received]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Credit",
+[0]               "AccountRef": {
+[0]                 "value": "96",
+[0]                 "name": "Sales"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "Adjustment": false,
+[0]         "TotalAmt": 0,
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "371",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:10-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:10-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-08",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "0",
+[0]             "Description": "POS sale [Point of Sale Transaction]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Debit",
+[0]               "AccountRef": {
+[0]                 "value": "92",
+[0]                 "name": "Undeposited Funds"
+[0]               }
+[0]             }
+[0]           },
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "POS sale [Point of Sale Transaction]",
+[0]             "Amount": 100,
+[0]             "DetailType": "JournalEntryLineDetail",
+[0]             "JournalEntryLineDetail": {
+[0]               "PostingType": "Credit",
+[0]               "AccountRef": {
+[0]                 "value": "96",
+[0]                 "name": "Sales"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       }
+[0]     ],
+[0]     "startPosition": 1,
+[0]     "maxResults": 4,
+[0]     "totalCount": 4
+[0]   },
+[0]   "time": "2025-06-30T14:41:24.765-07:00"
+[0] }
+[0] 📊 Found 4 journal entry transactions
+[0] {
+[0]   response: {
+[0]     debugId: 3,
+[0]     headers: {
+[0]       date: 'Mon, 30 Jun 2025 21:41:25 GMT',
+[0]       'content-type': 'application/json',
+[0]       'content-length': '6341',
+[0]       connection: 'keep-alive',
+[0]       'x-spanid': '10ee8c87-f838-728e-3d92-c34fa339a855',
+[0]       'x-amzn-trace-id': 'Root=1-68630484-008f192231712e4c4d95a363',
+[0]       'x-content-type-options': 'nosniff',
+[0]       'x-envoy-upstream-service-time': '675',
+[0]       server: 'istio-envoy',
+[0]       'x-envoy-decorator-operation': 'v3-facade-service-desired-service.dev-devx-v3facadeservice-usw2-stg-ids.svc.cluster.local:8090/*',
+[0]       'strict-transport-security': 'max-age=31536000',
+[0]       intuit_tid: '1-68630484-008f192231712e4c4d95a363',
+[0]       'x-request-id': '1-68630484-008f192231712e4c4d95a363'
+[0]     },
+[0]     statusCode: 200,
+[0]     body: { QueryResponse: [Object], time: '2025-06-30T14:41:24.909-07:00' }
+[0]   }
+[0] }
+[0] invoking endpoint: https://sandbox-quickbooks.api.intuit.com/v3/company/9341454912394000/query?query=select * from purchase startposition 1 maxresults 1000
+[0]
+[0] {
+[0]   "QueryResponse": {
+[0]     "Purchase": [
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 2500,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "379",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:16-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:16-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-01",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Monthly rent [Housing:Rent]",
+[0]             "Amount": 2500,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "107",
+[0]                 "name": "Rent or Lease"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 850,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "378",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:15-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:15-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-02",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Food inventory [Inventory:Food]",
+[0]             "Amount": 850,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "129",
+[0]                 "name": "Cost of Goods Sold"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 450,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "377",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:14-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:14-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-03",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Utilities [Utilities]",
+[0]             "Amount": 450,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "114",
+[0]                 "name": "Utilities"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 3500,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "375",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:13-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:13-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-04",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Payroll [Salary & Wages]",
+[0]             "Amount": 3500,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "133",
+[0]                 "name": "Payroll"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 320,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "374",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:12-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:12-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-05",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Equipment purchase [Office Equipment & Supplies]",
+[0]             "Amount": 320,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "108",
+[0]                 "name": "Repair & Maintenance"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 180,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "372",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:11-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:11-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-07",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Beverage restock [Groceries - Beverages]",
+[0]             "Amount": 180,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "131",
+[0]                 "name": "Other"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       },
+[0]       {
+[0]         "AccountRef": {
+[0]           "value": "92",
+[0]           "name": "Undeposited Funds"
+[0]         },
+[0]         "PaymentType": "Cash",
+[0]         "TotalAmt": 25,
+[0]         "PurchaseEx": {
+[0]           "any": [
+[0]             {
+[0]               "name": "{http://schema.intuit.com/finance/v3}NameValue",
+[0]               "declaredType": "com.intuit.schema.finance.v3.NameValue",
+[0]               "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+[0]               "value": {
+[0]                 "Name": "TxnType",
+[0]                 "Value": "54"
+[0]               },
+[0]               "nil": false,
+[0]               "globalScope": true,
+[0]               "typeSubstituted": false
+[0]             }
+[0]           ]
+[0]         },
+[0]         "domain": "QBO",
+[0]         "sparse": false,
+[0]         "Id": "370",
+[0]         "SyncToken": "0",
+[0]         "MetaData": {
+[0]           "CreateTime": "2025-06-27T16:34:10-07:00",
+[0]           "LastUpdatedTime": "2025-06-27T16:34:10-07:00"
+[0]         },
+[0]         "TxnDate": "2024-06-09",
+[0]         "CurrencyRef": {
+[0]           "value": "USD",
+[0]           "name": "United States Dollar"
+[0]         },
+[0]         "Line": [
+[0]           {
+[0]             "Id": "1",
+[0]             "Description": "Banking fee [Bank Fees]",
+[0]             "Amount": 25,
+[0]             "DetailType": "AccountBasedExpenseLineDetail",
+[0]             "AccountBasedExpenseLineDetail": {
+[0]               "AccountRef": {
+[0]                 "value": "104",
+[0]                 "name": "Miscellaneous"
+[0]               },
+[0]               "BillableStatus": "NotBillable",
+[0]               "TaxCodeRef": {
+[0]                 "value": "NON"
+[0]               }
+[0]             }
+[0]           }
+[0]         ]
+[0]       }
+[0]     ],
+[0]     "startPosition": 1,
+[0]     "maxResults": 7
+[0]   },
+[0]   "time": "2025-06-30T14:41:24.909-07:00"
+[0] }
+[0] 📊 Found 7 purchase transactions
+[0] 📊 Retrieved: 7 purchases, 4 journal entries
+[0] ✅ Returning 11 transactions with subcategories
+[0] converting transactions to json [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
