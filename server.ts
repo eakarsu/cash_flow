@@ -16,6 +16,8 @@ import exportRouter from './src/api/routes/export.js';
 import quickbooksRouter from './src/api/routes/quickbooks.js';
 import uploadRouter from './src/api/routes/upload.js';
 import transactionsRouter from './src/api/routes/transactions.js';
+import aiRouter from './src/api/routes/ai.js';
+import customFeaturesRouter from './src/api/routes/customFeatures.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config'; // Load env vars first
@@ -59,6 +61,13 @@ app.use('/api/export', exportRouter);
 app.use('/api/quickbooks', quickbooksRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
+app.use('/api/ai', aiRouter);
+app.use('/api/custom', customFeaturesRouter);
+// // === Batch 09 Gaps & Frontend Mounts === (mounts moved above static/catch-all)
+import batch09GapAiCFlow from './src/api/routes/batch09GapAi.js';
+import batch09GapNonaiCFlow from './src/api/routes/batch09GapNonai.js';
+app.use('/api/gap-ai-cash_flow', batch09GapAiCFlow);
+app.use('/api/gap-nonai-cash_flow', batch09GapNonaiCFlow);
 
 // Debug: Log all registered routes
 console.log('🔧 Registered routes:');
@@ -67,6 +76,7 @@ console.log('  - /api/export');
 console.log('  - /api/quickbooks');
 console.log('  - /api/upload');
 console.log('  - /api/transactions');
+console.log('  - /api/ai');
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -109,3 +119,7 @@ app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
+
+app.use('/api/gap-ai-cash_flow', gapBatch09Ai); // // === Batch 09 Gaps & Frontend Mounts ===
+
+app.use('/api/gap-nonai-cash_flow', gapBatch09Nonai); // // === Batch 09 Gaps & Frontend Mounts ===
