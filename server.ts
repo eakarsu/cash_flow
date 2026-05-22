@@ -18,6 +18,7 @@ import uploadRouter from './src/api/routes/upload.js';
 import transactionsRouter from './src/api/routes/transactions.js';
 import aiRouter from './src/api/routes/ai.js';
 import customFeaturesRouter from './src/api/routes/customFeatures.js';
+import vendorCashCommitmentsRouter from './src/api/routes/vendorCashCommitments.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config'; // Load env vars first
@@ -63,6 +64,7 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/transactions', transactionsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/custom', customFeaturesRouter);
+app.use('/api/vendor-cash-commitments', vendorCashCommitmentsRouter);
 // // === Batch 09 Gaps & Frontend Mounts === (mounts moved above static/catch-all)
 import batch09GapAiCFlow from './src/api/routes/batch09GapAi.js';
 import batch09GapNonaiCFlow from './src/api/routes/batch09GapNonai.js';

@@ -16,6 +16,7 @@ import CashInflowsPage from '../pages/Analytics/CashInflowsPage';
 import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage';
 import CashRunwayPage from '../pages/Analytics/CashRunwayPage';
 import CashForecastPage from '../pages/Analytics/CashForecastPage';
+import VendorCashCommitmentsPage from '../pages/Analytics/VendorCashCommitmentsPage';
 
 // Reports pages
 import ReportsPage from '../pages/Reports/ReportsPage';
@@ -90,6 +91,7 @@ const AppRouter: React.FC = () => {
             <Route path="/analytics/outflows" element={<CashOutflowsPage />} />
             <Route path="/analytics/runway" element={<CashRunwayPage />} />
             <Route path="/analytics/forecast" element={<CashForecastPage />} />
+            <Route path="/analytics/vendor-commitments" element={<VendorCashCommitmentsPage />} />
             
             {/* Transaction Management Pages */}
             <Route path="/transactions" element={<TransactionsPage />} />
