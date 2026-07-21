@@ -3,11 +3,12 @@ import { HelmetProvider } from 'react-helmet-async';
 import { TransactionProvider } from './context/TransactionContext';
 import { AICashFlowProvider } from './context/AICashFlowContext';
 import AppRouter from './router/AppRouter';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   useEffect(() => {
     // Register service worker for PWA
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+    if ('serviceWorker' in navigator && import.meta.env.PROD) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           console.log('SW registered: ', registration);
@@ -20,11 +21,13 @@ function App() {
 
   return (
     <HelmetProvider>
-      <TransactionProvider>
-        <AICashFlowProvider>
-          <AppRouter />
-        </AICashFlowProvider>
-      </TransactionProvider>
+      <AuthProvider>
+        <TransactionProvider>
+          <AICashFlowProvider>
+            <AppRouter />
+          </AICashFlowProvider>
+        </TransactionProvider>
+      </AuthProvider>
     </HelmetProvider>
   );
 }

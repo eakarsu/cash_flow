@@ -26,15 +26,15 @@ const createTransporter = () => {
     ...(isSSL ? {
       // SSL configuration for port 465
       tls: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
         servername: process.env.SMTP_HOST
       }
     } : {
       // STARTTLS configuration for port 587
       requireTLS: true,
       tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
+        rejectUnauthorized: true,
+        minVersion: 'TLSv1.2'
       }
     }),
     // Authentication
@@ -198,15 +198,15 @@ Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
           ...(altSecure ? {
             // SSL configuration for port 465
             tls: {
-              rejectUnauthorized: false,
+              rejectUnauthorized: true,
               servername: process.env.SMTP_HOST
             }
           } : {
             // STARTTLS configuration for port 587
             requireTLS: true,
             tls: {
-              rejectUnauthorized: false,
-              ciphers: 'SSLv3'
+              rejectUnauthorized: true,
+              minVersion: 'TLSv1.2'
             }
           })
         });

@@ -50,20 +50,22 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({
   const { currentBalance, forecastWithScenarios, finalBalance, projectedChange, projectedChangePercent } = useMemo(() => {
     const balance = transactions.reduce((sum, t) => sum + t.amount, 0);
     
-    // Generate 13 weeks of forecast data
+    const dated = transactions.filter(t => Number.isFinite(Date.parse(t.date)));
+    const timestamps = dated.map(t => Date.parse(t.date));
+    const spanWeeks = timestamps.length > 1 ? Math.max(1, Math.min(13, Math.ceil((Math.max(...timestamps) - Math.min(...timestamps)) / (7 * 86_400_000)))) : 1;
+    const weeklyInflow = dated.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0) / spanWeeks;
+    const weeklyOutflow = dated.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0) / spanWeeks;
+    // Deterministic scenarios are derived from observed weekly cash, never random or LLM-generated.
     const weeks = [];
     let runningBalance = balance;
     
     for (let i = 1; i <= 13; i++) {
-      const weeklyInflow = Math.random() * 5000 + 2000; // Random inflows
-      const weeklyOutflow = Math.random() * 8000 + 3000; // Random outflows
-      
       const optimisticBalance = runningBalance + (weeklyInflow * 1.2) - (weeklyOutflow * 0.8);
       const realisticBalance = runningBalance + weeklyInflow - weeklyOutflow;
       const pessimisticBalance = runningBalance + (weeklyInflow * 0.8) - (weeklyOutflow * 1.2);
       
       weeks.push({
-        week: `Week ${i}`,
+        week: new Date(Date.now() + i * 7 * 86_400_000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
         inflows: weeklyInflow,
         outflows: weeklyOutflow,
         optimistic: optimisticBalance,
@@ -217,17 +219,6 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({
         </div>
         <div className="text-sm text-gray-500">
           {useAI && isConfigured ? 'AI-generated predictions' : 'Historical trend-based projections'}
-          {/* Refresh Button */}
-          {typeof onRefresh === 'function' && (
-            <button
-              className="ml-4 px-3 py-1 bg-gray-100 rounded text-sm text-gray-700 hover:bg-gray-200"
-              onClick={onRefresh}
-              title="Refresh Prediction"
-              type="button"
-            >
-              Refresh
-            </button>
-          )}
         </div>
       </div>
 
@@ -248,7 +239,7 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({
             <TrendingUp className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-600">13-Week Projection</span>
             {useAI && prediction?.weeklyForecasts && (
-              <Brain className="h-4 w-4 text-blue-600" title="AI" />
+              <Brain className="h-4 w-4 text-blue-600" aria-label="AI advisory" />
             )}
           </div>
           <p className="text-2xl font-bold text-blue-900 mt-1">
@@ -387,4 +378,3 @@ const CashForecastWidget: React.FC<CashForecastWidgetProps> = ({
 };
 
 export default CashForecastWidget;
-

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DollarSign, Menu, X, ChevronDown, User, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface HeaderProps {
   onImport?: () => void;
@@ -10,7 +11,7 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock auth state
+  const { authenticated: isLoggedIn, logout } = useAuth();
   const location = useLocation();
   
   const analyticsRef = useRef<HTMLDivElement>(null);
@@ -42,9 +43,8 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    // Add logout logic here
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -146,47 +146,19 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
             </Link>
 
             <Link
-              to="/features"
-              className={`text-sm font-medium ${
-                isActive('/features') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
+              to="/operations"
+              className={`text-sm font-medium ${isActive('/operations') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}
             >
-              Features
+              Operations
             </Link>
 
-            <Link
-              to="/pricing"
-              className={`text-sm font-medium ${
-                isActive('/pricing') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
-              Pricing
-            </Link>
-
-            <Link
-              to="/about"
-              className={`text-sm font-medium ${
-                isActive('/about') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
-              About
-            </Link>
-
-            <Link
-              to="/help"
-              className={`text-sm font-medium ${
-                isActive('/help') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
-              Help
-            </Link>
           </nav>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* User Account / Auth */}
             <div className="hidden lg:flex items-center space-x-4">
-              {isLoggedIn ? (
+              {isLoggedIn && (
                 <div className="relative" ref={accountRef}>
                   <button
                     onClick={() => {
@@ -202,25 +174,11 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
                   {isAccountOpen && (
                     <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
                       <Link
-                        to="/account/profile"
+                        to="/operations"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsAccountOpen(false)}
                       >
-                        Profile
-                      </Link>
-                      <Link
-                        to="/account/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsAccountOpen(false)}
-                      >
-                        Settings
-                      </Link>
-                      <Link
-                        to="/account/billing"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsAccountOpen(false)}
-                      >
-                        Billing
+                        Security &amp; controls
                       </Link>
                       <hr className="my-1" />
                       <button
@@ -232,15 +190,6 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
                       </button>
                     </div>
                   )}
-                </div>
-              ) : (
-                <div className="flex items-center space-x-4">
-                  <button className="text-sm font-medium text-gray-700 hover:text-primary-600">
-                    Login
-                  </button>
-                  <button className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Sign Up
-                  </button>
                 </div>
               )}
             </div>
@@ -311,42 +260,21 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
                 Reports
               </Link>
               <Link
-                to="/features"
+                to="/operations"
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Features
-              </Link>
-              <Link
-                to="/pricing"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Pricing
-              </Link>
-              <Link
-                to="/about"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link
-                to="/help"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Help
+                Operations
               </Link>
               {isLoggedIn && (
                 <>
                   <hr className="my-2" />
                   <Link
-                    to="/account/profile"
+                    to="/operations"
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Profile
+                    Security &amp; controls
                   </Link>
                   <button
                     onClick={handleLogout}

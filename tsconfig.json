@@ -1,9 +1,25 @@
-i{
+{
   "compilerOptions": {
-    "baseUrl": "src",
-    "paths": {
-      "*": ["*"]
-    }
-  }
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "src/api/**", "src/server/**", "src/processors/**", "src/hooks/useAICashFlow.ts",
+    "src/services/OpenRouterService.ts", "src/services/aiCashFlowService.ts", "src/utils/webVitals.ts"
+  ]
 }
-

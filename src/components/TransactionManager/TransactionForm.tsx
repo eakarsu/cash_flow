@@ -46,6 +46,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave, 
       date: formData.date,
       description: formData.description,
       amount: formData.type === 'inflow' ? amount : -amount,
+      type: formData.type,
       category: formData.category,
       balance,
     });
@@ -129,7 +130,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave, 
               value={formData.amount}
               onChange={handleChange}
               step="0.01"
-              min="0"
+              min="0.01"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             />

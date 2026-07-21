@@ -1,29 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "outDir": "dist",
-    "rootDir": "./",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist-server",
+    "rootDir": ".",
     "strict": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
     "resolveJsonModule": true,
-    "allowJs": true
+    "types": ["node"]
   },
-  "include": [
-    "server.ts",
-    "src/types",
-    "src/api/**/*.ts",
-    "src/processors/**/*.ts",
-    "src/services/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "build",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts"
-  ]
+  "include": ["server.ts", "src/server/**/*.ts", "scripts/migrate.ts", "scripts/bootstrap-user.ts"],
+  "exclude": ["node_modules", "dist-web", "tests"]
 }
-

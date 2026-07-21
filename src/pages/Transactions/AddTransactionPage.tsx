@@ -8,8 +8,8 @@ const AddTransactionPage: React.FC = () => {
   const navigate = useNavigate();
   const { addTransaction } = useTransactions();
 
-  const handleSave = (transactionData: any) => {
-    addTransaction(transactionData);
+  const handleSave = async (transactionData: any) => {
+    await addTransaction(transactionData);
     navigate('/transactions');
   };
 

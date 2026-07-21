@@ -1,127 +1,22 @@
+import "dotenv/config";
+import { createApp } from "./src/server/app.js";
+import { readRuntimeConfig } from "./src/server/config.js";
+import { openDatabase } from "./src/server/database.js";
 
-import express from 'express';
-import cors from 'cors';
-import multer from 'multer';
-import fs from 'fs';
-import dotenv from 'dotenv';
-import history from 'connect-history-api-fallback';
-import axios from 'axios';
-import { Parser } from 'json2csv';
+const config = readRuntimeConfig();
+const autoMigrate = !config.production && process.env.AUTO_MIGRATE !== "false";
+const database = openDatabase(config.databasePath, { migrate: autoMigrate, initialize: true });
+const port = Number(process.env.PORT || 3001);
+if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error("PORT is invalid.");
 
+const server = createApp(database, config).listen(port, "0.0.0.0", () => {
+  console.log(`Cash Flow Manager listening on port ${port} in paper-only mode.`);
+});
 
-// Import routers
-import contactRouter from './src/api/routes/contact.js';
-import exportRouter from './src/api/routes/export.js';
-
-import quickbooksRouter from './src/api/routes/quickbooks.js';
-import uploadRouter from './src/api/routes/upload.js';
-import transactionsRouter from './src/api/routes/transactions.js';
-import aiRouter from './src/api/routes/ai.js';
-import customFeaturesRouter from './src/api/routes/customFeatures.js';
-import vendorCashCommitmentsRouter from './src/api/routes/vendorCashCommitments.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import 'dotenv/config'; // Load env vars first
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Import services and processors
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
-
-// Initialize services
-let userTokens:UserTokens = {};
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-interface UserTokens {
-  accessToken?: string;
-  // ... other properties
+function shutdown(signal: string) {
+  console.log(`Received ${signal}; stopping.`);
+  server.close(() => { database.close(); process.exit(0); });
+  setTimeout(() => process.exit(1), 10_000).unref();
 }
-
-// Middleware to attach user tokens to requests
-app.use((req, res, next) => {
-  req.userTokens = userTokens;
-  next();
-});
-
-// Import routes
-
-
-// API routes
-app.use('/api/contact', contactRouter);
-app.use('/api/export', exportRouter);
-
-app.use('/api/quickbooks', quickbooksRouter);
-app.use('/api/upload', uploadRouter);
-app.use('/api/transactions', transactionsRouter);
-app.use('/api/ai', aiRouter);
-app.use('/api/custom', customFeaturesRouter);
-app.use('/api/vendor-cash-commitments', vendorCashCommitmentsRouter);
-// // === Batch 09 Gaps & Frontend Mounts === (mounts moved above static/catch-all)
-import batch09GapAiCFlow from './src/api/routes/batch09GapAi.js';
-import batch09GapNonaiCFlow from './src/api/routes/batch09GapNonai.js';
-app.use('/api/gap-ai-cash_flow', batch09GapAiCFlow);
-app.use('/api/gap-nonai-cash_flow', batch09GapNonaiCFlow);
-
-// Debug: Log all registered routes
-console.log('🔧 Registered routes:');
-console.log('  - /api/contact');
-console.log('  - /api/export');
-console.log('  - /api/quickbooks');
-console.log('  - /api/upload');
-console.log('  - /api/transactions');
-console.log('  - /api/ai');
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK',
-    service: 'Generic Excel Upload API',
-    timestamp: new Date().toISOString(),
-    quickbooksConnected: !!userTokens.accessToken,
-    uploadEnabled: true
-  });
-});
-
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, 'build')));
-
-// Simple catch-all handler for frontend routes (after API routes)
-app.get('*', (req, res) => {
-  // Only serve index.html for non-API routes
-  if (!req.path.startsWith('/api/') && !req.path.startsWith('/auth/') && !req.path.startsWith('/oauth/')) {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  } else {
-    // This should not be reached if routes are properly defined
-    console.error(`❌ Unmatched API route: ${req.method} ${req.path}`);
-    res.status(404).json({ error: 'API endpoint not found', path: req.path });
-  }
-});
-
-
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
-
-
-app.listen(PORT, () => {
-  console.log(`🚀 Generic Excel Upload API running on port ${PORT}`);
-  console.log(`📁 Generic Upload: http://localhost:${PORT}/api/upload-generic`);
-  console.log(`⚙️  Configuration: http://localhost:${PORT}/api/configure-processors`);
-  console.log(`📋 Formats Info: http://localhost:${PORT}/api/upload-formats`);
-  console.log(`quikcbooks Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
-
-
-app.use('/api/gap-ai-cash_flow', gapBatch09Ai); // // === Batch 09 Gaps & Frontend Mounts ===
-
-app.use('/api/gap-nonai-cash_flow', gapBatch09Nonai); // // === Batch 09 Gaps & Frontend Mounts ===
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));

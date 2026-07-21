@@ -1,0 +1,5 @@
+# Historical placeholder in the 2025 environment example.
+115f91f6bc2247dddb9fff7c33fddb6c5d34319d:.env.example:generic-api-key:6
+# Historical duplicate OpenRouter finding. See SECURITY_INCIDENT.md; current files are removed.
+06b34e5f97017410eb9ed0b0b0e7ca4cce14f17c:files.txt:generic-api-key:1
+06b34e5f97017410eb9ed0b0b0e7ca4cce14f17c:.aider.chat.history.md:generic-api-key:7

@@ -1,220 +1,91 @@
-# Cash Flow Management Application
+# Cash Flow Manager
 
-A comprehensive React TypeScript application for managing business cash flow with advanced analytics, forecasting, and transaction management
-capabilities.
+Cash Flow Manager is a governed cash-operations ledger with licensed provider ingestion, reconciliation, deterministic risk limits, and paper-only order simulation. It does not take custody, store bank passwords, or send live broker orders.
 
-## Features
+## Supported journey
 
-### 📊 Dashboard Analytics
-- **Cash Inflows Widget**: Track revenue streams with visual charts and category breakdowns
-- **Cash Outflows Widget**: Monitor expenses with spending analysis and trend visualization
-- **Cash Runway Widget**: Calculate months of cash remaining with color-coded alerts
-- **13-Week Cash Forecast**: Project future cash balances with scenario planning
+1. An operator registers a bank or broker source that is present in `LICENSED_PROVIDERS` and records the real license/contract reference.
+2. The provider submits a timestamped HMAC-signed batch. Source account, currency, external IDs, versions, source timestamps, and idempotency keys are validated.
+3. Exact duplicates are harmless. Reused source versions with different content create visible review exceptions rather than overwriting history.
+4. Operators reconcile a source closing balance to append-only ledger changes. Corrections append a reversal and replacement; ledger and audit rows cannot be updated or deleted.
+5. Market snapshots from licensed broker sources feed deterministic exposure, liquidity, daily-loss, stale-data, approval, and kill-switch checks.
+6. Orders and fills are paper records only. Larger orders require an independent operator, partial fills cannot overfill, and kill-switch release requires a second operator.
+7. Auditors can export ledger, ingestion, reconciliation, and audit evidence with verified SHA-256 hash-chain results.
 
-### 💰 Transaction Management
-- Import transactions from CSV files
-- Manual transaction entry with comprehensive form
-- Edit and delete existing transactions
-- Advanced filtering and search capabilities
-- Category-based organization
+AI is intentionally excluded from ingestion, reconciliation, limits, approvals, and execution. Dashboard forecasts use observed historical cash flows and deterministic scenarios.
 
-### 📈 Advanced Analytics
-- Monthly cash flow trends
-- Category-wise spending analysis
-- Burn rate calculations
-- Runway projections with historical trends
-- Scenario-based forecasting (optimistic/realistic/pessimistic)
+## Requirements
 
-### 🔧 Technical Features
-- React 18+ with TypeScript
-- Responsive design with Tailwind CSS
-- Local storage for data persistence
-- CSV import/export functionality
-- Interactive charts with Recharts
-- Modern UI components
+- Node.js 24.x
+- npm
+- A durable SQLite-compatible volume for local/single-instance deployment
+- HTTPS reverse proxy, encrypted storage, and an approved backup target for production
+- Contracted providers capable of the signed ingestion contract
 
-## Getting Started
+## Local setup
 
-### Prerequisites
-- Node.js 16+
-- npm or yarn
-
-### Installation
-
-1. **Clone or create the project directory**
 ```bash
-mkdir cash-flow-manager
-cd cash-flow-manager
+./setup.sh
+cp .env.example .env
+```
 
+Fill four different random secrets of at least 32 characters, set the approved provider IDs, then run the explicit state-changing steps:
 
- 2 Install dependencies
+```bash
+npm run db:migrate
+BOOTSTRAP_EMAIL=operator@example.com \
+BOOTSTRAP_PASSWORD='a-unique-password-of-12-or-more-characters' \
+BOOTSTRAP_ROLE=operator \
+npm run admin:bootstrap
+```
 
+Run the API and web development server in separate terminals:
 
-npm install
+```bash
+npm run dev:server
+npm run dev:web
+```
 
+The web UI is at `http://127.0.0.1:3000`; Vite proxies `/api` to port 3001. Setup never migrates, seeds, resets, kills a process, or creates a user automatically. Bootstrap refuses to overwrite or promote an existing user.
 
- 3 Start the development server
+## Provider ingestion contract
 
+Register the custody boundary with `POST /api/v1/source-accounts`. Provider batches use:
 
-npm start
+```text
+POST /api/v1/provider-ingestions/<provider-id>
+x-cashflow-timestamp: 2026-07-19T12:00:00.000Z
+x-cashflow-signature: HMAC_SHA256(PROVIDER_WEBHOOK_SECRET, timestamp + "." + rawJsonBody)
+```
 
+The JSON body contains `sourceAccountId`, `idempotencyKey`, `sourceAsOf`, `entries`, and optional `marketSnapshots`. Money is represented as integer minor units and quantities as millionths. Batches and CSV imports are capped at 1,000 records; request bodies are capped at 1 MB. Webhooks expire after five minutes.
 
- 4 Open your browser Navigate to http://localhost:3000
+Service clients authenticate with a bearer `OPERATOR_API_TOKEN` or `AUDITOR_API_TOKEN` plus a bounded `x-actor-id`. Browser users receive an eight-hour HttpOnly, SameSite=Strict session and must send the returned CSRF token on mutations.
 
-Building for Production
+## Main API routes
 
+- `GET /api/v1/ledger` — authenticated ledger view
+- `POST /api/v1/manual-transactions` and `/manual-imports` — governed manual additions
+- `POST /api/v1/ledger/:id/corrections` — reversal/replacement correction
+- `POST /api/v1/reconciliations` — source-to-ledger reconciliation
+- `POST /api/v1/paper/orders` — deterministic paper-order decision
+- `POST /api/v1/paper/orders/:id/review` and `/fills` — independent review and idempotent partial fills
+- `POST /api/v1/controls/kill-switch/*` — immediate stop and two-person release
+- `POST /api/v1/paper/simulations` — stale, duplicate, partial-fill, provider-failure, and limit scenarios
+- `GET /api/v1/audit-export` — verified evidence export
 
+There is no live-order endpoint. Startup rejects `LIVE_TRADING_ENABLED=true`.
+
+## Validation
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run test:integration
+npm run test:e2e
 npm run build
+npm run security:audit
+```
 
-
-
-Usage
-
-Importing Transaction Data
-
- 1 Click the "Import CSV" button in the header
- 2 Select your CSV file with the following format:
-
-
-Transaction date,Transaction ID,Merchant name,Payment ref ID / Check No,Description,Debit amount,Credit amount,Balance
-2024-06-01,TXN100000,Rent,,Monthly rent,227.67,0.0,9772.33
-
-
- 3 The application will automatically categorize transactions and update all analytics
-
-Manual Transaction Entry
-
- 1 Navigate to the "Transactions" tab
- 2 Click "Add Transaction"
- 3 Fill in the transaction details:
-    • Date
-    • Type (Inflow/Outflow)
-    • Amount
-    • Category
-    • Description
-    • Merchant (optional)
-    • Payment Reference (optional)
-
-Dashboard Analytics
-
-The dashboard provides four main widgets:
-
- 1 Cash Inflows: Shows revenue trends and income source breakdown
- 2 Cash Outflows: Displays expense analysis and spending patterns
- 3 Cash Runway: Calculates how many months of cash remain based on burn rate
- 4 Cash Forecast: Projects 13-week cash balance with scenario planning
-
-Data Export
-
-Click "Export Data" to download your transactions as a CSV file for backup or external analysis.
-
-
-Project Structure
-
-
-src/
-├── components/
-│   ├── Dashboard/
-│   │   ├── CashInflowsWidget.tsx
-│   │   ├── CashOutflowsWidget.tsx
-│   │   ├── CashRunwayWidget.tsx
-│   │   └── CashForecastWidget.tsx
-│   ├── Layout/
-│   │   └── Header.tsx
-│   └── TransactionManager/
-│       ├── TransactionList.tsx
-│       └── TransactionForm.tsx
-├── hooks/
-│   └── useLocalStorage.ts
-├── types/
-│   └── index.ts
-├── utils/
-│   ├── calculations.ts
-│   └── csvParser.ts
-├── App.tsx
-├── index.tsx
-└── index.css
-
-
-
-Key Features Explained
-
-Automatic Transaction Categorization
-
-The application automatically categorizes imported transactions based on merchant names and descriptions:
-
- • Revenue (Stripe, Square payments)
- • Food Inventory (Sysco, US Foods, etc.)
- • Beverages (PepsiCo, Coca-Cola)
- • Equipment & Maintenance
- • Utilities, Rent, Payroll
- • And more...
-
-Cash Runway Calculation
-
- • Analyzes last 6 months of expenses to calculate monthly burn rate
- • Divides current balance by burn rate to determine runway
- • Color-coded alerts: Green (12+ months), Yellow (6-12 months), Red (<6 months)
-
-13-Week Forecast
-
- • Uses historical patterns to project future cash flows
- • Provides optimistic, realistic, and pessimistic scenarios
- • Shows weekly breakdown of projected inflows and outflows
-
-Responsive Design
-
- • Fully responsive layout works on desktop, tablet, and mobile
- • Touch-friendly interface for mobile transaction management
- • Optimized charts and tables for all screen sizes
-
-
-Data Storage
-
-The application uses browser localStorage to persist data. Your transaction data is stored locally and never sent to external servers, ensuring
-privacy and security.
-
-
-Browser Compatibility
-
- • Chrome 90+
- • Firefox 88+
- • Safari 14+
- • Edge 90+
-
-
-Contributing
-
- 1 Fork the repository
- 2 Create a feature branch
- 3 Make your changes
- 4 Add tests if applicable
- 5 Submit a pull request
-
-
-License
-
-This project is licensed under the MIT License.
-
-▌ ▌ ▌ ▌ ▌ ▌ ▌ REPLACE
-
-
-
-Now let's create a sample data file to help users test the application:
-
-sample-data.csv
-```csv
-<<<<<<< SEARCH
-=======
-Transaction date,Transaction ID,Merchant name,Payment ref ID / Check No,Description,Debit amount,Credit amount,Balance
-2024-06-01,TXN100000,Rent,,Monthly rent,2500.00,0.0,47500.00
-2024-06-01,TXN100001,Stripe,,Customer payment,0.0,3200.00,50700.00
-2024-06-02,TXN100002,Sysco,,Food inventory,850.00,0.0,49850.00
-2024-06-03,TXN100003,Square,,POS sale,0.0,1200.00,51050.00
-2024-06-03,TXN100004,Utilities Co.,,Utilities,450.00,0.0,50600.00
-2024-06-04,TXN100005,Payroll,,Payroll,3500.00,0.0,47100.00
-2024-06-05,TXN100006,Amazon,,Equipment purchase,320.00,0.0,46780.00
-2024-06-06,TXN100007,Stripe,,Customer payment,0.0,2800.00,49580.00
-2024-06-07,TXN100008,PepsiCo,,Beverage restock,180.00,0.0,49400.00
-2024-06-08,TXN100009,Square,,POS sale,0.0,1500.00,50900.00
-2024-06-09,TXN100010,Chase Bank,,Banking fee,25.00,0.0,50875.00
+CI repeats clean dependency installation, full-history secret scanning, two migration deploys, static checks, unit/integration/browser tests, production build, dependency audit, and a container build. See [OPERATIONS.md](./OPERATIONS.md) and [SECURITY.md](./SECURITY.md) before release.

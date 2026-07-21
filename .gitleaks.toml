@@ -1,0 +1,14 @@
+title = "Cash Flow Manager secret detection"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore generated and dependency outputs only"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)dist-web/''',
+  '''(^|/)dist-server/''',
+  '''(^|/)test-results/''',
+  '''(^|/)playwright-report/''',
+]

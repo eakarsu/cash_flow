@@ -11,9 +11,9 @@ const EditTransactionPage: React.FC = () => {
 
   const transaction = transactions.find(t => t.id === id);
 
-  const handleSave = (transactionData: any) => {
+  const handleSave = async (transactionData: any) => {
     if (id) {
-      updateTransaction(id, transactionData);
+      await updateTransaction(id, transactionData);
       navigate('/transactions');
     }
   };

@@ -2,10 +2,10 @@ import React,{useState, useEffect, useCallback} from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, TrendingUp, DollarSign, BarChart3, Calendar, Star, Users, Shield, Zap } from 'lucide-react';
 import { useTransactions } from '../context/TransactionContext';
-import CashInflowsWidget from '../components/Dashboard/CashInflowsWidget';
-import CashOutflowsWidget from '../components/Dashboard/CashOutflowsWidget';
-import CashRunwayWidget from '../components/Dashboard/CashRunwayWidget';
-import CashForecastWidget from '../components/Dashboard/CashForecastWidget';
+const CashInflowsWidget = React.lazy(() => import('../components/Dashboard/CashInflowsWidget'));
+const CashOutflowsWidget = React.lazy(() => import('../components/Dashboard/CashOutflowsWidget'));
+const CashRunwayWidget = React.lazy(() => import('../components/Dashboard/CashRunwayWidget'));
+const CashForecastWidget = React.lazy(() => import('../components/Dashboard/CashForecastWidget'));
 import ErrorBoundary from './ErrorBoundary';
 
 const HomePage: React.FC = () => {
@@ -45,11 +45,11 @@ const HomePage: React.FC = () => {
     },
     {
       question: "How does Cash Flow Manager help my business?",
-      answer: "Our platform provides real-time transaction tracking, AI-powered forecasting, detailed financial reports, and insights to help you optimize your cash flow and prevent financial shortfalls."
+      answer: "The platform records source-timestamped transactions, reconciliations, deterministic forecasts, and paper-only risk decisions with audit evidence."
     },
     {
       question: "Is my financial data secure?",
-      answer: "Yes, we use bank-level encryption and security measures to protect your financial data. All data is encrypted in transit and at rest."
+      answer: "Production startup requires HTTPS and distinct strong secrets. Financial records remain in an append-only, hash-chained ledger; infrastructure operators must enable encrypted storage and backups."
     },
     {
       question: "Can I import data from my bank or accounting software?",
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
             </h1>
             <p className="text-xl text-primary-100 mb-8 max-w-3xl mx-auto">
               Monitor, analyze, and forecast your business cash flow with precision. 
-              Get AI-powered insights and real-time financial tracking to make informed decisions.
+              Reconcile licensed source data, inspect deterministic forecasts, and test paper-only risk controls with a verifiable audit trail.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
               <Link
@@ -87,15 +87,15 @@ const HomePage: React.FC = () => {
             <div className="flex flex-wrap justify-center items-center gap-6 text-primary-200">
               <div className="flex items-center">
                 <Shield className="h-5 w-5 mr-2" />
-                <span className="text-sm">Bank-Level Security</span>
+                <span className="text-sm">Hash-chained audit evidence</span>
               </div>
               <div className="flex items-center">
                 <Users className="h-5 w-5 mr-2" />
-                <span className="text-sm">10,000+ Businesses</span>
+                <span className="text-sm">Licensed-source boundaries</span>
               </div>
               <div className="flex items-center">
                 <Star className="h-5 w-5 mr-2" />
-                <span className="text-sm">4.8/5 Rating</span>
+                <span className="text-sm">Paper trading only</span>
               </div>
             </div>
           </div>
@@ -188,6 +188,7 @@ const HomePage: React.FC = () => {
         ) : (
           <>
             {/* Dashboard Widgets */}
+            <React.Suspense fallback={<p className="mb-8 rounded bg-white p-6 text-center text-gray-600">Loading deterministic analytics…</p>}>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
               <CashInflowsWidget transactions={transactions} />
               <CashOutflowsWidget transactions={transactions} />
@@ -197,6 +198,7 @@ const HomePage: React.FC = () => {
               <CashRunwayWidget transactions={transactions} />
               <CashForecastWidget transactions={transactions} />
             </div> 
+            </React.Suspense>
             
             {/* Recent Transactions */}
             <div className="bg-white rounded-lg shadow">

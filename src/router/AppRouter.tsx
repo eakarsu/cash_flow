@@ -1,9 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import HomePage from '../pages/HomePage';
-import PlaceholderPage from '../components/PlaceholderPage';
-import { useTransactions } from '../context/TransactionContext';
 
 // Transaction pages
 import TransactionsPage from '../pages/Transactions/TransactionsPage';
@@ -12,77 +10,45 @@ import EditTransactionPage from '../pages/Transactions/EditTransactionPage';
 import ImportTransactionsPage from '../pages/Transactions/ImportTransactionsPage';
 
 // Analytics pages
-import CashInflowsPage from '../pages/Analytics/CashInflowsPage';
-import CashOutflowsPage from '../pages/Analytics/CashOutflowsPage';
-import CashRunwayPage from '../pages/Analytics/CashRunwayPage';
-import CashForecastPage from '../pages/Analytics/CashForecastPage';
-import VendorCashCommitmentsPage from '../pages/Analytics/VendorCashCommitmentsPage';
+const CashInflowsPage = React.lazy(() => import('../pages/Analytics/CashInflowsPage'));
+const CashOutflowsPage = React.lazy(() => import('../pages/Analytics/CashOutflowsPage'));
+const CashRunwayPage = React.lazy(() => import('../pages/Analytics/CashRunwayPage'));
+const CashForecastPage = React.lazy(() => import('../pages/Analytics/CashForecastPage'));
+const VendorCashCommitmentsPage = React.lazy(() => import('../pages/Analytics/VendorCashCommitmentsPage'));
 
 // Reports pages
 import ReportsPage from '../pages/Reports/ReportsPage';
 
-// Company pages
-import AboutPage from '../pages/Company/AboutPage';
-import ContactPage from '../pages/Company/ContactPage';
-
-// Marketing pages
-import FeaturesPage from '../pages/Marketing/FeaturesPage';
-import PricingPage from '../pages/Marketing/PricingPage';
-
-// Support pages
-import HelpPage from '../pages/Support/HelpPage';
-import DocumentationPage from '../pages/Support/DocumentationPage';
-import TutorialsPage from '../pages/Support/TutorialsPage';
-import SupportContactPage from '../pages/Support/SupportContactPage';
-
 // Integration pages
 import IntegrationPage from '../pages/Integration/IntegrationPage';
-import QuickBooksAuthPage from '../pages/Integration/QuickBooksAuthPage';
 
-// Settings pages
-import SettingsPage from '../pages/Settings/SettingsPage';
-import BillingPage from '../pages/Settings/BillingPage';
-import ProfilePage from '../pages/Settings/ProfilePage';
+import LoginPage from '../pages/LoginPage';
+import OperationsPage from '../pages/OperationsPage';
+import { useAuth } from '../context/AuthContext';
+import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage';
+import TermsOfServicePage from '../pages/Legal/TermsOfServicePage';
+import CookiePolicyPage from '../pages/Legal/CookiePolicyPage';
+import DataProcessingPage from '../pages/Legal/DataProcessingPage';
+import RefundPolicyPage from '../pages/Legal/RefundPolicyPage';
 
 const AppRouter: React.FC = () => {
-  const { transactions } = useTransactions();
+  const { authenticated, loading } = useAuth();
+
+  if (loading) return <div className="min-h-screen bg-slate-950 p-12 text-center text-slate-100">Checking secure session…</div>;
 
   const handleImport = () => {
     // Navigate to import page instead of handling file upload here
     window.location.href = '/transactions/import';
   };
 
-  const handleExport = () => {
-    // Create CSV content
-    const headers = ['Date', 'Description', 'Amount', 'Category', 'Balance'];
-    const csvContent = [
-      headers.join(','),
-      ...transactions.map(t => [
-        t.date,
-        `"${t.description}"`,
-        t.amount,
-        t.category,
-        t.balance
-      ].join(','))
-    ].join('\n');
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  };
-
 
   return (
     <Router>
-      <Layout onImport={handleImport} onExport={handleExport}>
+      {!authenticated ? (
+        <Routes><Route path="/login" element={<LoginPage />} /><Route path="*" element={<Navigate to="/login" replace />} /></Routes>
+      ) : <Layout onImport={handleImport}><React.Suspense fallback={<p className="p-8 text-center text-gray-600">Loading financial view…</p>}>
         <Routes>
+            <Route path="/login" element={<Navigate to="/" replace />} />
             {/* Main Application Pages */}
             <Route path="/" element={<HomePage />} />
             
@@ -98,47 +64,48 @@ const AppRouter: React.FC = () => {
             <Route path="/transactions/add" element={<AddTransactionPage />} />
             <Route path="/transactions/edit/:id" element={<EditTransactionPage />} />
             <Route path="/transactions/import" element={<ImportTransactionsPage />} />
-            <Route path="/transactions/categories" element={<PlaceholderPage title="Transaction Categories" description="Manage and organize your transaction categories" />} />
+            <Route path="/transactions/categories" element={<Navigate to="/transactions" replace />} />
             
             {/* Integration Pages */}
             <Route path="/integration" element={<IntegrationPage />} />
-            <Route path="/integration/quickbooks" element={<QuickBooksAuthPage />} />
+            <Route path="/integration/quickbooks" element={<Navigate to="/integration" replace />} />
             
             {/* Reports Pages */}
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/reports/custom" element={<PlaceholderPage title="Custom Reports" description="Create custom financial reports" />} />
-            <Route path="/reports/export" element={<PlaceholderPage title="Export Data" description="Export your financial data in various formats" />} />
+            <Route path="/operations" element={<OperationsPage />} />
+            <Route path="/reports/custom" element={<Navigate to="/reports" replace />} />
+            <Route path="/reports/export" element={<Navigate to="/operations" replace />} />
             
             {/* Account Pages */}
-            <Route path="/account/profile" element={<ProfilePage />} />
-            <Route path="/account/settings" element={<SettingsPage />} />
-            <Route path="/account/billing" element={<BillingPage />} />
+            <Route path="/account/profile" element={<Navigate to="/operations" replace />} />
+            <Route path="/account/settings" element={<Navigate to="/operations" replace />} />
+            <Route path="/account/billing" element={<Navigate to="/operations" replace />} />
             
             {/* Company Pages */}
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/about" element={<Navigate to="/operations" replace />} />
+            <Route path="/contact" element={<Navigate to="/operations" replace />} />
             
             {/* Marketing Pages */}
-            <Route path="/features" element={<FeaturesPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/testimonials" element={<PlaceholderPage title="Customer Testimonials" description="See what our customers are saying about us" />} />
-            <Route path="/case-studies" element={<PlaceholderPage title="Case Studies" description="Real-world examples of how our platform helps businesses" />} />
-            <Route path="/blog" element={<PlaceholderPage title="Blog" description="Latest insights and tips for cash flow management" />} />
+            <Route path="/features" element={<Navigate to="/operations" replace />} />
+            <Route path="/pricing" element={<Navigate to="/operations" replace />} />
+            <Route path="/testimonials" element={<Navigate to="/operations" replace />} />
+            <Route path="/case-studies" element={<Navigate to="/operations" replace />} />
+            <Route path="/blog" element={<Navigate to="/operations" replace />} />
             
             {/* Support Pages */}
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/documentation" element={<DocumentationPage />} />
-            <Route path="/tutorials" element={<TutorialsPage />} />
-            <Route path="/support" element={<SupportContactPage />} />
+            <Route path="/help" element={<Navigate to="/operations" replace />} />
+            <Route path="/documentation" element={<Navigate to="/operations" replace />} />
+            <Route path="/tutorials" element={<Navigate to="/operations" replace />} />
+            <Route path="/support" element={<Navigate to="/operations" replace />} />
             
-            {/* Legal Pages - Using PlaceholderPage for now */}
-            <Route path="/privacy" element={<PlaceholderPage title="Privacy Policy" description="Our commitment to protecting your privacy" />} />
-            <Route path="/terms" element={<PlaceholderPage title="Terms of Service" description="Terms and conditions for using our service" />} />
-            <Route path="/cookies" element={<PlaceholderPage title="Cookie Policy" description="How we use cookies on our website" />} />
-            <Route path="/data-processing" element={<PlaceholderPage title="Data Processing Agreement" description="Information about how we process your data" />} />
-            <Route path="/refund-policy" element={<PlaceholderPage title="Refund Policy" description="Our refund and cancellation policy" />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/cookies" element={<CookiePolicyPage />} />
+            <Route path="/data-processing" element={<DataProcessingPage />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-      </Layout>
+      </React.Suspense></Layout>}
     </Router>
   );
 };

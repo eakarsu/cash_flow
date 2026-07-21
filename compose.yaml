@@ -1,0 +1,44 @@
+services:
+  migrate:
+    build: .
+    command: ["node", "dist-server/scripts/migrate.js"]
+    environment: &runtime
+      NODE_ENV: production
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:?set PUBLIC_APP_URL}
+      LEDGER_DATABASE_PATH: /app/data/cash-flow.sqlite
+      OPERATOR_API_TOKEN: ${OPERATOR_API_TOKEN:?set OPERATOR_API_TOKEN}
+      AUDITOR_API_TOKEN: ${AUDITOR_API_TOKEN:?set AUDITOR_API_TOKEN}
+      PROVIDER_WEBHOOK_SECRET: ${PROVIDER_WEBHOOK_SECRET:?set PROVIDER_WEBHOOK_SECRET}
+      IDENTITY_HASH_SECRET: ${IDENTITY_HASH_SECRET:?set IDENTITY_HASH_SECRET}
+      LICENSED_PROVIDERS: ${LICENSED_PROVIDERS:?set LICENSED_PROVIDERS}
+      LIVE_TRADING_ENABLED: "false"
+    volumes:
+      - ledger-data:/app/data
+    restart: "no"
+
+  app:
+    build: .
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment: *runtime
+    ports:
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - ledger-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ledger-data:

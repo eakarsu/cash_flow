@@ -50,32 +50,6 @@ const TransactionsPage: React.FC = () => {
     });
   }, [transactions, searchTerm, selectedCategory, dateRange, amountRange]);
 
-  const handleExport = () => {
-    // Create CSV content
-    const headers = ['Date', 'Description', 'Category', 'Amount', 'Balance'];
-    const csvContent = [
-      headers.join(','),
-      ...filteredTransactions.map(t => [
-        new Date(t.date).toLocaleDateString(),
-        `"${t.description}"`,
-        t.category,
-        t.amount,
-        t.balance
-      ].join(','))
-    ].join('\n');
-
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  };
-
   const handleEdit = (transaction: any) => {
     // Navigate to edit page - this would be handled by router
     console.log('Edit transaction:', transaction);
@@ -106,13 +80,13 @@ const TransactionsPage: React.FC = () => {
                 <Upload className="h-4 w-4 mr-2" />
                 Import Transactions
               </Link>
-              <button
-                onClick={handleExport}
+              <a
+                href="/api/v1/audit-export"
                 className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Export Data
-              </button>
+                Export Audit Evidence
+              </a>
               <Link
                 to="/transactions/add"
                 className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
@@ -342,7 +316,7 @@ const TransactionsPage: React.FC = () => {
                         {transaction.amount >= 0 ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${transaction.balance.toLocaleString()}
+                        {typeof transaction.balance === 'number' ? `$${transaction.balance.toLocaleString()}` : 'Derived from ledger'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <Link
@@ -352,10 +326,10 @@ const TransactionsPage: React.FC = () => {
                           Edit
                         </Link>
                         <button
-                          onClick={() => deleteTransaction(transaction.id)}
+                          onClick={() => void deleteTransaction(transaction.id)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          Delete
+                          Reverse
                         </button>
                       </td>
                     </tr>

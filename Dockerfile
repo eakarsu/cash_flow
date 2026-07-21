@@ -1,28 +1,22 @@
-# Use Node.js runtime
-FROM node:24-alpine
-
-# Set working directory
+FROM node:24.1.0-bookworm-slim AS build
 WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
+COPY package.json package-lock.json ./
 RUN npm ci
-
-# Copy source code
 COPY . .
+RUN npm run build && npm prune --omit=dev
 
-RUN npm run build
-RUN npm run build:server
-
-# Install serve for static frontend
-RUN npm install -g serve
-
-# Install concurrently for running both servers
-RUN npm install -g concurrently
-
-# Add local node_modules binaries to PATH
-ENV PATH=/app/node_modules/.bin:$PATH
-
-CMD ["concurrently", "node dist/server.js", "serve -s build -l 3000"]
+FROM node:24.1.0-bookworm-slim AS runtime
+ENV NODE_ENV=production \
+    PORT=3001 \
+    AUTO_MIGRATE=false \
+    LIVE_TRADING_ENABLED=false
+WORKDIR /app
+COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/dist-server ./dist-server
+COPY --from=build --chown=node:node /app/dist-web ./dist-web
+COPY --from=build --chown=node:node /app/migrations ./migrations
+RUN mkdir -p /app/data && chown node:node /app/data
+USER node
+EXPOSE 3001
+CMD ["node", "dist-server/server.js"]

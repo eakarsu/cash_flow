@@ -1,8 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useTransactions } from './TransactionContext';
-import AICashFlowService, { CashFlowPrediction } from '../services/aiCashFlowService';
+import React, { createContext, useContext, useMemo, useState } from "react";
 
-interface AICashFlowContextType {
+interface CashFlowPrediction {
+  weeklyForecasts: Array<{ week: string; projectedBalance: number; inflows: number; outflows: number; optimistic: number; realistic: number; pessimistic: number }>;
+  runwayAnalysis: { currentRunway: number; projectedRunway: number; burnRate: number; recommendations: string[] };
+  categoryInsights: Array<{ category: string; trend: "increasing" | "decreasing" | "stable"; projectedAmount: number; riskLevel: "low" | "medium" | "high" }>;
+  summary: { overallTrend: "positive" | "negative" | "stable"; keyInsights: string[]; actionItems: string[] };
+}
+
+interface AdvisoryContext {
   prediction: CashFlowPrediction | null;
   loading: boolean;
   error: string | null;
@@ -13,103 +18,25 @@ interface AICashFlowContextType {
   setUseAI: (enabled: boolean) => void;
 }
 
-const AICashFlowContext = createContext<AICashFlowContextType | undefined>(undefined);
+const Context = createContext<AdvisoryContext | undefined>(undefined);
 
-interface AICashFlowProviderProps {
-  children: ReactNode;
+export function AICashFlowProvider({ children }: { children: React.ReactNode }) {
+  const [error, setError] = useState<string | null>(null);
+  const value = useMemo<AdvisoryContext>(() => ({
+    prediction: null,
+    loading: false,
+    error,
+    lastUpdated: null,
+    refreshPrediction: () => setError("AI advice is disabled. Forecasts are deterministic and cannot approve or place orders."),
+    isConfigured: false,
+    useAI: false,
+    setUseAI: (enabled: boolean) => { if (enabled) setError("AI cannot participate in financial control decisions."); },
+  }), [error]);
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
-export const AICashFlowProvider: React.FC<AICashFlowProviderProps> = ({ children }) => {
-  const { transactions } = useTransactions();
-  const [prediction, setPrediction] = useState<CashFlowPrediction | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [useAI, setUseAI] = useState(false);
-
-  // Get API key from environment
-  const apiKey = process.env.REACT_APP_OPENROUTER_API_KEY;
-  const isConfigured = !!apiKey;
-  const aiService = apiKey ? new AICashFlowService(apiKey) : null;
-
-  // Get current balance
-  const currentBalance = transactions.length > 0 ? 
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].balance || 0 : 0;
-
-  const fetchPrediction = async (force = false) => {
-    if (!aiService || !apiKey) {
-      console.log('⚠️ AI Service not configured - no API key provided');
-      setError(null);
-      setPrediction(null);
-      return;
-    }
-
-    if (loading && !force) {
-      console.log('🔄 Already loading, skipping duplicate request');
-      return;
-    }
-
-    console.log('🚀 Starting centralized AI prediction fetch...');
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await aiService.getPredictions(transactions, currentBalance);
-      console.log('✅ Centralized AI prediction successful:', result);
-      setPrediction(result);
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error('❌ Centralized AI prediction error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to get AI predictions');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshPrediction = () => fetchPrediction(true);
-
-  // Auto-refresh effect when AI is enabled
-  useEffect(() => {
-    if (useAI && isConfigured && aiService && transactions.length > 0) {
-      console.log('🔄 AI enabled, fetching centralized predictions');
-      fetchPrediction();
-    }
-  }, [useAI, transactions.length, currentBalance, isConfigured]);
-
-  // Auto-refresh interval when AI is enabled
-  useEffect(() => {
-    if (useAI && isConfigured && !loading) {
-      const interval = setInterval(() => {
-        console.log('⏰ Auto-refresh interval triggered');
-        fetchPrediction();
-      }, 300000); // 5 minutes
-
-      return () => clearInterval(interval);
-    }
-  }, [useAI, isConfigured, loading]);
-
-  const value: AICashFlowContextType = {
-    prediction,
-    loading,
-    error,
-    lastUpdated,
-    refreshPrediction,
-    isConfigured,
-    useAI,
-    setUseAI
-  };
-
-  return (
-    <AICashFlowContext.Provider value={value}>
-      {children}
-    </AICashFlowContext.Provider>
-  );
-};
-
-export const useAICashFlowContext = () => {
-  const context = useContext(AICashFlowContext);
-  if (context === undefined) {
-    throw new Error('useAICashFlowContext must be used within an AICashFlowProvider');
-  }
+export function useAICashFlowContext() {
+  const context = useContext(Context);
+  if (!context) throw new Error("useAICashFlowContext must be used within AICashFlowProvider");
   return context;
-};
+}
