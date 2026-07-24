@@ -279,7 +279,7 @@ export function correctEntry(db: Database.Database, actor: string, entryId: stri
     const reversalSource = { correctionId, reason, originalHash: original.entry_hash };
     const reversal = appendEntry(db, {
       sourceAccountId: String(original.source_account_id), externalId: `${correctionId}:reversal`, sourceVersion: 1,
-      eventType: "reversal", occurredAt: String(original.occurred_at), sourceTimestamp: now, receivedAt: now,
+      eventType: "reversal", occurredAt: String(original.occurred_at), sourceTimestamp: corrected?.sourceTimestamp ? iso(corrected.sourceTimestamp, "sourceTimestamp") : String(original.source_timestamp), receivedAt: now,
       currency: String(original.currency), amountMinor: -Number(original.amount_minor),
       description: `Reversal: ${String(original.description)}`, originalEntryId: entryId,
       metadata: reversalSource, sourceDigest: sha256(stableJson(reversalSource)), actor,

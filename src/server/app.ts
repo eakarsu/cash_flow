@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { randomUUID } from "node:crypto";
 import express, { type NextFunction, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -60,6 +61,25 @@ export function createApp(db: Database.Database, config: RuntimeConfig) {
   });
   app.get("/api/auth/session", session);
   app.get("/api/auth/me", session);
+  app.post("/api/runtime-ai/cashflow-advice", asyncRoute(async (request, response) => {
+    const actor = authorize(request, db, config, "operator", true);
+    const prompt = String(objectBody(request).prompt || "").trim();
+    if (!prompt) throw new DomainError("invalid_prompt", "prompt is required.", 400);
+    const apiKey = process.env.OPENROUTER_API_KEY, baseUrl = process.env.OPENROUTER_BASE_URL, model = process.env.OPENROUTER_MODEL;
+    if (!apiKey || !baseUrl || !model) throw new Error("OpenRouter is not configured");
+    const providerResponse = await fetch(baseUrl.replace(/\/$/, "") + "/chat/completions", {
+      method: "POST", headers: { authorization: "Bearer " + apiKey, "content-type": "application/json" },
+      body: JSON.stringify({ model, messages: [{ role: "system", content: "Provide concise cash-flow operations advice with risks and auditable next actions." }, { role: "user", content: prompt }], temperature: 0.2 }),
+    });
+    if (!providerResponse.ok) throw new Error("OpenRouter returned " + providerResponse.status);
+    const payload = await providerResponse.json() as { choices?: Array<{ message?: { content?: string } }> };
+    const content = payload.choices?.[0]?.message?.content?.trim();
+    if (!content) throw new Error("OpenRouter returned empty content");
+    const persistedId = randomUUID(), createdAt = new Date().toISOString();
+    db.prepare("INSERT INTO runtime_ai_results(id,workspace_id,actor_id,prompt,content,provider,model,created_at) VALUES(?,?,?,?,?,'openrouter',?,?)")
+      .run(persistedId, DEFAULT_WORKSPACE_ID, actor.id, prompt, content, model, createdAt);
+    response.json({ content, provider: "openrouter", model, persistedId });
+  }));
   app.post("/api/auth/logout", asyncRoute((request, response) => {
     authorize(request, db, config, "auditor", true);
     logout(db, config, request, response);

@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [react()],
   build: { outDir: "dist-web", sourcemap: false },
   server: {
-    port: 3000,
-    proxy: { "/api": "http://127.0.0.1:3001" },
+    port: Number(process.env.UI_PORT || 3000),
+    strictPort: true,
+    proxy: { "/api": process.env.VITE_API_TARGET || "http://127.0.0.1:3001" },
   },
 });
