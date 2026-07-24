@@ -21,6 +21,15 @@ export default function LoginPage() {
       <label className="mt-4 block text-sm font-medium" htmlFor="login-password">Password</label>
       <input id="login-password" type="password" autoComplete="current-password" minLength={12} required value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2" />
       {error && <p role="alert" className="mt-4 rounded bg-red-950 p-3 text-sm text-red-200">{error}</p>}
+      <button
+        type="button"
+        onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL || ''); setPassword(import.meta.env.VITE_DEMO_PASSWORD || ''); }}
+        disabled={!import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
+        aria-label="Auto Fill Demo Credentials"
+        style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
+      >
+        Auto Fill Demo Credentials
+      </button>
       <button disabled={submitting} className="mt-6 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500 disabled:opacity-60">{submitting ? "Signing in…" : "Sign in"}</button>
     </form>
   </main>;
