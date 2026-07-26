@@ -57,7 +57,7 @@ export function createApp(db: Database.Database, config: RuntimeConfig) {
   app.post("/api/auth/login", asyncRoute((request, response) => response.json(login(db, config, request, response, objectBody(request)))));
   const session = asyncRoute((request, response) => {
     const actor = authenticate(request, db, config);
-    response.json({ authenticated: true, role: actor.role, csrfToken: actor.csrfToken || null });
+    response.json({ authenticated: true, user: { id: actor.id, role: actor.role }, role: actor.role, csrfToken: actor.csrfToken || null });
   });
   app.get("/api/auth/session", session);
   app.get("/api/auth/me", session);
