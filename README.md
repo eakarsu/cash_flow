@@ -89,3 +89,8 @@ npm run security:audit
 ```
 
 CI repeats clean dependency installation, full-history secret scanning, two migration deploys, static checks, unit/integration/browser tests, production build, dependency audit, and a container build. See [OPERATIONS.md](./OPERATIONS.md) and [SECURITY.md](./SECURITY.md) before release.
+# AI Operations
+
+Use **AI Operations** in the desktop or mobile navigation. Three complete examples fill the native operations brief; **Generate with OpenRouter** sends it through the existing operator session and CSRF protection. The report, Copy and Download actions present readable text and tables. Browser Cancel disconnects pending provider work and prevents a late save; a completed atomic SQLite save remains retained.
+
+Saved reports are scoped to the current actor and workspace and open in a centered dialog. Edit prepares a new request. Delete is disabled because provider evidence is retained. Auditor sessions cannot generate or change operational data through this screen. The financial ledger, paper-only execution and independent approval gates remain authoritative.

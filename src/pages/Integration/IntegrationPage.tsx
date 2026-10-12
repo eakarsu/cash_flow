@@ -9,7 +9,10 @@ export default function IntegrationPage() {
   const [form, setForm] = useState({ provider: "", externalAccountId: "", displayName: "", currency: "USD", custodyClass: "bank", licenseReference: "" });
   const load = useCallback(async () => {
     const response = await fetch("/api/v1/source-accounts");
-    if (response.ok) setAccounts((await response.json()).data || []);
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) { setMessage(body?.error?.message || 'Registered sources could not be loaded.'); return; }
+    if (!Array.isArray(body.data)) { setMessage('Source response did not contain an account list.'); return; }
+    setAccounts(body.data);
   }, []);
   useEffect(() => { void load(); }, [load]);
   const submit = async (event: React.FormEvent) => {

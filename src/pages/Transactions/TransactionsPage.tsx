@@ -1,15 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, Download, Search, Filter, Calendar, DollarSign } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
 
 const TransactionsPage: React.FC = () => {
-  const { transactions, deleteTransaction } = useTransactions();
+  const { transactions, deleteTransaction, loading, error } = useTransactions();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [amountRange, setAmountRange] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
+  const [selected, setSelected] = useState<(typeof transactions)[number] | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') { setSelected(null); setConfirmDelete(false); } };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [selected]);
 
   // Get unique categories for filter dropdown
   const categories = useMemo(() => {
@@ -225,6 +234,7 @@ const TransactionsPage: React.FC = () => {
           </div>
         </div>
 
+        {error && <p role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-800">{error}</p>}
         {/* Transaction List */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -240,7 +250,7 @@ const TransactionsPage: React.FC = () => {
             </div>
           </div>
           
-          {filteredTransactions.length === 0 ? (
+          {loading ? <p className="p-6 text-gray-600">Loading transactions…</p> : filteredTransactions.length === 0 ? (
             <div className="text-center py-12">
               <DollarSign className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No transactions found</h3>
@@ -296,7 +306,7 @@ const TransactionsPage: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-gray-50">
+                    <tr key={transaction.id} tabIndex={0} role="button" aria-label={`Open details for ${transaction.description}`} onClick={() => { setSelected(transaction); setConfirmDelete(false); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(transaction); setConfirmDelete(false); } }} className="hover:bg-gray-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(transaction.date).toLocaleDateString()}
                       </td>
@@ -339,6 +349,43 @@ const TransactionsPage: React.FC = () => {
             </div>
           )}
         </div>
+        {selected && (
+          <div className="fixed inset-0 z-50 bg-slate-950/50 p-4 grid place-items-center" onMouseDown={(e) => { if (e.target === e.currentTarget) { setSelected(null); setConfirmDelete(false); } }}>
+            <section role="dialog" aria-modal="true" aria-label={`Transaction ${selected.description}`} className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto">
+              <header className="p-5 border-b flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">{selected.description}</h2>
+                  <p className="text-gray-600">{selected.merchant || 'No merchant'} · {new Date(selected.date).toLocaleDateString()}</p>
+                </div>
+                <button aria-label="Close" onClick={() => { setSelected(null); setConfirmDelete(false); }} className="text-gray-500">✕</button>
+              </header>
+              <div className="p-6 space-y-3">
+                <dl className="grid grid-cols-2 gap-4">
+                  <div><dt className="text-xs uppercase text-gray-500">Date</dt><dd>{new Date(selected.date).toLocaleDateString()}</dd></div>
+                  <div><dt className="text-xs uppercase text-gray-500">Category</dt><dd>{selected.category}</dd></div>
+                  <div><dt className="text-xs uppercase text-gray-500">Type</dt><dd>{selected.type === 'inflow' ? 'Inflow' : 'Outflow'}</dd></div>
+                  <div><dt className="text-xs uppercase text-gray-500">Amount</dt><dd className={selected.type === 'inflow' ? 'text-green-600' : 'text-red-600'}>{selected.type === 'inflow' ? '+' : '-'}${Math.abs(selected.amount).toLocaleString()}</dd></div>
+                  <div className="col-span-2"><dt className="text-xs uppercase text-gray-500">Description</dt><dd>{selected.description}</dd></div>
+                </dl>
+                {confirmDelete && (
+                  <div role="alert" className="rounded border border-red-200 bg-red-50 p-3">
+                    <strong>Delete this transaction?</strong>
+                    <p className="text-sm text-red-800">The ledger entry is reversed and retained for audit history.</p>
+                    <div className="mt-2 flex gap-2">
+                      <button className="rounded bg-red-600 px-3 py-1 text-white" onClick={() => { void deleteTransaction(selected.id); setSelected(null); setConfirmDelete(false); }}>Delete transaction</button>
+                      <button className="rounded border px-3 py-1" onClick={() => setConfirmDelete(false)}>Cancel deletion</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <footer className="p-5 border-t flex justify-end gap-3">
+                <button className="rounded border px-4 py-2" onClick={() => { setSelected(null); setConfirmDelete(false); }}>Cancel</button>
+                <button className="rounded border px-4 py-2" onClick={() => setConfirmDelete(true)}>Delete</button>
+                <Link to={`/transactions/edit/${selected.id}`} onClick={() => setSelected(null)} className="rounded bg-primary-600 px-4 py-2 text-white">Edit</Link>
+              </footer>
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );

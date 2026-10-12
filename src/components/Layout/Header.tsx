@@ -152,12 +152,14 @@ const Header: React.FC<HeaderProps> = ({ onImport }) => {
               Operations
             </Link>
 
+            <Link to="/ai-operations" className={`text-sm font-medium ${isActive('/ai-operations') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>AI Operations</Link>
           </nav>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* User Account / Auth */}
             <div className="hidden lg:flex items-center space-x-4">
+              <Link to="/ai-operations" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>AI Operations</Link>
               {isLoggedIn && (
                 <div className="relative" ref={accountRef}>
                   <button

@@ -4,7 +4,7 @@ import { useTransactions } from '../../context/TransactionContext';
 
 const ReportsPage: React.FC = () => {
   const { transactions } = useTransactions();
-  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('all');
   const [selectedReport, setSelectedReport] = useState<'summary' | 'detailed' | 'forecast'>('summary');
 
   // Filter transactions based on selected period
@@ -211,7 +211,7 @@ const ReportsPage: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900">Recent Transactions</h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {filteredTransactions.slice(0, 10).map((transaction) => (
+            {filteredTransactions.slice(0, 15).map((transaction) => (
               <div key={transaction.id} className="px-6 py-4">
                 <div className="flex justify-between items-center">
                   <div>
@@ -229,7 +229,7 @@ const ReportsPage: React.FC = () => {
                       {transaction.amount >= 0 ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Balance: ${transaction.balance.toLocaleString()}
+                      Balance: {typeof transaction.balance === 'number' ? `$${transaction.balance.toLocaleString()}` : 'Derived from ledger'}
                     </p>
                   </div>
                 </div>

@@ -55,7 +55,8 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     setLoading(true); setError(null);
     try {
       const response = await checked(await fetch("/api/v1/ledger?limit=1000", { credentials: "same-origin" }));
-      setTransactions((response.data || []).map(toTransaction));
+      if (!Array.isArray(response?.data)) throw new Error("Ledger response did not contain a transaction list.");
+      setTransactions(response.data.map(toTransaction));
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load ledger"); }
     finally { setLoading(false); }
   }, [authenticated]);

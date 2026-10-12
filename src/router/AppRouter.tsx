@@ -24,6 +24,7 @@ import IntegrationPage from '../pages/Integration/IntegrationPage';
 
 import LoginPage from '../pages/LoginPage';
 import OperationsPage from '../pages/OperationsPage';
+import AIOperationsPage from '../pages/AIOperationsPage';
 import { useAuth } from '../context/AuthContext';
 import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/Legal/TermsOfServicePage';
@@ -73,6 +74,7 @@ const AppRouter: React.FC = () => {
             {/* Reports Pages */}
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/operations" element={<OperationsPage />} />
+            <Route path="/ai-operations" element={<AIOperationsPage />} />
             <Route path="/reports/custom" element={<Navigate to="/reports" replace />} />
             <Route path="/reports/export" element={<Navigate to="/operations" replace />} />
             

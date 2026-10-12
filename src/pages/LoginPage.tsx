@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const demoAvailable = import.meta.env.VITE_ENABLE_DEMO_CREDENTIAL_AUTOFILL === 'true' && !!import.meta.env.VITE_DEMO_EMAIL && !!import.meta.env.VITE_DEMO_PASSWORD;
   if (authenticated) return <Navigate to="/" replace />;
   return <main className="min-h-screen bg-slate-950 px-4 py-16 text-slate-100">
     <form className="mx-auto max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl" onSubmit={async (event) => {
@@ -23,13 +24,14 @@ export default function LoginPage() {
       {error && <p role="alert" className="mt-4 rounded bg-red-950 p-3 text-sm text-red-200">{error}</p>}
       <button
         type="button"
-        onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL || ''); setPassword(import.meta.env.VITE_DEMO_PASSWORD || ''); }}
-        disabled={!import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
-        aria-label="Auto Fill Demo Credentials"
+        onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL); setPassword(import.meta.env.VITE_DEMO_PASSWORD); }}
+        disabled={!demoAvailable || submitting}
+        aria-label="Fill demo credentials"
         style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
       >
-        Auto Fill Demo Credentials
+        Fill demo credentials
       </button>
+      {!demoAvailable && <p className="text-sm text-slate-300">Demo credentials are unavailable in this build. Sign in with your configured account.</p>}
       <button disabled={submitting} className="mt-6 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500 disabled:opacity-60">{submitting ? "Signing in…" : "Sign in"}</button>
     </form>
   </main>;

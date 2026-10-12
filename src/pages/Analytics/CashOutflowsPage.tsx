@@ -102,7 +102,7 @@ const CashOutflowsPage: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900">Recent Outflow Transactions</h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {outflowTransactions.slice(0, 10).map((transaction) => (
+            {outflowTransactions.slice(0, 15).map((transaction) => (
               <div key={transaction.id} className="px-6 py-4">
                 <div className="flex justify-between items-center">
                   <div>
