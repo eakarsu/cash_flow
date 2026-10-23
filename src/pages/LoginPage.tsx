@@ -8,11 +8,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const demoAvailable = import.meta.env.VITE_ENABLE_DEMO_CREDENTIAL_AUTOFILL === 'true' && !!import.meta.env.VITE_DEMO_EMAIL && !!import.meta.env.VITE_DEMO_PASSWORD;
+  const [demoError, setDemoError] = useState("");
+  const submitLogin = async (loginEmail: string, loginPassword: string) => {
+    setSubmitting(true);
+    try {
+      await login(loginEmail, loginPassword);
+    } catch {
+      /* context renders the generic error */
+    } finally {
+      setSubmitting(false);
+    }
+  };
   if (authenticated) return <Navigate to="/" replace />;
   return <main className="min-h-screen bg-slate-950 px-4 py-16 text-slate-100">
     <form className="mx-auto max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl" onSubmit={async (event) => {
-      event.preventDefault(); setSubmitting(true); try { await login(email, password); } catch { /* context renders the generic error */ } finally { setSubmitting(false); }
+      event.preventDefault(); await submitLogin(email, password);
     }}>
       <ShieldCheck className="mb-5 h-10 w-10 text-blue-400" aria-hidden="true" />
       <h1 className="text-2xl font-bold">Cash operations sign in</h1>
@@ -22,16 +32,22 @@ export default function LoginPage() {
       <label className="mt-4 block text-sm font-medium" htmlFor="login-password">Password</label>
       <input id="login-password" type="password" autoComplete="current-password" minLength={12} required value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2" />
       {error && <p role="alert" className="mt-4 rounded bg-red-950 p-3 text-sm text-red-200">{error}</p>}
+      {demoError && <p role="alert" className="mt-4 rounded bg-red-950 p-3 text-sm text-red-200">{demoError}</p>}
       <button
         type="button"
-        onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL); setPassword(import.meta.env.VITE_DEMO_PASSWORD); }}
-        disabled={!demoAvailable || submitting}
+        onClick={async () => {
+          if (import.meta.env.VITE_DEMO_EMAIL && import.meta.env.VITE_DEMO_PASSWORD) { setEmail(import.meta.env.VITE_DEMO_EMAIL); setPassword(import.meta.env.VITE_DEMO_PASSWORD); return; }
+          try {
+            const response = await fetch("/api/auth/demo-credentials", { cache: "no-store" });
+            if (response.ok) { const data = await response.json(); if (data?.email && data?.password) { setEmail(data.email); setPassword(data.password); return; } }
+          } catch { /* fall through to message below */ }
+          setDemoError("Demo credentials are not configured for this environment.");
+        }}
         aria-label="Fill demo credentials"
         style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
       >
         Fill demo credentials
       </button>
-      {!demoAvailable && <p className="text-sm text-slate-300">Demo credentials are unavailable in this build. Sign in with your configured account.</p>}
       <button disabled={submitting} className="mt-6 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500 disabled:opacity-60">{submitting ? "Signing in…" : "Sign in"}</button>
     </form>
   </main>;
